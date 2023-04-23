@@ -62,4 +62,4 @@ def main(file_name):
                 print(f'line {line_count}, Col {col}: {string}:{trans_dict[string]} ')
         line_count += 1
 if __name__ == '__main__':
-    main(r'Course\en\chapter8\2.mdx')
+    main(r'Course\en\chapter5\2.mdx')

@@ -1,7 +1,11 @@
-import format_check,os
-for file in os.listdir('Course\zh-CN\chapter8'):
-    if 'fix'not in file and file=='4.mdx':
-        print(file)
-        errors = format_check.check_file('Course\zh-CN\chapter8\\'+file, fmt='text',auto_fix=True,print_change=False)
-        print(errors)
-        print('------------------')
+import format_check
+import os
+
+def comfirm(file_name):
+    select=input("Warnding!!! 是否信任格式化后的版本，删除之前的版本?(y/n)")
+    if select=='y':
+        os.remove(file_name)
+        os.renames('.'.join(file_name.split('.')[:-1]+['_fix']+[file_name.split('.')[-1]]),file_name)
+file_name='Course\zh-CN\chapter4\\1.mdx'
+format_check.check_file(file_name,auto_fix=True)
+comfirm(file_name)
