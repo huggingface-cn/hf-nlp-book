@@ -3,15 +3,15 @@ import yaml
 import re
 import pandas as pd
 sumery_dict={"title":[],"words_num":[]}
-dict_file=yaml.load(open('translate_course\course\chapters\en\_toctree.yml','r',encoding='utf-8'))
+# 读取zh-CN目录
+dict_file=yaml.load(open('Course\en\_toctree.yml','r',encoding='utf-8'))
 for chapter in dict_file:
     title=chapter['title']
     words=0
     for file in chapter['sections']:
-        words=len(re.sub("'''.*?'''", "", open('translate_course\course\chapters\zh-CN\\'+file['local']+'.mdx','r',encoding='utf-8').read(),flags=re.MULTILINE|re.DOTALL))
+        #去除代码块后统计字数
+        words=len(re.sub("'''.*?'''", "", open('Course\zh-CN\\'+file['local']+'.mdx','r',encoding='utf-8').read(),flags=re.MULTILINE|re.DOTALL))
         sumery_dict['title'].append(file['local']+"  "+file['title'])
         sumery_dict['words_num'].append(words)
-    # print(f'{title}|{words}')
 data=pd.DataFrame(sumery_dict)
-data.to_markdown('translate_course\summery.md',index=False)
-data.to_csv('translate_course\summery.csv',index=False)
+data.to_csv('summery.csv',index=False)
