@@ -1,6 +1,6 @@
 import pandas as pd
 from markdown_it import MarkdownIt
-import numpy as np
+import numpy as np  
 import re
 #从glossary.md中提取glossary
 #把翻译中出现的英文术语和常用缩写给出提示
@@ -62,4 +62,5 @@ def main(file_name):
                 print(f'line {line_count}, Col {col}: {string}:{trans_dict[string]} ')
         line_count += 1
 if __name__ == '__main__':
-    main(r'Course\en\chapter5\2.mdx')
+    main(r'Course\en\chapter4\1.mdx')
+
