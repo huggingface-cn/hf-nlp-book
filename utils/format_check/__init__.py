@@ -18,7 +18,6 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     '''
     ignore_dict = {}
     # 1. 删除代码块
-
     md_text =re.findall(r'```.*?(.*?)```',  text, flags=re.I|re.S)
     text=re.compile(r"```.*?(.*?)```",flags=re.I|re.S).sub('+-|--?n?--|-+',text)
     for code in md_text:
@@ -32,6 +31,14 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
         ignore_dict[f'+-|--?{len(ignore_dict)}?--|-+']=f'{img_link}'
     # 3. 提取链接内容
     md_text = re.findall(r'(\[.*?\]\(.*?\))',  text, flags=re.MULTILINE)
+    if auto_fix==False:
+        select=input("Markdown链接([]())左右各加一个空格的format？(y/n)")
+    else:
+        select='y'
+    if select=='y':
+        print("format Markdown链接([]())")
+        md_text=[code.strip() for code in md_text]
+        md_text=[f' {code} ' for code in md_text]
     text=re.compile(r"(\[.*?\]\(.*?\))",flags=re.MULTILINE).sub('+-|--?n?--|-+',text)
     for link in md_text:
         text=text.replace('+-|--?n?--|-+',f'+-|--?{len(ignore_dict)}?--|-+',1)
@@ -39,11 +46,11 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     # 4. 去除 ``
     md_text = re.findall(r' *(?<!`)`([^`]+)`(?!`) *',  text)
     if auto_fix==False:
-        select=input("` `左右一个空格的format？(y/n)")
+        select=input("行内代码块（` `)左右各加一个空格的format？(y/n)")
     else:
         select='y'
     if select=='y':
-        print("format ` `")
+        print("format 行内代码块（` `)")
         md_text=[code.strip() for code in md_text]
         md_text=[f' `{code}` ' for code in md_text]
     text=re.compile(r" *(?<!`)`([^`]+)`(?!`) *").sub('+-|--?n?--|-+',text)
@@ -104,8 +111,12 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     return errors
 
 
-def check_file(fn, ignore='', fmt='json', format_output=True, auto_fix=False,print_change=True):
-    '''Check markdown file'''
+def check_file(fn, ignore='', fmt='text', format_output=True, auto_fix=False,print_change=True):
+    ''' Check markdown file
+        :param fn: file name
+        :param ignore: ignore error code
+        :param auto_fix: auto fix error or or comfirm one by one (True/False)
+    '''
     with open(fn, encoding='utf-8') as f:
         text = f.read()
         if auto_fix==False:
