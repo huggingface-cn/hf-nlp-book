@@ -10,7 +10,8 @@ for chapter in dict_file:
     words=0
     for file in chapter['sections']:
         #去除代码块后统计字数
-        words=len(re.sub("'''.*?'''", "", open('Course\zh-CN\\'+file['local']+'.mdx','r',encoding='utf-8').read(),flags=re.MULTILINE|re.DOTALL))
+        # words=len(re.sub("'''.*?'''", "", open('Course\zh-CN\\'+file['local']+'.mdx','r',encoding='utf-8').read(),flags=re.MULTILINE|re.DOTALL))
+        words=len(open('Course\zh-CN\\'+file['local']+'.mdx','r',encoding='utf-8').read())
         sumery_dict['title'].append(file['local']+"  "+file['title'])
         sumery_dict['words_num'].append(words)
 data=pd.DataFrame(sumery_dict)
