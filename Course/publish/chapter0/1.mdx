@@ -1,0 +1,42 @@
+# 课程简介 [[课程简介]]
+
+欢迎来到 Hugging Face 课程！本小节将指导您搭建工作环境。如果您刚开始学习本课程，我们建议您先阅读 [第一章](/course/chapter1) , 然后返回此处搭建环境，以便您亲自尝试和实现代码。
+
+本课程涉及的所有库均以 Python 包形式提供，因此在这里我们将展示如何搭建 Python 环境并安装所需要的库。此外，大多数课程和服务都依赖于您拥有 Hugging Face 帐户。我们建议现在创建一个： [创建一个账号](https://huggingface.co/join) .
+
+## 安装Python [[安装 Python]]
+
+第一步是在您的系统上安装 Python。我们建议您按照 [该指南](https://realpython.com/installing-python/) 进行配置。
+
+安装 Python 后在终端中运行 Python 命令：**python --version**来检验安装是否正确，终端会打印出您系统上现在可用的 Python 版本。然后再继续下一步。
+
+在终端中运行 Python 命令的这个 Python 版本视为系统上的“默认”Python，建议保持这个默认的 Python 安装时没有任何包，当运行某个程序的时候就为那个程序创建一个单独的运行环境 - 这样，每个应用程序都可以有自己的依赖项和包，无需担心与其他应用程序潜在的兼容性问题。
+
+
+## 安装依赖 [[安装依赖]]
+
+您现在需要安装在本书中使用的库。我们将使用 **pip** 进行安装，它是 Python 的包管理器。在 Notebook 中，您可以通过加上！字符表示执行系统命令，所以安装🤗 Transformers 的命令如下：
+
+```
+!pip install transformers
+```
+
+您可以通过在运行 Python 时导入包来判断是否正确安装了该包：
+
+```
+import transformers
+```
+
+<div class="flex justify-center">
+<img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter0/install.gif" alt="A gif showing the result of the two commands above: installation and import" width="80%"/>
+</div>
+
+这将安装一个没有安装机器学习框架（如 PyTorch 或 TensorFlow）非常轻量级的 🤗 Transformers。由于之后我们将使用该库的许多不同功能，我们建议安装开发版本，它带有几乎所有所需的依赖项：
+
+```
+!pip install transformers[sentencepiece]
+```
+
+这将需要一些时间，但当完成之后您就做好学习剩下的课程的环境准备了！
+
+您现在已准备就绪，可以开始了！
