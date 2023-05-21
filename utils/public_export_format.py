@@ -75,8 +75,8 @@ def translate_label(input_path,output_path):
     mdx=mdx.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
     with open(output_path,'w',encoding='utf-8') as f:
         f.write(mdx)
-basic_input_dir='Course/publish/chapter1/'
-basic_output_dir='Course/publish/chapter1/'
+basic_input_dir='Course/publish/chapter0/'
+basic_output_dir='Course/publish/chapter0/'
 for file_name in os.listdir(basic_input_dir):
     if file_name.endswith('.mdx'):
         translate_label(basic_input_dir+file_name,basic_output_dir+file_name)
