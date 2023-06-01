@@ -1,12 +1,14 @@
 import os
 import requests
 import re
+import warnings
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 # 你的文件夹路径
 directory = 'Course\publish\chapter1'
-
+if 'directory' not in os.listdir(directory):
+    os.makedirs(os.path.join(directory, 'assets'))
 for filename in os.listdir(directory):
     if filename.endswith(".md") or filename.endswith(".mdx"):
         filepath = os.path.join(directory, filename)
@@ -25,11 +27,17 @@ for filename in os.listdir(directory):
                     # 下载图片
                     session = requests.Session()
                     session.trust_env = False
-                    img_data=response = session.get(url).content
-                    while img_data == b'':
-                        img_data=response = session.get(url).content
-                        print('retrying',url)
-                    # img_data = requests.get(url).content
+                    try:
+                        response = session.get(url)
+                        response.raise_for_status()  # 如果HTTP请求返回了不成功的状态码, Response.raise_for_status()会抛出一个HTTPError异常
+                        img_data = response.content
+                        if img_data == b'':
+                            raise ValueError("No data received for the url.")
+                    except (requests.RequestException, ValueError) as e:
+                        warnings.warn(f"{filename}:Can't download the image from {url}, it will not be replaced. Error: {str(e)}")
+                        continue  # 如果图片下载失败，跳过这个图片
+
+                    # 保存图片
                     with open(os.path.join(directory, 'assets', img_name.split(' ')[0]), 'wb') as handler:
                         handler.write(img_data)
 

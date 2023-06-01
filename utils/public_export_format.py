@@ -37,7 +37,9 @@ def translate_label(input_path,output_path):
         # label_mask_list+=re.findall(f'',mdx,re.S)
         label_mask_list+=re.findall(f'< *{label}.*?>.*?</ *{label}>.*?',mdx,re.S)
     for p in re.findall(f'(#.*)(\[\[[^\]]*\D[^\]]*\]\])',mdx):
-        mdx.replace(p[0]+p[1],p[0])
+        mdx=mdx.replace(p[0]+p[1],p[0])
+    for label in label_mask_list:
+        mdx=mdx.replace(label,'')
     # 将Tip标签转换，方便后续处理
     tip_mask_list=re.finditer('< *Tip.*?>',mdx,re.S)
     replace_dict={}
@@ -47,6 +49,8 @@ def translate_label(input_path,output_path):
             replace_dict[f'||++==--{idx}++==--||']='<div custom-style="Tip-green">\n'
         elif '⚠️' in mdx[label.regs[0][0]:label.regs[0][0]+50]:
             replace_dict[f'||++==--{idx}++==--||']='<div custom-style="Tip-yellow">\n'
+        else:
+            replace_dict[f'||++==--{idx}++==--||']='<div custom-style="Tip-green">\n'
         # mdx=mdx.replace(mdx[label.regs[0][0]:label.regs[0][1]],f'||++==--{idx}++==--||')
         replace_list.append([f'||++==--{idx}++==--||',mdx[label.regs[0][0]:label.regs[0][1]]])
     for label in replace_list:
@@ -68,11 +72,11 @@ def translate_label(input_path,output_path):
     replacement = r'![\1](\2 "\1"'
     mdx = re.sub(pattern, replacement, mdx)
     #对于异常空行的处理
-    mdx=mdx.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
+    # mdx=mdx.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
     with open(output_path,'w',encoding='utf-8') as f:
         f.write(mdx)
 basic_input_dir='Course/zh-CN/chapter2/'
 basic_output_dir='Course/publish/chapter2/'
 for file_name in os.listdir(basic_input_dir):
-    if file_name.endswith('.mdx') and '2' in file_name:
+    if file_name.endswith('.mdx') and  file_name in [str(i)+'.mdx' for i in range(8)]:
         translate_label(basic_input_dir+file_name,basic_output_dir+file_name)
