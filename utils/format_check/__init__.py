@@ -30,21 +30,21 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
         text=text.replace('+-|--?n?--|-+',f'+-|--?{len(ignore_dict)}?--|-+',1)
         ignore_dict[f'+-|--?{len(ignore_dict)}?--|-+']=f'{img_link}'
     # 3. 提取链接内容
-    md_text = re.findall(r' +(\[.*?\]\(.*?\)) +',  text, flags=re.MULTILINE)
+    md_text = re.findall(r' *(\[((?:[^\\[\]]|\\.)*)\]\(\s*((?:[^\\()\\]|\\.)+)\s*\)) *',  text, flags=re.MULTILINE)
     if auto_fix==False:
         select=input("Markdown链接([]())左右各加一个空格的format？(y/n)")
     else:
         select='y'
     if select=='y':
         print("format Markdown链接([]())")
-        md_text=[code.strip() for code in md_text]
+        md_text=[code[0].strip() for code in md_text]
         md_text=[f' {code} ' for code in md_text]
-    text=re.compile(r" *(\[.*?\]\(.*?\)) *",flags=re.MULTILINE).sub('+-|--?n?--|-+',text)
+    text=re.compile(r" *(\[((?:[^\\[\]]|\\.)*)\]\(\s*((?:[^\\()\\]|\\.)+)\s*\)) *").sub('+-|--?n?--|-+',text)
     for link in md_text:
         text=text.replace('+-|--?n?--|-+',f'+-|--?{len(ignore_dict)}?--|-+',1)
         ignore_dict[f'+-|--?{len(ignore_dict)}?--|-+']=f'{link}'
     # 4. 去除 ``
-    md_text = re.findall(r' *(?<!`)`([^`]+)`(?!`) *',  text)
+    md_text = re.findall(r' *?(?<!`)`([^`]+?)`(?!`) *?',  text)
     if auto_fix==False:
         select=input("行内代码块（` `)左右各加一个空格的format？(y/n)")
     else:
@@ -53,7 +53,7 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
         print("format 行内代码块（` `)")
         md_text=[code.strip() for code in md_text]
         md_text=[f' `{code}` ' for code in md_text]
-    text=re.compile(r" *(?<!`)`([^`]+)`(?!`) *").sub('+-|--?n?--|-+',text)
+    text=re.compile(r" *(?<!`)`([^`]+?)`(?!`) *").sub('+-|--?n?--|-+',text)
     for code in md_text:
         text=text.replace('+-|--?n?--|-+',f'+-|--?{len(ignore_dict)}?--|-+',1)
         ignore_dict[f'+-|--?{len(ignore_dict)}?--|-+']=f'{code}'

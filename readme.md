@@ -151,6 +151,7 @@ TODO：尝试搭建Github的Bot自动化处理
 4. YouTube标签：移除
 5. 标题后的[[[*]]：移除
 6. 章节测试的处理
+7. Torch和TensorFlow的区别处理
 
 ## 5.2内容处理
 

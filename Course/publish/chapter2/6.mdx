@@ -1,24 +1,10 @@
-<FrameworkSwitchCourse {fw} />
 
-# 综合应用 [[把它们放在一起]]
+
+# 综合应用 
 
 {#if fw === 'pt'}
 
-<CourseFloatingBanner chapter={2}
-  classNames="absolute z-10 right-0 top-0"
-  notebooks={[
-    {label: "Google Colab", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/zh-CN/chapter2/section6_pt.ipynb"},
-    {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter2/section6_pt.ipynb"},
-]} />
-
 {:else}
-
-<CourseFloatingBanner chapter={2}
-  classNames="absolute z-10 right-0 top-0"
-  notebooks={[
-    {label: "Google Colab", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/zh-CN/chapter2/section6_tf.ipynb"},
-    {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter2/section6_tf.ipynb"},
-]} />
 
 {/if}
 
@@ -97,7 +83,7 @@ model_inputs = tokenizer(sequences, padding=True, return_tensors="tf")
 model_inputs = tokenizer(sequences, padding=True, return_tensors="np")
 ```
 
-## 特殊词符(token) [[特殊词符(token)]]
+## 特殊词符(token) 
 
 如果我们看一下标记器返回的输入 ID，我们会发现它们与之前的略有不同：
 
@@ -131,7 +117,7 @@ print(tokenizer.decode(ids))
 
  `tokenizer` 在开头添加了特殊单词 `[CLS]` ，在结尾添加了特殊单词 `[SEP]` 。这是因为模型在预训练时使用了这些字词，所以为了得到相同的推断结果，我们也需要添加它们。请注意，有些模型不添加特殊单词，或者添加不同的单词；模型也可能只在开头或结尾添加这些特殊单词。无论如何，分词器知道哪些是必需的，并会为你处理这些问题。
 
-## 小结：从 tokenizer 到模型 [[结束：从标记器到模型]]
+## 小结：从 tokenizer 到模型 
 
 现在我们已经看到 `tokenizer` 对象在处理文本时的所有步骤，让我们最后再看一次它如何通过 tokenizer API 处理多个序列（填充！），非常长的序列（截断！）以及多种类型的张量：
 

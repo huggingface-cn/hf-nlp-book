@@ -36,12 +36,8 @@ def translate_label(input_path,output_path):
     for label in mutiply_label_type:
         # label_mask_list+=re.findall(f'',mdx,re.S)
         label_mask_list+=re.findall(f'< *{label}.*?>.*?</ *{label}>.*?',mdx,re.S)
-    label_mask_list+=re.findall(f'\[\[.*?\]\] *',mdx,re.S)
-    # replace_dict={}
-    for idx,label in enumerate(label_mask_list):
-        # replace_dict[f'||++==--{idx}++==--||']=label
-        # mdx=mdx.replace(label,f'||++==--{idx}++==--||')
-        mdx=mdx.replace(label,'')
+    for p in re.findall(f'(#.*)(\[\[[^\]]*\D[^\]]*\]\])',mdx):
+        mdx.replace(p[0]+p[1],p[0])
     # 将Tip标签转换，方便后续处理
     tip_mask_list=re.finditer('< *Tip.*?>',mdx,re.S)
     replace_dict={}
@@ -75,8 +71,8 @@ def translate_label(input_path,output_path):
     mdx=mdx.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
     with open(output_path,'w',encoding='utf-8') as f:
         f.write(mdx)
-basic_input_dir='Course/publish/chapter0/'
-basic_output_dir='Course/publish/chapter0/'
+basic_input_dir='Course/zh-CN/chapter2/'
+basic_output_dir='Course/publish/chapter2/'
 for file_name in os.listdir(basic_input_dir):
-    if file_name.endswith('.mdx'):
+    if file_name.endswith('.mdx') and '2' in file_name:
         translate_label(basic_input_dir+file_name,basic_output_dir+file_name)
