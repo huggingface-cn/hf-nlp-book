@@ -62,13 +62,13 @@ classifier(
 
 让我们先简单了解一下这三个步骤。
 
-## 使用 tokenizer(标记器)进行预处理 [[使用 tokenizer(标记器)进行预处理]]
+## 使用 tokenizer(词元分析器)进行预处理 [[使用 tokenizer(词元分析器)进行预处理]]
 
-与其他神经网络一样，Transformer 模型无法直接处理原始文本，因此我们管道的第一步是将文本输入转换为模型能够理解的数字。为此，我们使用*tokenizer*(标记器)，它将负责：
+与其他神经网络一样，Transformer 模型无法直接处理原始文本，因此我们管道的第一步是将文本输入转换为模型能够理解的数字。为此，我们使用*tokenizer*(词元分析器)，它将负责：
 
-- 将输入拆分为单词、子单词或符号（如标点符号），称为标记(*token*)
-- 将每个标记(token)映射到一个数字，称为*input ID*（输入 ID）
-- 添加模型需要的其他输入，例如特殊标记（如 `[CLS]` 和 `[SEP]` ）或标记类型 ID
+- 将输入拆分为单词、子单词或符号（如标点符号），称为 **词元**(token)
+- 将每个词元(token)映射到一个数字，称为 **input ID**（输入 ID）
+- 添加模型需要的其他输入，例如特殊词元（如 `[CLS]` 和 `[SEP]` ）或 类型标记词元
 
 在使用模型时所有这些预处理都需要与模型预训练时的方式完全相同，因此我们首先需要从 [Model Hub](https://huggingface.co/models) 中下载这些信息。为此，我们使用 `AutoTokenizer` 类和它的 `from_pretrained()` 方法。并输入我们模型的检查点名称，它将自动获取与模型的 tokenizer 相关联的数据，并对其进行缓存（因此只有在您第一次运行下面的代码时才会下载）。
 
@@ -145,7 +145,7 @@ print(inputs)
 ```
 {/if}
 
-输出是一个包含两个键， `input_ids` 和 `attention_mask` 。 `input_ids` 包含两行整数（每个句子一行），它们是每个句子中标记（token）的 ID。我们将在本章后面解释什么是 `attention_mask` 。
+输出是一个包含两个键， `input_ids` 和 `attention_mask` 。 `input_ids` 包含两行整数（每个句子一行），它们是每个句子中词元（token）的 ID。我们将在本章后面解释什么是 `attention_mask` 。
 
 ## 探索模型 [[探索模型]]
 
@@ -221,7 +221,7 @@ Transformers 模型的输出会直接发送到模型头进行处理。
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter2/transformer_and_head.svg" alt="A Transformer network alongside its head."/>
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter2/transformer_and_head-dark.svg" alt="A Transformer network alongside its head."/>
 </div>
-在此图中，模型由其嵌入层和后续层表示。嵌入层将标记化输入中的每个输入 ID 转换为表示关联标记(token)的向量。后续层使用注意机制操纵这些向量，生成句子的最终表示。
+在此图中，模型由其嵌入层和后续层表示。嵌入层将词元化输入中的每个输入 ID 转换为表示关联词元(token)的向量。后续层使用注意机制操纵这些向量，生成句子的最终表示。
 
 
 🤗 Transformers 中有许多不同的体系结构，每种体系结构都是围绕处理特定任务而设计的。以下是一个非详尽的列表：

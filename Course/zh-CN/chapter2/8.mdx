@@ -14,14 +14,14 @@
 	choices={[
 		{
 			text: "首先是模型它处理文本并返回原始预测。然后，分词器会对这些预测进行解释，并在将它们转换回文本",
-			explain: "模型不能理解文本！必须首先使用 Tokenizer 将文本转换为 id，之后才可以输入给模型。"
+			explain: "模型不能理解文本！必须首先使用词元分析器将文本转换为 id，之后才可以输入给模型。"
 		},
 		{
 			text: "首先是 Tokenizer，它处理文本并返回 id。模型根据这些 id 并输出预测，可以是一些文本。",
-			explain: "该模型的预测结果是 id 而不是文本。必须使用 Tokenizer 才可以将预测转换回文本！"
+			explain: "该模型的预测结果是 id 而不是文本。必须使用词元分析器才可以将预测转换回文本！"
 		},
 		{
-			text: "Tokenizer 处理文本并返回 id。模型处理这些 id 并输出一个预测。然后可以再次使用 Tokenizer 将这些预测转换回某些文本。",
+			text: "Tokenizer 处理文本并返回 id。模型处理这些 id 并输出一个预测。然后可以再次使用词元分析器将这些预测转换回某些文本。",
 			explain: "正确！Tokenizer 可以用于 id 与文本的相互转换。",
             correct: true
 		}
@@ -88,7 +88,7 @@
 			explain: "不对！没有这样的组件。"
 		},
 		{
-			text: "也称为自注意力(self-attention)机制，它会根据序列的其他标记调整一个标记的表示",
+			text: "也称为自注意力(self-attention)机制，它会根据序列的其他词元调整一个词元的表示",
 			explain: "不对！自注意力层确实包含“注意力头”，但是和模型头并不是同一个概念。"
 		},
 		{
@@ -195,7 +195,7 @@
 		},
 		{
 			text: "直接调用 Tokenizer 对象。",
-			explain: "完全正确！标记化器(Tokenizer) 的 <code>__call__</code>方法是一个非常强大的方法，可以处理几乎任何事情。它同时也可以从模型中获取预测。",
+			explain: "完全正确！词元分析器(Tokenizer) 的 <code>__call__</code>方法是一个非常强大的方法，可以处理几乎任何事情。它同时也可以从模型中获取预测。",
 			correct: true
 		},
 		{
@@ -203,8 +203,8 @@
 			explain: "错！<code>pad</code>(填充)非常有用，但它只是 Tokenizer API 的一部分。"
 		},
 		{
-			text: "<code>tokenize</code>(标记)",
-			explain: "可以说，<code>tokenize</code>(标记)方法是最有用的方法之一，但它不是 Tokenizer API 的核心方法。"
+			text: "<code>tokenize</code>(词元化)",
+			explain: "可以说，<code>tokenize</code>(词元化)方法是最有用的方法之一，但它不是 Tokenizer API 的核心方法。"
 		}
 	]}
 />
@@ -220,8 +220,8 @@ result = tokenizer.tokenize("Hello!")
 <Question
 	choices={[
 		{
-			text: "字符串列表，每个字符串都是一个标记(Token)",
-			explain: "正确！把标记转换成 id 后，就可以传输给模型了！",
+			text: "字符串列表，每个字符串都是一个词元(Token)",
+			explain: "正确！把词元转换成 id 后，就可以传输给模型了！",
             correct: true
 		},
 		{
@@ -230,7 +230,7 @@ result = tokenizer.tokenize("Hello!")
 		},
 		{
 			text: "包含所有分词后的的字符串",
-			explain: "这将是次优的答案，因为 tokenize 方法会将字符串拆分为多个标记的列表。"
+			explain: "这将是次优的答案，因为 tokenize 方法会将字符串拆分为多个词元的列表。"
 		}
 	]}
 />
@@ -251,7 +251,7 @@ result = model(**encoded)
 	choices={[
 		{
 			text: "不，看起来是对的。",
-			explain: "不幸的是，将一个模型与一个不同 Checkpoint 训练的 Tokenizer 耦合在并不是一个好主意。模型没有在这个这个 Tokenizer 上训练来理解 Tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。"
+			explain: "不幸的是，将一个模型与一个不同 Checkpoint 训练的词元分析器耦合在并不是一个好主意。模型没有在这个这个词元分析器上训练来理解词元分析器的输出，因此模型的输出(如果它可以运行的话)会是错乱的。"
 		},
 		{
 			text: "Tokenizer 和模型应该来自相同的 Checkpoint。",
@@ -259,7 +259,7 @@ result = model(**encoded)
             correct: true
 		},
 		{
-			text: "由于模型输入需要是一个 Batch，因此可以使用 Tokenizer 对其进行截断或填充来改进这段代码。",
+			text: "由于模型输入需要是一个 Batch，因此可以使用词元分析器对其进行截断或填充来改进这段代码。",
 			explain: "的确，模型输入需要是一个 Batch。然而，截断或填充这个序列并不一定有意义，这里只有一句话，而截断或填充这些技术是用来批处理一个句子列表使其长度一致的。"
 		}
 	]}
@@ -281,7 +281,7 @@ result = model(**encoded)
 	choices={[
 		{
 			text: "不，看起来是对的。",
-			explain: "不幸的是，将一个模型与一个不同 Checkpoint 训练的 Tokenizer 耦合在并不是一个好主意。模型没有在这个这个 Tokenizer 上训练来理解 Tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。"
+			explain: "不幸的是，将一个模型与一个不同 Checkpoint 训练的词元分析器耦合在并不是一个好主意。模型没有在这个这个词元分析器上训练来理解词元分析器的输出，因此模型的输出(如果它可以运行的话)会是错乱的。"
 		},
 		{
 			text: "Tokenizer 和模型应该来自相同的 Checkpoint。",
@@ -289,7 +289,7 @@ result = model(**encoded)
             correct: true
 		},
 		{
-			text: "由于每个输入都是一个 Batch，因此可以使用标记器(Tokenizer)对其进行平移和截断来改善这段代码。",
+			text: "由于每个输入都是一个 Batch，因此可以使用词元分析器(Tokenizer)对其进行平移和截断来改善这段代码。",
 			explain: "的确，每个模型都需要 Batch 类型的输入。然而，截断或填充这个序列并不一定有意义，这里只有一句话，而这些技术是用来批处理一个句子列表的。"
 		}
 	]}
