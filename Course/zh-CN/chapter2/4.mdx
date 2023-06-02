@@ -123,7 +123,7 @@ print(tokenized_text)
 
 加载和保存词元分析器就像使用模型一样简单。实际上，它基于相同的两种方法： `from_pretrained()` 和 `save_pretrained()` 。这些方法会加载或保存分词器使用的算法（有点像模型的*架构*）以及其词汇表（有点像模型的*权重*）。
 
-加载使用与 BERT 相同的检查点训练的 BERT词元分析器与加载模型的方式相同，只是换成了 `Bert词元分析器` 类：
+加载使用与 BERT 相同的检查点训练的 BERT 词元分析器与加载模型的方式相同，只是换成了 `Bert词元分析器` 类：
 
 ```py
 from transformers import BertTokenizer
