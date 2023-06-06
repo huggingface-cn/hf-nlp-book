@@ -65,7 +65,7 @@ tokenizer = CamembertTokenizer.from_pretrained("camembert-base")
 model = CamembertForMaskedLM.from_pretrained("camembert-base")
 ```
 
-然而，我们建议使用 [`Auto*` 类](https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes)，因为 `Auto*` 类在设计时不依赖模型架构。前面的代码示例将只能在 CamemBERT 架构中加载可用的检查点，但使用 `Auto*` 类使切换不同的检查点变得简单：
+然而，我们建议使用 [`Auto*` 类](https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes) ，因为 `Auto*` 类在设计时不依赖模型架构。前面的代码示例将只能在 CamemBERT 架构中加载可用的检查点，但使用 `Auto*` 类使切换不同的检查点变得简单：
 
 ```py
 from transformers import AutoTokenizer, AutoModelForMaskedLM
@@ -81,7 +81,7 @@ tokenizer = CamembertTokenizer.from_pretrained("camembert-base")
 model = TFCamembertForMaskedLM.from_pretrained("camembert-base")
 ```
 
-然而，我们建议使用 [`TFAuto*` 类](https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes)，因为 `TFAuto*` 类在设计时不依赖模型架构。前面的代码示例将只能在 CamemBERT 架构中加载可用的检查点，但使用 `TFAuto*` 类使切换不同的检查点变得简单：
+然而，我们建议使用 [`TFAuto*` 类](https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes) ，因为 `TFAuto*` 类在设计时不依赖模型架构。前面的代码示例将只能在 CamemBERT 架构中加载可用的检查点，但使用 `TFAuto*` 类使切换不同的检查点变得简单：
 
 ```py
 from transformers import AutoTokenizer, TFAutoModelForMaskedLM
@@ -92,5 +92,5 @@ model = TFAutoModelForMaskedLM.from_pretrained("camembert-base")
 {/if}
 
 <Tip>
-使用预训练模型时，一定要检查它是如何训练的、在哪些数据集上训练的、它的局限性和偏差。所有这些信息都应在其模型卡片上有所展示。
+使用预训练模型时，一定要检查它是如何训练的、在哪些数据集上训练的、它的局限性和偏见。所有这些信息都应在其模型卡片上有所展示。
 </Tip>
