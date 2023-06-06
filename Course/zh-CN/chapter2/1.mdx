@@ -14,10 +14,10 @@
 
 最后一个特性使🤗 Transformers 与其他 ML 库截然不同。模型并非建立在跨越多个代码文件共享的模块上；相反，每一个模型都有自己的层次结构。除了使模型更加容易接受和更容易理解，这还允许你轻松地在一个模型上实验，而且不影响其他模型。
 
-本章将从一个端到端（从输入端到输出端）的示例开始，在该示例中，我们一起使用模型和词元分析器(tokenizer) 来复刻 [Chapter 1](/course/chapter1) 中引入的函数 pipeline(). 接下来，我们将讨论 `Model` API：我们将深入研究 `Model` 类和 `Config` 类，并向您展示如何加载模型，以及它如何将输入处理为输出。
+本章将从一个端到端（从输入端到输出端）的示例开始，在该示例中，我们一起使用模型和词元分析器(tokenizer) 来复刻 [Chapter 1](/course/chapter1) 中引入的函数 pipeline(). 接下来，我们将讨论 `Model` API：我们将深入研究 `Model` 类和 `Config` 类，并向你展示如何加载模型，以及它如何将输入处理为输出。
 
-然后我们来看看 `tokenizer` API，它是 pipeline()函数的另一个重要组成部分。在 pipeline()中 `Tokenizer` 负责第一步和最后一步的处理，将文本转换到神经网络的输入，以及在需要时将其转换回文本。最后，我们将向您展示如何处理将多个句子整理为一个 batch 发送给模型，然后我们将更深入地研究 tokenizer()函数。
+然后我们来看看 `tokenizer` API，它是 pipeline()函数的另一个重要组成部分。在 pipeline()中 `Tokenizer` 负责第一步和最后一步的处理，将文本转换到神经网络的输入，以及在需要时将其转换回文本。最后，我们将向你展示如何处理将多个句子整理为一个 batch 发送给模型，然后我们将更深入地研究 tokenizer()函数。
 
 <Tip>
-⚠️ 为了充分利用 Model Hub 和🤗 Transformers 提供的所有功能，我们建议您<a href="https://huggingface.co/join">创建一个账户</a>.
+⚠️ 为了充分利用 Model Hub 和🤗 Transformers 提供的所有功能，我们建议你<a href="https://huggingface.co/join">创建一个账户</a>.
 </Tip>

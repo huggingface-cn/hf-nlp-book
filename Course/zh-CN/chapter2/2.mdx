@@ -23,7 +23,7 @@
 {/if}
 
 <Tip>
-这是第一部分，根据您使用 PyTorch 或者 TensorFlow，内容略有不同。点击标题上方的平台，选择您喜欢的平台！
+这是第一部分，根据你使用 PyTorch 或者 TensorFlow，内容略有不同。点击标题上方的平台，选择你喜欢的平台！
 </Tip>
 
 {#if fw === 'pt'}
@@ -70,7 +70,7 @@ classifier(
 - 将每个词元(token)映射到一个数字，称为 **input ID**（输入 ID）
 - 添加模型需要的其他输入，例如特殊词元（如 `[CLS]` 和 `[SEP]` ）或 类型标记词元
 
-在使用模型时所有这些预处理都需要与模型预训练时的方式完全相同，因此我们首先需要从 [Model Hub](https://huggingface.co/models) 中下载这些信息。为此，我们使用 `AutoTokenizer` 类和它的 `from_pretrained()` 方法。并输入我们模型的检查点名称，它将自动获取与模型的 tokenizer 相关联的数据，并对其进行缓存（因此只有在您第一次运行下面的代码时才会下载）。
+在使用模型时所有这些预处理都需要与模型预训练时的方式完全相同，因此我们首先需要从 [Model Hub](https://huggingface.co/models) 中下载这些信息。为此，我们使用 `AutoTokenizer` 类和它的 `from_pretrained()` 方法。并输入我们模型的检查点名称，它将自动获取与模型的 tokenizer 相关联的数据，并对其进行缓存（因此只有在你第一次运行下面的代码时才会下载）。
 
  `sentiment-analysis` （情绪分析）管道的默认检查点是 `distilbert-base-uncased-finetuned-sst-2-english` （你可以在 [这里](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) )看到它的模型卡片，我们运行以下代码：
 
@@ -83,7 +83,7 @@ tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
 当我们有了 tokenizer，我们就可以直接将我们的句子传递给它，我们就会得到一个*input ID*（输入 ID）列表！剩下要做的唯一一件事就是将输入 ID 列表转换为 tensor(张量)。
 
-您在使用🤗 Transformers 时，不必在意后端是哪个 ML 框架实现的；它可能是 PyTorch 或 TensorFlow，或 Flax。但是，Transformers 模型只接受*tensor(张量)*作为输入。如果这是你第一次听说张量，你可以把它们想象成 NumPy 数组。NumPy 数组可以是标量（0D）、向量（1D）、矩阵（2D）或具有更多维度。这些都可以称为张量；其他 ML 框架的张量使用方法也类似，通常与 NumPy 数组一样易于实例化。
+你在使用Transformers 时，不必在意后端是哪个 ML 框架实现的；它可能是 PyTorch 或 TensorFlow，或 Flax。但是，Transformers 模型只接受*tensor(张量)*作为输入。如果这是你第一次听说张量，你可以把它们想象成 NumPy 数组。NumPy 数组可以是标量（0D）、向量（1D）、矩阵（2D）或具有更多维度。这些都可以称为张量；其他 ML 框架的张量使用方法也类似，通常与 NumPy 数组一样易于实例化。
 
 为了指定我们想要得到的张量的类型（PyTorch、TensorFlow 或纯 NumPy），我们使用 return_tensors 参数：
 
@@ -107,7 +107,7 @@ print(inputs)
 ```
 {/if}
 
-现在不要担心 padding(填充)和 truncation(截断)；我们稍后会解释这些。这里要记住的是，您可以传递一个句子或一组句子，还可以指定要返回的张量类型（如果没有传递类型，默认返回的是 python 中的 list 格式）。
+现在不要担心 padding(填充)和 truncation(截断)；我们稍后会解释这些。这里要记住的是，你可以传递一个句子或一组句子，还可以指定要返回的张量类型（如果没有传递类型，默认返回的是 python 中的 list 格式）。
 
 {#if fw === 'pt'}
 
@@ -150,7 +150,7 @@ print(inputs)
 ## 探索模型 [[探索模型]]
 
 {#if fw === 'pt'}
-我们可以像使用 tokenizer 一样下载预训练模型。🤗 Transformers 提供了一个 `AutoModel` 类，它也有一个 from_pretrained()方法：
+我们可以像使用 tokenizer 一样下载预训练模型。Transformers 提供了一个 `AutoModel` 类，它也有一个 from_pretrained()方法：
 
 ```python
 from transformers import AutoModel
@@ -159,7 +159,7 @@ checkpoint = "distilbert-base-uncased-finetuned-sst-2-english"
 model = AutoModel.from_pretrained(checkpoint)
 ```
 {:else}
-我们可以像使用 tokenizer 一样下载预训练模型。🤗 Transformers 提供了一个 `AutoModel` 类，它也有一个 from_pretrained()方法：
+我们可以像使用 tokenizer 一样下载预训练模型。Transformers 提供了一个 `AutoModel` 类，它也有一个 from_pretrained()方法：
 
 ```python
 from transformers import TFAutoModel
@@ -209,7 +209,7 @@ print(outputs.last_hidden_state.shape)
 ```
 {/if}
 
-注意，🤗 Transformers 模型的输出有些像 `namedtuple` 或词典。您可以通过属性（就像我们所做的那样）或键（ `outputs["last_hidden_state"]` ）访问元素，如果您确切知道要查找的内容在哪里（ `outputs[0]` ），也可以通过索引访问元素。
+注意，Transformers 模型的输出有些像 `namedtuple` 或词典。你可以通过属性（就像我们所做的那样）或键（ `outputs["last_hidden_state"]` ）访问元素，如果你确切知道要查找的内容在哪里（ `outputs[0]` ），也可以通过索引访问元素。
 
 ### 模型头：理解数字的意义 [[模型头：理解数字的意义]]
 
@@ -224,7 +224,7 @@ Transformers 模型的输出会直接发送到模型头进行处理。
 在此图中，模型由其嵌入层和后续层表示。嵌入层将词元化输入中的每个输入 ID 转换为表示关联词元(token)的向量。后续层使用注意机制操纵这些向量，生成句子的最终表示。
 
 
-🤗 Transformers 中有许多不同的体系结构，每种体系结构都是围绕处理特定任务而设计的。以下是一个非详尽的列表：
+Transformers 中有许多不同的体系结构，每种体系结构都是围绕处理特定任务而设计的。以下是一个非详尽的列表：
 
 - `*Model` (隐状态检索)
 - `*ForCausalLM` 

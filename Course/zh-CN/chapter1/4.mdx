@@ -51,7 +51,7 @@
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/causal_modeling-dark.svg" alt="Example of causal language modeling in which the next word from a sentence is predicted."/>
 </div>
 
-另一个例子是*遮罩语言建模*（完形填空），该模型预测句子中的遮住的词。
+另一个例子是*掩码语言建模*（完形填空），该模型预测句子中的遮住的词。
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/masked_modeling.svg" alt="Example of masked language modeling in which a masked word from a sentence is predicted."/>
@@ -81,7 +81,7 @@
 
 这就是为什么共享语言模型至关重要：共享经过训练的权重，当遇见新的需求时在预训练的权重之上进行微调，可以降低训练模型训练的算力和时间消耗，降低全球的总体计算成本和碳排放。
 
-顺便说一句，您可以通过多种工具评估模型训练的碳排放。 例如 [ML CO2 Impact](https://mlco2.github.io/impact/) 或集成在 🤗 Transformers 中的 [Code Carbon]( https://codecarbon.io/)。 要了解更多相关信息，您可以阅读这篇[博客文章](https://huggingface.co/blog/carbon-emissions-on-the-hub)，其中将向您展示如何生成 `emissions.csv` 文件估计训练的碳排放，这里还有 🤗 Transformers 关于碳排放的[文档](https://huggingface.co/docs/hub/model-cards-co2)。
+顺便说一句，你可以通过多种工具评估模型训练的碳排放。 例如 [ML CO2 Impact](https://mlco2.github.io/impact/) 或集成在 🤗 Transformers 中的 [Code Carbon]( https://codecarbon.io/)。 要了解更多相关信息，你可以阅读这篇[博客文章](https://huggingface.co/blog/carbon-emissions-on-the-hub)，其中将向你展示如何生成 `emissions.csv` 文件估计训练的碳排放，这里还有 🤗 Transformers 关于碳排放的[文档](https://huggingface.co/docs/hub/model-cards-co2)。
 
 ## 迁移学习 [[迁移学习]]
 
@@ -98,7 +98,7 @@
 
 另一方面，*微调*是在模型经过预训练后完成的训练。要执行微调，首先需要获取一个经过预训练的语言模型，然后使用特定于任务的数据集进行额外的训练。等等，为什么不直接为最后的任务而训练呢？有几个原因：
 
-*  预训练模型已经在与微调数据集有一些相似之处的数据集上进行了训练。因此，微调过程能够利用模型在预训练期间获得的知识（例如，对于NLP问题，预训练模型将对您在任务中使用的语言有某种统计规律上的理解）。
+*  预训练模型已经在与微调数据集有一些相似之处的数据集上进行了训练。因此，微调过程能够利用模型在预训练期间获得的知识（例如，对于NLP问题，预训练模型将对你在任务中使用的语言有某种统计规律上的理解）。
 *  由于预训练模型已经在大量数据上进行了训练，因此微调需要更少的数据来获得不错的结果。
 *  出于同样的原因，获得好结果所需的时间和资源要少得多
 
@@ -139,7 +139,7 @@
 
 ## 注意力层 [[注意力层]]
 
-Transformer模型的一个关键特性是*注意力层*。事实上，提出Transformer架构的文章的标题是[“Attention Is All You Need”](https://arxiv.org/abs/1706.03762)! 我们将在课程的后面更加深入地探讨注意力层的细节；现在，您需要知道的是，这一层将告诉模型在处理每个单词的表示时，对不同单词的重视（忽略）程度。
+Transformer模型的一个关键特性是*注意力层*。事实上，提出Transformer架构的文章的标题是[“Attention Is All You Need”](https://arxiv.org/abs/1706.03762)! 我们将在课程的后面更加深入地探讨注意力层的细节；现在，你需要知道的是，这一层将告诉模型在处理每个单词的表示时，对不同单词的重视（忽略）程度。
 
 可以考虑一个例子，假如我们要将英语翻译成法语。给定输入"You like this course"时，翻译模型需要注意相邻的词"You"，才能获得"like"的正确翻译，因为在法语中，动词"like"的变形依赖于主语。然而，对于那个词的翻译，句子的其余部分并没有用。同样，当翻译"this"时，模型也需要注意词"course"，因为"this"的翻译依赖于关联名词是单数还是复数。再次，句子中的其他词对于"this"的翻译并不重要。对于更复杂的句子（和更复杂的语法规则），模型可能需要特别注意可能在句子中更远处出现的词，以正确翻译每个词。
 
@@ -162,11 +162,11 @@ Transformer架构最初是为翻译而设计的。在训练期间，编码器接
 
 注意，解码器块中的第一个注意力层关联到解码器的所有（过去的）输入，但是第二个注意力层只使用编码器的输出。因此，它在预测当前单词时，可以使用整个句子的信息。这是非常有用的，因因为不同的语言可以有把词放在不同顺序的语法规则，或者句子后面提供的一些上下文可能有助于确定给定单词的最佳翻译。
 
-也可以在编码器/解码器中使用*attention mask（注意力遮罩层）*，以防止模型关注到某些特殊单词。例如，用于在批量处理句子时使所有输入长度一致的特殊填充词。
+也可以在编码器/解码器中使用*attention mask（注意力掩码层）*，以防止模型关注到某些特殊单词。例如，用于在批量处理句子时使所有输入长度一致的特殊填充词。
 
 ##  architecture（架构）与checkpoints（参数） [[架构与参数]]
 
-在本课程中，当我们深入探讨Transformers模型时，您将看到
+在本课程中，当我们深入探讨Transformers模型时，你将看到
 架构、参数和模型
 。 这些术语的含义略有不同：
 
