@@ -5,6 +5,8 @@ def action( elem, doc ):
         return Div( Para(*elem.content), attributes={'custom-style': 'Tip-green'} )
     if isinstance( elem, Div ) and 'Tip-yellow' in elem.classes:
         return Div( Para(*elem.content), attributes={'custom-style': 'Tip-yellow'} )
+    if isinstance( elem, Div ) and 'Tip-red' in elem.classes:
+        return Div( Para(*elem.content), attributes={'custom-style': 'Tip-red'} )
 
 def main(doc=None):
     return run_filter( action, doc=doc )

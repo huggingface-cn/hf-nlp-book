@@ -49,6 +49,8 @@ def translate_label(input_path,output_path):
             replace_dict[f'||++==--{idx}++==--||']='<div custom-style="Tip-green">\n'
         elif '⚠️' in mdx[label.regs[0][0]:label.regs[0][0]+50]:
             replace_dict[f'||++==--{idx}++==--||']='<div custom-style="Tip-yellow">\n'
+        elif '🚨' in mdx[label.regs[0][0]:label.regs[0][0]+50]:
+            replace_dict[f'||++==--{idx}++==--||']='<div custom-style="Tip-red">\n'
         else:
             replace_dict[f'||++==--{idx}++==--||']='<div custom-style="Tip-green">\n'
         # mdx=mdx.replace(mdx[label.regs[0][0]:label.regs[0][1]],f'||++==--{idx}++==--||')
