@@ -58,14 +58,14 @@ model_inputs = tokenizer(sequences)
 它可以使用多种不同的方法对目标进行填充：
 
 ```py
-# Will pad the sequences up to the maximum sequence length
+# 将句子序列填充到最长句子的长度
 model_inputs = tokenizer(sequences, padding="longest")
 
-# Will pad the sequences up to the model max length
+# 将句子序列填充到模型的最大长度
 # (512 for BERT or DistilBERT)
 model_inputs = tokenizer(sequences, padding="max_length")
 
-# Will pad the sequences up to the specified max length
+# 将句子序列填充到指定的最大长度
 model_inputs = tokenizer(sequences, padding="max_length", max_length=8)
 ```
 
@@ -74,11 +74,11 @@ model_inputs = tokenizer(sequences, padding="max_length", max_length=8)
 ```py
 sequences = ["I've been waiting for a HuggingFace course my whole life.", "So have I!"]
 
-# Will truncate the sequences that are longer than the model max length
+# 将截断比模型最大长度长的句子序列
 # (512 for BERT or DistilBERT)
 model_inputs = tokenizer(sequences, truncation=True)
 
-# Will truncate the sequences that are longer than the specified max length
+# 将截断长于指定最大长度的句子序列
 model_inputs = tokenizer(sequences, max_length=8, truncation=True)
 ```
 
@@ -87,13 +87,13 @@ model_inputs = tokenizer(sequences, max_length=8, truncation=True)
 ```py
 sequences = ["I've been waiting for a HuggingFace course my whole life.", "So have I!"]
 
-# Returns PyTorch tensors
+# 返回 PyTorch tensors
 model_inputs = tokenizer(sequences, padding=True, return_tensors="pt")
 
-# Returns TensorFlow tensors
+# 返回 TensorFlow tensors
 model_inputs = tokenizer(sequences, padding=True, return_tensors="tf")
 
-# Returns NumPy arrays
+# 返回 NumPy arrays
 model_inputs = tokenizer(sequences, padding=True, return_tensors="np")
 ```
 

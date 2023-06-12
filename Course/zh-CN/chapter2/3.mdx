@@ -50,20 +50,20 @@
 ```py
 from transformers import BertConfig, BertModel
 
-# Building the config
+# 初始化配置类
 config = BertConfig()
 
-# Building the model from the config
+# 从配置类初始化模型
 model = BertModel(config)
 ```
 {:else}
 ```py
 from transformers import BertConfig, TFBertModel
 
-# Building the config
+# 初始化配置类
 config = BertConfig()
 
-# Building the model from the config
+# 从配置类初始化模型
 model = TFBertModel(config)
 ```
 {/if}
