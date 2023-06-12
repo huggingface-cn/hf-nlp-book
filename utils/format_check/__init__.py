@@ -18,7 +18,7 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     '''
     ignore_dict = {}
     # 1. 删除代码块
-    md_text =re.findall(r'```.*?(.*?)```',  text, flags=re.I|re.S)
+    md_text =re.findall(r'```.*?(.*?)```',  text, flags=re.S)
     text=re.compile(r"```.*?(.*?)```",flags=re.I|re.S).sub('+-|--?n?--|-+',text)
     for code in md_text:
         text=text.replace('+-|--?n?--|-+',f'+-|--?{len(ignore_dict)}?--|-+',1)
