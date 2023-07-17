@@ -6,6 +6,6 @@ def comfirm(file_name):
     if select=='y':
         os.remove(file_name)
         os.renames('.'.join(file_name.split('.')[:-1]+['_fix']+[file_name.split('.')[-1]]),file_name)
-file_name='Course\zh-CN\chapter6\\1.mdx'
+file_name='Course\zh-CN\chapter6\\10.mdx'
 format_check.check_file(file_name,auto_fix=True)
 comfirm(file_name)

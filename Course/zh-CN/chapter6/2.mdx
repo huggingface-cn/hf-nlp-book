@@ -1,4 +1,4 @@
-# 基于已有的tokenizer训练新的tokenizer [[基于已有的tokenizer训练新的tokenizer]]
+# 基于已有的 tokenizer 训练新的 tokenizer [[基于已有的 tokenizer 训练新的 tokenizer]]
 
 <CourseFloatingBanner chapter={6}
   classNames="absolute z-10 right-0 top-0"
@@ -7,21 +7,21 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section2.ipynb"},
 ]} />
 
-如果您感兴趣的语言中没有可用的语言模型，或者你的语料库与语言模型训练时所使用的语料库差异很大，你可能需要从零开始重新训练一个适应你的数据的词元分析器器模型。训练一个新的词元分析器是什么意思呢？ 当我们在 [第二章](/course/chapter2) 中第一次看到词元分析器时，我们看到大多数 Transformer 模型使用 _子词分词算法_ 。为了找到语料库中的常见子词，词元分析器需要深入查看语料库中的所有文本——这个过程我们称之为*训练 (training)*。具体的训练规则取决于使用的分词器类型，我们将在本章后面的部分详细介绍三种主要算法。
+如果您感兴趣的语言中没有可用的语言模型，或者你的语料库与语言模型训练时所使用的语料库差异很大，你可能需要从零开始重新训练一个适应你的数据的词元分析器器模型。训练一个新的词元分析器是什么意思呢？当我们在 [第二章](/course/chapter2) 中第一次看到词元分析器时，我们看到大多数 Transformer 模型使用 _子词分词算法_ 为了找到语料库中的常见子词，词元分析器需要深入查看语料库中的所有文本——这个过程我们称之为*训练 (training)*。具体的训练规则取决于使用的分词器类型，我们将在本章后面的部分详细介绍三种主要算法。
 
 <Youtube id="DJimQynXZsQ"/>
 
 <Tip warning={true}>
 
-⚠️ 训练词元分析器与训练模型不同！模型训练使用随机梯度下降使每个batch的loss小一点。它本质上是随机的（这意味着在进行两次相同的训练时，您必须设置一些随机数种子才能获得相同的结果）。训练词元分析器是一个统计过程，它试图确定哪些子词最适合为给定的语料库选择，确定的过程取决于分词算法。它是确定性的，这意味着在相同的语料库上使用相同的算法进行训练时，您总是会得到相同的结果。
+⚠️ 训练词元分析器与训练模型不同！模型训练使用随机梯度下降使每个 batch 的 loss 小一点。它本质上是随机的（这意味着在进行两次相同的训练时，您必须设置一些随机数种子才能获得相同的结果）。训练词元分析器是一个统计过程，它试图确定哪些子词最适合为给定的语料库选择，确定的过程取决于分词算法。它是确定性的，这意味着在相同的语料库上使用相同的算法进行训练时，您总是会得到相同的结果。
 
 </Tip>
 
 ## 准备语料库 [[准备语料库]]
 
-在🤗 Transformers中，有一个非常简单的API可以让你训练一个新的分词器，且新的分词器具有和旧分词器相同的特性：`AutoTokenizer.train_new_from_iterator()` 。为了演示这个功能，假设我们想从零开始训练GPT-2模型，但是在非英语的语言上。我们首先需要做的就是在训练语料库中收集大量的目标语言数据。为了让每个人都能理解，我们不会使用俄语或汉语这样的语言，而是使用一种特定的英语语言：Python代码。
+在🤗 Transformers 中，有一个非常简单的 API 可以让你训练一个新的分词器，且新的分词器具有和旧分词器相同的特性： `AutoTokenizer.train_new_from_iterator()` 。为了演示这个功能，假设我们想从零开始训练 GPT-2 模型，但是在非英语的语言上。我们首先需要做的就是在训练语料库中收集大量的目标语言数据。为了让每个人都能理解，我们不会使用俄语或汉语这样的语言，而是使用一种特定的英语语言：Python 代码。
 
-[🤗 Datasets](https://github.com/huggingface/datasets)库可以帮助我们下载一个 Python 源代码语料库。我们将使用`load_dataset()`功能下载和缓存[CodeSearchNet](https://huggingface.co/datasets/code_search_net)数据集。该数据集是为[CodeSearchNet 挑战](https://wandb.ai/github/CodeSearchNet/benchmark)而创建的，，其中包含了GitHub上开源库中的数百万个函数，涵盖了多种编程语言。在这里，我们将加载这个数据集的Python部分：
+ [🤗 Datasets](https://github.com/huggingface/datasets) 库可以帮助我们下载一个 Python 源代码语料库。我们将使用 `load_dataset()` 功能下载和缓存 [CodeSearchNet](https://huggingface.co/datasets/code_search_net) 数据集。该数据集是为 [CodeSearchNet 挑战](https://wandb.ai/github/CodeSearchNet/benchmark) 而创建的，其中包含了 GitHub 上开源库中的数百万个函数，涵盖了多种编程语言。在这里，我们将加载这个数据集的 Python 部分：
 ```py
 from datasets import load_dataset
 
@@ -69,16 +69,16 @@ def handle_simple_responses(
     return self._accept_responses('OKAY', info_cb, timeout_ms=timeout_ms)
 ```
 
-我们首先需要做的是将数据集转换为一个文本列表的 _迭代器_ ，例如，文本列表的列表。使用文本列表将使我们的词元分析器运行得更快（以文本批次为单位进行训练，而不是一次处理一个文本），并且如果我们希望一次不把所有内容都加载到内存中，就应该使用迭代器。如果你的语料库很大，你可能会想利用🤗 Datasets不将所有内容加载到RAM，而是将数据集的元素存储在磁盘上的特性。
+我们首先需要做的是将数据集转换为一个文本列表的 _迭代器_ 例如，文本列表的列表。使用文本列表将使我们的词元分析器运行得更快（以文本批次为单位进行训练，而不是一次处理一个文本），并且如果我们希望一次不把所有内容都加载到内存中，就应该使用迭代器。如果你的语料库很大，你可能会想利用🤗 Datasets 不将所有内容加载到 RAM，而是将数据集的元素存储在磁盘上的特性。
 
-下面的操作会创建一个由每个列表包含1000个文本组成的文本列表，但会将所有内容加载到内存中：
+下面的操作会创建一个由每个列表包含 1000 个文本组成的文本列表，但会将所有内容加载到内存中：
 
 ```py
 # 除非你的数据集很小，否则不要直接运行下面的代码！
 # training_corpus = [raw_datasets["train"][i: i + 1000]["whole_func_string"] for i in range(0, len(raw_datasets["train"]), 1000)]
 ```
 
-通过使用Python生成器，我们可以使Python只将正在使用的数据加载到内存中。要创建这样一个生成器，你只需要将方括号替换为圆括号：
+通过使用 Python 生成器，我们可以使 Python 只将正在使用的数据加载到内存中。要创建这样一个生成器，你只需要将方括号替换为圆括号：
 
 ```py
 training_corpus = (
@@ -87,9 +87,9 @@ training_corpus = (
 )
 ```
 
-这行代码不会加载数据集的任何元素；它只创建了一个你可以在Python for循环中使用的对象。只有当你使用它们（即，当你在`for`循环步骤上尝试访问他们）时，文本才会被加载，而且一次只会加载1000个文本。这样，即使你在处理大型数据集，也不会耗尽所有内存。
+这行代码不会加载数据集的任何元素；它只创建了一个你可以在 Python for 循环中使用的对象。只有当你使用它们（即，当你在 `for` 循环步骤上尝试访问他们）时，文本才会被加载，而且一次只会加载 1000 个文本。这样，即使你在处理大型数据集，也不会耗尽所有内存。
 
-生成器对象的问题是它只能使用一次。让我们尝试获取2次前10个数字的列表：
+生成器对象的问题是它只能使用一次。让我们尝试获取 2 次前 10 个数字的列表：
 
 ```py
 gen = (i for i in range(10))
@@ -131,7 +131,7 @@ def get_training_corpus():
 
 ## 训练一个新的词元分析器 [[训练一个新的词元分析器]]
 
-现在我们已经将文本转化为迭代器形式准备好了我们的语料库，我们就可以开始训练新的词元分析器了。首先，我们需要加载我们想要与我们的模型匹配的词元分析器（这里为GPT-2）：
+现在我们已经将文本转化为迭代器形式准备好了我们的语料库，我们就可以开始训练新的词元分析器了。首先，我们需要加载我们想要与我们的模型匹配的词元分析器（这里为 GPT-2）：
 
 ```py
 from transformers import AutoTokenizer
@@ -157,7 +157,7 @@ tokens
  'Ġnumbers', 'Ġ`', 'a', '`', 'Ġand', 'Ġ`', 'b', '`', '."', '""', 'Ċ', 'Ġ', 'Ġ', 'Ġ', 'Ġreturn', 'Ġa', 'Ġ+', 'Ġb']
 ```
 
-这个词元分析器有一些特殊的符号，比如 `Ċ` 和 `Ġ` ，分别表示空格和换行符。正如我们所看到的，这并不是非常高效：词元分析器为每个空格返回单独的词元，其实它可以将缩进级别组合在一起时（因为在代码中具有四个或八个空格的集合将非常普遍）。它也有点奇怪地拆分了函数名称，对使用`_`的函数命名的方法并不友好。
+这个词元分析器有一些特殊的符号，比如 `Ċ` 和 `Ġ` ，分别表示空格和换行符。正如我们所看到的，这并不是非常高效：词元分析器为每个空格返回单独的词元，其实它可以将缩进级别组合在一起时（因为在代码中具有四个或八个空格的集合将非常普遍）。它也有点奇怪地拆分了函数名称，对使用 `_` 的函数命名的方法并不友好。
 
 让我们训练一个新的词元分析器，看看它是否能解决这些问题。为此，我们将使用 `train_new_from_iterator()` 方法：
 
@@ -166,11 +166,11 @@ tokenizer = old_tokenizer.train_new_from_iterator(training_corpus, 52000)
 ```
 如果您的语料库非常大，此命令可能需要一些时间，但对于这个 1.6 GB 文本数据集，它的速度非常快（在具有 12 个内核的 AMD Ryzen 9 3900X CPU 上仅需 1 分 16 秒）。
 
-注意 `AutoTokenizer.train_new_from_iterator()` 只有您使用的词元分析器是“快速（fast）”词元分析器时才有效。下一节中，您将在看到，🤗 Transformers 库包含两种类型的词元分析器：一种完全用 Python 编写，而另一些（快速的）由 🤗 Tokenizers 库支持，该库用[Rust](https://www.rust-lang.org)编程语言编写。 Python 是最常用于数据科学和深度学习应用程序的语言，但是当需要并行化以提高速度时，就需要用另一种语言来编写。例如，位于模型计算核心的矩阵乘法是用CUDA编写的，这是一个针对GPU优化的C库。
+注意 `AutoTokenizer.train_new_from_iterator()` 只有您使用的词元分析器是“快速（fast）”词元分析器时才有效。下一节中，您将在看到，🤗 Transformers 库包含两种类型的词元分析器：一种完全用 Python 编写，而另一些（快速的）由 🤗 Tokenizers 库支持，该库用 [Rust](https://www.rust-lang.org) 编程语言编写。Python 是最常用于数据科学和深度学习应用程序的语言，但是当需要并行化以提高速度时，就需要用另一种语言来编写。例如，位于模型计算核心的矩阵乘法是用 CUDA 编写的，这是一个针对 GPU 优化的 C 库。
 
-用纯 Python 训练一个全新的词元分析器会非常缓慢，这就是我们开发 🤗 Tokenizers库的原因。正如您无需学习 CUDA 语言即可在 GPU 上训练您的模型一样，您也无需学习 Rust 即可使用快速词元分析器。 🤗 Tokenizers 库为许多内部调用 Rust 代码的方法提供 Python 绑定；例如，并行化训练新的词元分析器，或者像我们在[第三章](/course/chapter3)中看到的那样，对一批输入进行词元化。
+用纯 Python 训练一个全新的词元分析器会非常缓慢，这就是我们开发 🤗 Tokenizers 库的原因。正如您无需学习 CUDA 语言即可在 GPU 上训练您的模型一样，您也无需学习 Rust 即可使用快速词元分析器。🤗 Tokenizers 库为许多内部调用 Rust 代码的方法提供 Python 绑定；例如，并行化训练新的词元分析器，或者像我们在 [第三章](/course/chapter3) 中看到的那样，对一批输入进行词元化。
 
-大多数 Transformer 模型都有可用的快速词元分析器（您可以[在这里](https://huggingface.co/transformers/#supported-frameworks)检查一些例外情况)，如果 `AutoTokenizer` 可用，API 总是为您选择快速词元分析器。在下一节中，我们将看看快速词元分析器具有的其他一些特殊功能，这些功能对于词元分类和问答等任务非常有用。然而，在深入研究之前，让我们尝试在之前的例子上使用我们的全新分词器：
+大多数 Transformer 模型都有可用的快速词元分析器（您可以 [在这里](https://huggingface.co/transformers/#supported-frameworks) 检查一些例外情况)，如果 `AutoTokenizer` 可用，API 总是为您选择快速词元分析器。在下一节中，我们将看看快速词元分析器具有的其他一些特殊功能，这些功能对于词元分类和问答等任务非常有用。然而，在深入研究之前，让我们尝试在之前的例子上使用我们的全新分词器：
 
 ```py
 tokens = tokenizer.tokenize(example)
@@ -182,7 +182,7 @@ tokens
  'a', '`', 'Ġand', 'Ġ`', 'b', '`."""', 'ĊĠĠĠ', 'Ġreturn', 'Ġa', 'Ġ+', 'Ġb']
 ```
 
-在这里我们再次看到了表示空格和换行符的特殊符号 `Ċ` 和 `Ġ` ，但我们也可以看到我们的词元分析器学习了一些专属于 Python 函数语料库的词元：例如，有一个 `ĊĠĠĠ` 词元表示缩的，以及 `Ġ` 词元表示开始文档字符串的三个引号。词元分析器也正确地在`_`上拆分了函数名称。这是一个非常紧凑的表示；相比之下，使用简单的英语词元分析器会给我们一个更长的句子：
+在这里我们再次看到了表示空格和换行符的特殊符号 `Ċ` 和 `Ġ` ，但我们也可以看到我们的词元分析器学习了一些专属于 Python 函数语料库的词元：例如，有一个 `ĊĠĠĠ` 词元表示缩的，以及 `Ġ` 词元表示开始文档字符串的三个引号。词元分析器也正确地在 `_` 上拆分了函数名称。这是一个非常紧凑的表示；相比之下，使用简单的英语词元分析器会给我们一个更长的句子：
 
 ```py
 print(len(tokens))
@@ -216,7 +216,7 @@ tokenizer.tokenize(example)
  'Ġreturn', 'Ġx', 'Ġ@', 'Ġself', '.', 'weights', 'Ġ+', 'Ġself', '.', 'bias', 'ĊĠĠĠĠ']
 ```
 
-除了对应于缩进的词元外，这里我们还可以看到一个对应于双缩进的词元： `ĊĠĠĠĠĠĠĠ` 。特殊的 Python 词如 `class` , `init` , `call` , `self` ， 和 `return` 每个都被分词为一个词元，我们还可以看到，除了可以在 `_` 和 `.`上正确拆分，词元分析器甚至可以正确拆分驼峰法命名的名称： `LinearLayer` 被分词为 `[ĠLinear, Layer]`。
+除了对应于缩进的词元外，这里我们还可以看到一个对应于双缩进的词元： `ĊĠĠĠĠĠĠĠ` 。特殊的 Python 词如 `class` , `init` , `call` , `self` ，和 `return` 每个都被分词为一个词元，我们还可以看到，除了可以在 `_` 和 `.` 上正确拆分，词元分析器甚至可以正确拆分驼峰法命名的名称： `LinearLayer` 被分词为 `[ĠLinear, Layer]` 。
 
 ## 保存词元分析器 [[保存词元分析器]]
 
@@ -226,7 +226,7 @@ tokenizer.tokenize(example)
 tokenizer.save_pretrained("code-search-net-tokenizer")
 ```
 
-这将创建一个名为的*code-search-net-tokenizer*的新文件夹，它将包含重新加载词元分析器所需要的所有文件。如果您想与您的同事和朋友分享这个词元分析器，您可以通过登录您的帐户将其上传到 Hub。如果您在notebook上工作，有一个便捷的功能可以帮助您：
+这将创建一个名为的*code-search-net-tokenizer*的新文件夹，它将包含重新加载词元分析器所需要的所有文件。如果您想与您的同事和朋友分享这个词元分析器，您可以通过登录您的帐户将其上传到 Hub。如果您在 notebook 上工作，有一个便捷的功能可以帮助您：
 
 ```python
 from huggingface_hub import notebook_login
@@ -234,7 +234,7 @@ from huggingface_hub import notebook_login
 notebook_login()
 ```
 
-这将显示一个小部件，您可以在其中输入您的 Hugging Face 登录凭据。如果您不是在notebook上工作，只需在终端中输入以下行：
+这将显示一个小部件，您可以在其中输入您的 Hugging Face 登录凭据。如果您不是在 notebook 上工作，只需在终端中输入以下行：
 
 ```bash
 huggingface-cli login
@@ -246,11 +246,11 @@ huggingface-cli login
 tokenizer.push_to_hub("code-search-net-tokenizer")
 ```
 
-这将在您的命名空间中创建一个名为`code-search-net-tokenizer`的新仓库 ，包含词元分析器文件。然后，您可以使用词元分析器的 `from_pretrained()` 方法从任何地方加载加载词元分析器：
+这将在您的命名空间中创建一个名为 `code-search-net-tokenizer` 的新仓库 包含词元分析器文件。然后，您可以使用词元分析器的 `from_pretrained()` 方法从任何地方加载加载词元分析器：
 
 ```py
 # 将下面的 "huggingface-course" 替换为您的用户名来加载您的词元分析器
 tokenizer = AutoTokenizer.from_pretrained("huggingface-course/code-search-net-tokenizer")
 ```
 
-您现在已准备好从头开始训练语言模型并根据您手头的任务对其进行微调！我们将在[第七章](/course/chapter7)进行这部分。在本章的剩余部分，我们将仔细研究快速词元分析器，并详细探讨调用 `train_new_from_iterator()` 方法时到底在幕后发生了什么。
+您现在已准备好从头开始训练语言模型并根据您手头的任务对其进行微调！我们将在 [第七章](/course/chapter7) 进行这部分。在本章的剩余部分，我们将仔细研究快速词元分析器，并详细探讨调用 `train_new_from_iterator()` 方法时到底在幕后发生了什么。
