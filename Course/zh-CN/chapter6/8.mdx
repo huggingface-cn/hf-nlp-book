@@ -319,7 +319,7 @@ tokenizer = Tokenizer(models.BPE())
 
 同样，对于 BERT，如果我们有一个词汇表，我们也可以使用这个词汇表来初始化模型（在这种情况下，我们需要传入 `vocab` 和 `merges` ），但是因为我们将从头开始训练，所以我们不需要做这个。我们也不需要指定 `unk_token` ，因为 GPT-2 使用字节级 BPE，这不需要它。
 
-GPT-2 不使用 `normalizer`，因此我们跳过该步骤并直接进入预分词：
+GPT-2 不使用 `normalizer` ，因此我们跳过该步骤并直接进入预分词：
 
 ```python
 tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)

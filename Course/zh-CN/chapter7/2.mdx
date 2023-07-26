@@ -53,7 +53,7 @@
 
 ### CoNLL-2003 数据集 [[CoNLL-2003 数据集]]
 
-要加载 CoNLL-2003 数据集，我们可以使用🤗 Datasets 库的`load_dataset()` 方法：
+要加载 CoNLL-2003 数据集，我们可以使用🤗 Datasets 库的 `load_dataset()` 方法：
 
 ```py
 from datasets import load_dataset
@@ -266,7 +266,7 @@ print(align_labels_with_tokens(labels, word_ids))
 
 <Tip>
 
-✏️ **轮到你了！** 有些研究人员更喜欢每个单词只分配一个标签，对该单词其他部分分配 `-100`。这是为了避免那些分解成许多子子词的长单词对损失作出过重的贡献。请按照这个规则，改变之前的函数，使标签与输入ID对齐。
+✏️ **轮到你了！** 有些研究人员更喜欢每个单词只分配一个标签，对该单词其他部分分配 `-100` 。这是为了避免那些分解成许多子子词的长单词对损失作出过重的贡献。请按照这个规则，改变之前的函数，使标签与输入 ID 对齐。
 
 </Tip>
 
@@ -317,9 +317,9 @@ tokenized_datasets = raw_datasets.map(
 
 ### 整理数据 [[整理数据]]
 
-我们不能像 [第三章](/course/chapter3) 那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（输入 ID、注意掩码和词元类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100`  进行填充，以便在损失计算中忽略相应的预测。
+我们不能像 [第三章](/course/chapter3) 那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（输入 ID、注意掩码和词元类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
 
-这些可以由 [`DataCollatorForTokenClassification`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification) 实现。它是一个带有填充功能的数据整理器，使用时只需要传入用于预处理输入的 `tokenizer`：
+这些可以由 [`DataCollatorForTokenClassification`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification) 实现。它是一个带有填充功能的数据整理器，使用时只需要传入用于预处理输入的 `tokenizer` ：
 
 {#if fw === 'pt'}
 
@@ -474,7 +474,7 @@ optimizer, schedule = create_optimizer(
 model.compile(optimizer=optimizer)
 ```
 
-请注意，我们没有给 `compile()` 提供 `loss` 参数。这是因为模型实际上可以内部计算损失 —— 如果您编译时没有提供损失的计算方法并在输入字典中提供标签（就像我们在数据集中所做的那样），那么模型将使用内部默认的`loss`计算方法进行训练，这取决于你选择的任务和模型类型。
+请注意，我们没有给 `compile()` 提供 `loss` 参数。这是因为模型实际上可以内部计算损失 —— 如果您编译时没有提供损失的计算方法并在输入字典中提供标签（就像我们在数据集中所做的那样），那么模型将使用内部默认的 `loss` 计算方法进行训练，这取决于你选择的任务和模型类型。
 
 接下来，我们定义一个 `PushToHubCallback` 回调函数，以便在训练期间将模型上传到 Hub，并使用该回调来拟合模型：
 
