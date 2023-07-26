@@ -8,19 +8,19 @@
 
 ![Transformerd 简史](./assets/transformers_chrono.svg "Transformerd 简史")
 
-[Transformer 架构](https://arxiv.org/abs/1706.03762) 于 2017 年 6 月提出，原本研究的重点是翻译任务，随后推出了几个有影响力的模型，包括
+[Transformer 架构](https://arxiv.org/abs/1706.03762)(https://arxiv.org/abs/1706.03762) 于 2017 年 6 月提出，原本研究的重点是翻译任务，随后推出了几个有影响力的模型，包括
 
-- **2018 年 6 月**: [GPT](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf), 第一个预训练的 Transformer 模型，用于各种 NLP 任务并获得极好的结果
+- **2018 年 6 月**: [GPT](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)(https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf), 第一个预训练的 Transformer 模型，用于各种 NLP 任务并获得极好的结果
 
-- **2018 年 10 月**: [BERT](https://arxiv.org/abs/1810.04805), 另一个大型预训练模型，该模型旨在生成更好的句子摘要（下一章将详细介绍！）
+- **2018 年 10 月**: [BERT](https://arxiv.org/abs/1810.04805)(https://arxiv.org/abs/1810.04805), 另一个大型预训练模型，该模型旨在生成更好的句子摘要（下一章将详细介绍！）
 
-- **2019 年 2 月**: [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf), GPT 的改进（并且更大）版本，由于道德问题没有立即公开发布
+- **2019 年 2 月**: [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)(https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf), GPT 的改进（并且更大）版本，由于道德问题没有立即公开发布
 
-- **2019 年 10 月**: [DistilBERT](https://arxiv.org/abs/1910.01108), BERT 的提炼版本，速度提高 60%，内存减轻 40%，但仍保留 BERT 97% 的性能
+- **2019 年 10 月**: [DistilBERT](https://arxiv.org/abs/1910.01108)(https://arxiv.org/abs/1910.01108), BERT 的提炼版本，速度提高 60%，内存减轻 40%，但仍保留 BERT 97% 的性能
 
-- **2019 年 10 月**: [BART](https://arxiv.org/abs/1910.13461) 和 [T5](https://arxiv.org/abs/1910.10683), 两个使用与原始 Transformer 模型原始架构的大型预训练模型（第一个这样做）
+- **2019 年 10 月**: [BART](https://arxiv.org/abs/1910.13461)(https://arxiv.org/abs/1910.13461) 和 [T5](https://arxiv.org/abs/1910.10683)(https://arxiv.org/abs/1910.10683), 两个使用与原始 Transformer 模型原始架构的大型预训练模型（第一个这样做）
 
-- **2020 年 5 月**, [GPT-3](https://arxiv.org/abs/2005.14165), GPT-2 的更大版本，无需微调即可在各种任务上表现良好（称为零样本学习）
+- **2020 年 5 月**, [GPT-3](https://arxiv.org/abs/2005.14165)(https://arxiv.org/abs/2005.14165), GPT-2 的更大版本，无需微调即可在各种任务上表现良好（称为零样本学习）
 
 此列表远非详尽无遗，而是为了突出一些 Transformer 模型的不同类型，可以大致分为三类：
 
@@ -58,7 +58,7 @@
 
 这里只是显示了一支团队领导的大模型项目，该团队已经试图减少预训练对环境的影响，然而他们发现如果为了获得最佳超参数而进行大量试验，所造成的碳排放当量会更高。想象一下，如果每次一个学生组织、一个研究团队或一家公司想要训练一个模型，都从头开始训练的。这将导致巨大的和不必要的浪费。这就体现了共享语言模型的重要性：共享经过训练的权重，当遇见新的需求时在预训练的权重之上进行微调，可以降低模型训练时的算力和时间消耗，降低全球的总体训练成本和碳排放。
 
-您可以通过多种工具评估模型训练的碳排放。 例如 [ML CO2 Impact](https://mlco2.github.io/impact/) 或集成在 🤗 Transformers 中的 [Code Carbon](https://codecarbon.io/)。 要了解更多相关信息，您可以阅读这篇[博客文章](https://huggingface.co/blog/carbon-emissions-on-the-hub)，它将向您展示如何生成 `emissions.csv` 文件估计训练的碳排放，这里还有 🤗 Transformers 关于碳排放的[文档](https://huggingface.co/docs/hub/model-cards-co2)。
+您可以通过多种工具评估模型训练的碳排放。 例如 [ML CO2 Impact](https://mlco2.github.io/impact/)(https://mlco2.github.io/impact/) 或集成在 Transformers 中的 [Code Carbon](https://codecarbon.io/)(https://codecarbon.io/)。 要了解更多相关信息，您可以阅读这篇博客文章，它将向您展示如何生成 `emissions.csv` 文件估计训练的碳排放，这里还有 Transformers 关于碳排放的[文档](https://huggingface.co/docs/hub/model-cards-co2)(https://huggingface.co/docs/hub/model-cards-co2)。
 
 ## 迁移学习 
 
@@ -106,7 +106,7 @@
 
 ## 注意力层 
 
-Transformer模型的一个关键特性是*注意力层*。提出Transformer架构的文章的标题是[“Attention Is All You Need”](https://arxiv.org/abs/1706.03762)! 我们将在后面的章节更加深入探讨注意力层的细节。现在需要知道的是注意力层将告诉模型在处理每个单词的表示时，对不同单词的重视（忽略）程度。
+Transformer模型的一个关键特性是*注意力层*。提出Transformer架构的文章的标题是[“Attention Is All You Need”](https://arxiv.org/abs/1706.03762)(https://arxiv.org/abs/1706.03762)! 我们将在后面的章节更加深入探讨注意力层的细节。现在需要知道的是注意力层将告诉模型在处理每个单词的表示时，对不同单词的重视（忽略）程度。
 
 举个将英语翻译成法语的例子。给定输入"You like this course"时，翻译模型需要注意相邻的词"You"才能获得"like"的正确翻译，因为在法语中动词"like"的变形依赖于主语。然而对于"like"的翻译，句子的其余部分并没有用。同理当翻译"this"时模型也需要注意词"course"，因为"this"的翻译依赖关联名词是单数还是复数，而句子中的其他词对于"this"的翻译也并不重要。对于更复杂的句子和更复杂的语法规则，模型需要特别注意可能在句子中更远处出现的词来正确翻译每个词。
 

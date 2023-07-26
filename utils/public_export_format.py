@@ -73,12 +73,23 @@ def translate_label(input_path,output_path):
     pattern = r'!\[(.*?)\]\((.*?)( ".*?")+'
     replacement = r'![\1](\2 "\1"'
     mdx = re.sub(pattern, replacement, mdx)
+    pattern = r"(?<!!)\[(.*?)\]\((.*?)\)"
+    matches = re.findall(pattern, mdx)
+    for match in matches:
+        description = match[0]
+        url = match[1]
+        if '章'in description or '节' in description:
+            mdx = mdx.replace(f"[{description}]({url})", f"{description}")
+        else:
+            mdx = mdx.replace(f"[{description}]({url})", f"[{description}]({url})({url})")
+    mdx=mdx.replace('🤗 ','')
+    mdx=mdx.replace('🤗','')
     #对于异常空行的处理
     # mdx=mdx.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
     with open(output_path,'w',encoding='utf-8') as f:
         f.write(mdx)
-basic_input_dir='Course/zh-CN/chapter2/'
-basic_output_dir='Course/publish/chapter2/'
+basic_input_dir='Course/zh-CN/chapter1/'
+basic_output_dir='Course/publish/chapter1/'
 for file_name in os.listdir(basic_input_dir):
     if file_name.endswith('.mdx') and  file_name in [str(i)+'.mdx' for i in range(8)]:
         translate_label(basic_input_dir+file_name,basic_output_dir+file_name)

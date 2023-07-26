@@ -1,6 +1,6 @@
 import os
 import subprocess
-chapter='chapter0'
+chapter='chapter7'
 # Specify the source and destination folders
 source_folder = f'Course\publish/{chapter}'
 destination_folder = 'Course\docx_output'

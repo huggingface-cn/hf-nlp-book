@@ -1,6 +1,6 @@
 # Transformers 能做什么？
 
-在本节中，您将学习到 Transformer 模型可以做什么，并使用 🤗 Transformers 库中的第一个工具：pipeline() 函数。
+在本节中，您将学习到 Transformer 模型可以做什么，并使用 Transformers 库中的第一个工具：pipeline() 函数。
 
 ## Transformers 无处不在！
 
@@ -8,11 +8,11 @@ Transformer 模型用于解决各种 NLP 任务，就像上一节提到的那样
 
 ![使用 Hugging Face 的公司](./assets/companies.PNG "使用 Hugging Face 的公司")
 
- [🤗 Transformers 库](https://github.com/huggingface/transformers) 提供了创建和使用这些共享模型的功能。 [模型中心（hub）](https://huggingface.co/models) 包含数千个任何人都可以下载和使用的预训练模型。您还可以将自己的模型上传到 Hub！
+ [Transformers 库](https://github.com/huggingface/transformers)(https://github.com/huggingface/transformers) 提供了创建和使用这些共享模型的功能。 [模型中心（hub）](https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models) 包含数千个任何人都可以下载和使用的预训练模型。您还可以将自己的模型上传到 Hub！
 
 <div custom-style="Tip-yellow">
 
-⚠️ Hugging Face Hub 不只限于 Transformer 模型。每个人都可以分享任何类型的模型或数据。创建一个 [Huggingface.co 帐户](https://huggingface.co/join) 即可使用所有可用的功能。
+⚠️ Hugging Face Hub 不只限于 Transformer 模型。每个人都可以分享任何类型的模型或数据。创建一个 [Huggingface.co 帐户](https://huggingface.co/join)(https://huggingface.co/join) 即可使用所有可用的功能。
 
 </div>
 
@@ -20,7 +20,7 @@ Transformer 模型用于解决各种 NLP 任务，就像上一节提到的那样
 
 ## 使用 pipelines 
 
-🤗 Transformers 库中最基本的对象是 **pipeline()** 函数。它将模型与所需的预处理和后处理步骤连接起来，使我们能够直接输入文本并获得结果：
+Transformers 库中最基本的对象是 **pipeline()** 函数。它将模型与所需的预处理和后处理步骤连接起来，使我们能够直接输入文本并获得结果：
 
 ```python
 
@@ -68,7 +68,7 @@ classifier(
 
 3. 对模型的预测结果进行后续处理并输出最终我们可以理解的结果。
 
-目前 [可用的pipeline](https://huggingface.co/transformers/main_classes/pipelines.html) 有：
+目前 [可用的pipeline](https://huggingface.co/transformers/main_classes/pipelines.html)(https://huggingface.co/transformers/main_classes/pipelines.html) 有：
 
 * **eature-extraction**（获取文本的向量表示）
 
@@ -166,9 +166,9 @@ generator("In this course, we will teach you how to")
 
 ## 在 pipeline 中使用 Hub 中的其他模型 
 
-前面的示例使用了默认模型，您也可以从 Hub 中选择一个特定模型用于特定任务，例如文本生成。转到 [模型中心（hub）](https://huggingface.co/models) 并单击左侧的相应标签将会显示该任务支持的模型。您会看到一个 [这个页面](https://huggingface.co/models?pipeline_tag=text-generation) 的页面。
+前面的示例使用了默认模型，您也可以从 Hub 中选择一个特定模型用于特定任务，例如文本生成。转到 [模型中心（hub）](https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models) 并单击左侧的相应标签将会显示该任务支持的模型。您会看到一个 [这个页面](https://huggingface.co/models?pipeline_tag=text-generation)(https://huggingface.co/models?pipeline_tag=text-generation) 的页面。
 
-让我们试试 [**distilgpt2**](https://huggingface.co/distilgpt2) 模型吧！下面是在之前的 pipeline 中加载它的方法：
+让我们试试 [**distilgpt2**](https://huggingface.co/distilgpt2)(https://huggingface.co/distilgpt2) 模型吧！下面是在之前的 pipeline 中加载它的方法：
 
 ```python
 
@@ -212,7 +212,7 @@ generator(
 
 ## 推理 API 
 
-所有模型都可以使用 Inference API 直接通过浏览器进行测试，该 API 可在 [Hugging Face 网站](https://huggingface.co/) 上找到。您可以在此页面上使用该模型，输入自定义文本并观察模型的输出。
+所有模型都可以使用 Inference API 直接通过浏览器进行测试，该 API 可在 [Hugging Face 网站](https://huggingface.co/)(https://huggingface.co/) 上找到。您可以在此页面上使用该模型，输入自定义文本并观察模型的输出。
 
 ## 完形填空 
 
@@ -400,7 +400,7 @@ summarizer(
 
 ## 翻译 
 
-对于翻译任务 ，如果您在任务的名称中包含语言对（例如“**translation_en_to_fr**”），可以使用默认模型，但最简单的方法是在 [模型中心（hub）](https://huggingface.co/models) 选择要使用的模型。下面的示例中为尝试把法语翻译成英语：
+对于翻译任务 ，如果您在任务的名称中包含语言对（例如“**translation_en_to_fr**”），可以使用默认模型，但最简单的方法是在 [模型中心（hub）](https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models) 选择要使用的模型。下面的示例中为尝试把法语翻译成英语：
 
 ```python
 

@@ -39,7 +39,7 @@ result = classifier("This is a course about the Transformers library")
 ```
 1. 这个pipeline要求提供用来分类此文本的标签。
 2. 这个pipeline需要多个句子，而不仅仅是一个。
-3. 🤗 Transformers库又出故障了
+3. Transformers库又出故障了
 4. 该pipeline需要更长的输入； 这个句子太短了。
 
 ### 5. “迁移学习”是什么意思？
@@ -98,11 +98,11 @@ result = classifier("This is a course about the Transformers library")
 正确选项: 2. 文本分类
 
 1. 文本摘要提取    
-解析: 请前往 [roberta-large-mnli 页面](https://huggingface.co/roberta-large-mnli) 再仔细看一下.
+解析: 请前往 [roberta-large-mnli 页面](https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli) 再仔细看一下.
 2. 文本分类    
 解析: 更准确地说，它能判断两句话是否在逻辑上有关联，通过三个标签（矛盾，无关，蕴含）分类——这项任务也称为<em>自然语言推理</em>.
 3. 文本生成    
-解析: 请前往 [roberta-large-mnli 页面](https://huggingface.co/roberta-large-mnli) 回顾一下.
+解析: 请前往 [roberta-large-mnli 页面](https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli) 回顾一下.
 
 ### 2. 下面的代码将会输出什么结果？
 
@@ -152,7 +152,7 @@ result = classifier("This is a course about the Transformers library")
 解析: 正解 — 正确的代码需要包含：<code>candidate_labels=[...]</code>.
 2. 这个pipeline需要多个句子，而不仅仅是一个。    
 解析: 错误。尽管正确使用时，此pipeline可以同时处理多个句子（像所有其他pipeline一样）。
-3. 🤗 Transformers库又出故障了    
+3. Transformers库又出故障了    
 解析: 对此，我们不予置评！
 4. 该pipeline需要更长的输入； 这个句子太短了。    
 解析: 错误。 不过请注意，在这个pipeline处理太长的文本时会将其截断。

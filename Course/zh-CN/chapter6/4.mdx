@@ -105,7 +105,7 @@ tokenizer.backend_tokenizer.pre_tokenizer.pre_tokenize_str("Hello, how are  you?
 
 ## SentencePiece [[SentencePiece]]
 
- [SentencePiece](https://github.com/google/sentencepiece) 是一种用于文本预处理的词元化算法，您可以将其与我们将在接下来的三个部分中看到的任何模型一起使用。它将文本视为 Unicode 字符序列，并用特殊字符 `▁` 替换空格。与 Unigram 算法结合使用（参见 [第七节](/course/chapter7/7) )时，它甚至不需要预分词步骤，这对于不使用空格字符的语言（如中文或日语）非常有用。
+ [SentencePiece](https://github.com/google/sentencepiece) 是一种用于文本预处理的词元化算法，你可以将其与我们将在接下来的三个部分中看到的任何模型一起使用。它将文本视为 Unicode 字符序列，并用特殊字符 `▁` 替换空格。与 Unigram 算法结合使用（参见 [第七节](/course/chapter7/7) )时，它甚至不需要预分词步骤，这对于不使用空格字符的语言（如中文或日语）非常有用。
 
 SentencePiece 的另一个主要特点是可逆词元化：由于没有对空格进行特殊处理，解码词元的时候只需将它们连接起来，然后将 `_` 替换为空格，就可以还原原始的文本。如我们之前所见，BERT 分词器会删除重复的空格，所以它的分词不是可逆的。
 

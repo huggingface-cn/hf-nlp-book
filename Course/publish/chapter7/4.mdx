@@ -1,54 +1,44 @@
-<FrameworkSwitchCourse {fw} />
 
-# 翻译 [[翻译]]
+
+# 翻译 
 
 {#if fw === 'pt'}
 
-<DocNotebookDropdown
-  classNames="absolute z-10 right-0 top-0"
-  options={[
-    {label: "Google Colab", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/chapter7/section4_pt.ipynb"},
-    {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/chapter7/section4_pt.ipynb"},
-]} />
+
 
 {:else}
 
-<DocNotebookDropdown
-  classNames="absolute z-10 right-0 top-0"
-  options={[
-    {label: "Google Colab", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/chapter7/section4_tf.ipynb"},
-    {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/chapter7/section4_tf.ipynb"},
-]} />
+
 
 {/if}
 
-现在让我们深入研究翻译。这是另一个 [sequence-to-sequence 任务](/course/chapter1/7) ，这意味着这是一个可以表述为从一个序列到另一个序列的问题。从这个意义上说，这个问题非常类似 [文本摘要](/course/chapter7/6) ，并且你可以将我们将在此处学习到的一些内容迁移到其他的序列到序列问题，例如：
+现在让我们深入研究翻译。这是另一个 [sequence-to-sequence 任务](/course/chapter1/7) ，这意味着这是一个可以表述为从一个序列到另一个序列的问题。从这个意义上说，这个问题非常类似 [文本摘要](/course/chapter7/6) ，并且您可以将我们将在此处学习到的一些内容迁移到其他的序列到序列问题，例如：
 
 - **风格迁移** : 创建一个模型将某种风格迁移到一段文本（例如，正式的风格迁移到休闲的风格，或莎士比亚英语到现代英语）。
 - **生成问题的回答** 创建一个模型，在给定上下文的情况下生成问题的答案。
 
-<Youtube id="1JvfrvZgi6c"/>
 
-如果你有足够大的两种（或更多）语言的文本语料库，你可以从头开始训练一个新的翻译模型，就像我们在 [因果语言建模](/course/chapter7/6) 部分中所做的那样。然而，微调现有的翻译模型会更快，无论是从像 mT5 或 mBART 这样的多语言模型微调到特定的语言对，还是你想微调到特定语料库的一种语言到另一种语言的专用翻译模型。
+
+如果您有足够大的两种（或更多）语言的文本语料库，您可以从头开始训练一个新的翻译模型，就像我们在 [因果语言建模](/course/chapter7/6) 部分中所做的那样。然而，微调现有的翻译模型会更快，无论是从像 mT5 或 mBART 这样的多语言模型微调到特定的语言对，还是你想微调到特定语料库的一种语言到另一种语言的专用翻译模型。
 
 在这一节中，我们将微调一个预训练的 Marian 模型，该模型是用来从英语翻译成法语的（因为很多 Hugging Face 的员工都会说这两种语言），并在 [KDE4 数据集](https://huggingface.co/datasets/kde4) 上进行训练，这是一个用于 [KDE 应用](https://apps.kde.org/) 的本地化文件数据集。我们将使用的模型已经在从 [Opus 数据集](https://opus.nlpl.eu/) (实际上包含 KDE4 数据集)中提取的法语和英语文本的大型语料库上进行了预先训练。但是，即使我们使用的预训练模型在其预训练期间使用了这部分数据集，我们也会看到，经过微调后，我们可以得到一个更好的版本。
 
 完成后，我们将拥有一个模型，可以进行这样的翻译：
 
-<iframe src="https://course-demos-marian-finetuned-kde4-en-to-fr.hf.space" frameBorder="0" height="350" title="Gradio app" class="block dark:hidden container p-0 flex-grow space-iframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"></iframe>
+
 
 <a class="flex justify-center" href="/huggingface-course/marian-finetuned-kde4-en-to-fr">
 <img class="block dark:hidden lg:w-3/5" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/modeleval-marian-finetuned-kde4-en-to-fr.png" alt="One-hot encoded labels for question answering."/>
 <img class="hidden dark:block lg:w-3/5" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/modeleval-marian-finetuned-kde4-en-to-fr-dark.png" alt="One-hot encoded labels for question answering."/>
 </a>
 
-与前面的部分一样，你可以使用以下代码找到我们将训练并上传到 Hub 的实际模型，并 [在这里](https://huggingface.co/huggingface-course/marian-finetuned-kde4-en-to-fr?text=This+plugin+allows+you+to+automatically+translate+web+pages+between+several+languages.) 查看模型输出的结果。
+与前面的部分一样，您可以使用以下代码找到我们将训练并上传到 Hub 的实际模型，并 [在这里](https://huggingface.co/huggingface-course/marian-finetuned-kde4-en-to-fr?text=This+plugin+allows+you+to+automatically+translate+web+pages+between+several+languages.) 查看模型输出的结果。
 
-## 准备数据 [[准备数据]]
+## 准备数据 
 
-为了从头开始微调或训练翻译模型，我们需要一个适合该任务的数据集。如前所述，我们将使用 [KDE4 数据集](https://huggingface.co/datasets/kde4) 。在本节中，但你可以很容易地调整代码以使用你自己的数据，只要你有要互译的两种语言的句子对。如果你需要复习如何将自定义数据加载到 **Dataset** 可以复习一下 [第五章](/course/chapter5) 。
+为了从头开始微调或训练翻译模型，我们需要一个适合该任务的数据集。如前所述，我们将使用 [KDE4 数据集](https://huggingface.co/datasets/kde4) 。在本节中，但您可以很容易地调整代码以使用您自己的数据，只要您有要互译的两种语言的句子对。如果您需要复习如何将自定义数据加载到 **Dataset** 可以复习一下 [第五章](/course/chapter5) 。
 
-### KDE4 数据集 [[KDE4 数据集]]
+### KDE4 数据集 
 
 像往常一样，我们使用 `load_dataset()` 函数下载我们的数据集：
 
@@ -58,7 +48,7 @@ from datasets import load_dataset
 raw_datasets = load_dataset("kde4", lang1="en", lang2="fr")
 ```
 
-如果你想使用不同的语言对，你可以使用它们的代码来指定它们。该数据集共有 92 种语言可用；你可以通过 [数据集卡片](https://huggingface.co/datasets/kde4) 展开其上的语言标签来查看它们。
+如果您想使用不同的语言对，您可以使用它们的代码来指定它们。该数据集共有 92 种语言可用；您可以通过 [数据集卡片](https://huggingface.co/datasets/kde4) 展开其上的语言标签来查看它们。
 
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/language_tags.png" alt="Language available for the KDE4 dataset." width="100%">
 
@@ -153,19 +143,20 @@ translator(
 
 看看我们的微调模型是否能识别数据集的这些特殊性。（剧透警告：它会的）。
 
-<Youtube id="0Oxphw4Q9fo"/>
 
-<Tip>
+
+<div custom-style="Tip-green">
+
 
 ✏️ **轮到你了！** 另一个在法语中经常使用的英语单词是“email”。在训练数据集中找到使用这个词的第一个样本。它是如何翻译的？预训练模型如何翻译同一个英文句子？
 
-</Tip>
+</div>
 
-### 处理数据 [[处理数据]]
+### 处理数据 
 
-<Youtube id="XAR8jnZZuUs"/>
 
-你现在应该知道我们的下一步该做些什么了：所有文本都需要转换为 token IDs 的集合，以便模型能够理解它们。对于这个任务，我们需要同时对输入和目标词元化。我们的首要任务是创建我们的 `tokenizer` 对象。如前所述，我们将使用 Marian 英语到法语的预训练模型。如果你使用另一对语言尝试此代码，请确保调整模型 Checkpoint。 [Helsinki-NLP](https://huggingface.co/Helsinki-NLP) 组织提供了超过一千个多语言模型。
+
+您现在应该知道我们的下一步该做些什么了：所有文本都需要转换为 token IDs 的集合，以便模型能够理解它们。对于这个任务，我们需要同时对输入和目标词元化。我们的首要任务是创建我们的 `tokenizer` 对象。如前所述，我们将使用 Marian 英语到法语的预训练模型。如果您使用另一对语言尝试此代码，请确保调整模型 Checkpoint。 [Helsinki-NLP](https://huggingface.co/Helsinki-NLP) 组织提供了超过一千个多语言模型。
 
 ```python
 from transformers import AutoTokenizer
@@ -176,11 +167,12 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, return_tensors="pt")
 
 你也可以将 `model_checkpoint` 替换为你从 [Hub](https://huggingface.co/models) 中选择的其他模型，或者一个你保存了预训练模型和 tokenizer 的本地文件夹。
 
-<Tip>
+<div custom-style="Tip-green">
+
 
 💡 如果你在使用一个多语言的 tokenizer，比如 mBART，mBART-50，或者 M2M100，你需要通过设置 `tokenizer.src_lang` 和 `tokenizer.tgt_lang` 来在 tokenizer 中指定你的输入和目标的语言代码。
 
-</Tip>
+</div>
 
 我们的数据准备相当直接。只有一点要记住；你需要确保 tokenizer 处理的目标是输出语言（在这里是法语）。你可以通过将目标传递给 tokenizer 的 `__call__` 方法的 `text_targets` 参数来完成此操作。
 
@@ -228,17 +220,19 @@ def preprocess_function(examples):
 
 请注意，我们为输入和输出设置了相同的最大长度。由于我们处理的文本看起来很短，我们使用 128。
 
-<Tip>
+<div custom-style="Tip-green">
+
 
 💡 如果你正在使用 T5 模型（更具体地说，一个 `t5-xxx` 检查点），模型会期望文本输入有一个前缀指示着手头的任务，比如 `translate: English to French:` 。
 
-</Tip>
+</div>
 
-<Tip warning={true}>
+<div custom-style="Tip-yellow">
 
-⚠️ 我们不关注目标的注意力掩码，因为模型不会需要它。相反，对应于填充标记的标签应设置为 `-100` ，以便在 loss 计算中忽略它们。这将在稍后由我们的数据整理器完成，因为我们正在应用动态填充，但是如果你在此处使用填充，你应该调整预处理函数以将与填充词元对应的所有标签设置为 `-100` 。
 
-</Tip>
+⚠️ 我们不关注目标的注意力掩码，因为模型不会需要它。相反，对应于填充标记的标签应设置为 `-100` ，以便在 loss 计算中忽略它们。这将在稍后由我们的数据整理器完成，因为我们正在应用动态填充，但是如果您在此处使用填充，您应该调整预处理函数以将与填充词元对应的所有标签设置为 `-100` 。
+
+</div>
 
 我们现在可以对数据集的所有数据一次性进行该预处理：
 
@@ -254,7 +248,7 @@ tokenized_datasets = split_datasets.map(
 
 {#if fw === 'pt'}
 
-## 使用 `Trainer` API 微调模型 [[使用 `Trainer` API 微调模型]]
+## 使用 `Trainer` API 微调模型 
 
 使用 `Trainer` 的实际代码将与以前相同，只是稍作改动：我们在这里使用 [`Seq2SeqTrainer`](https://huggingface.co/transformers/main_classes/trainer.html#seq2seqtrainer) ，它是 `Trainer` 的子类，它使用 `generate()` 方法来预测输入的输出，并且可以正确处理这种序列到序列的评估。当我们讨论评估指标时，我们将更详细地探讨这一点。
 
@@ -268,7 +262,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 
 {:else}
 
-## 使用 Keras 微调模型 [[使用 Keras 微调模型]]
+## 使用 Keras 微调模型 
 
 首先，我们需要一个实际的模型来进行微调。我们将使用常用的 `AutoModel` API：
 
@@ -278,17 +272,18 @@ from transformers import TFAutoModelForSeq2SeqLM
 model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint, from_pt=True)
 ```
 
-<Tip warning={false}>
+<div custom-style="Tip-green">
 
-💡 `Helsinki-NLP/opus-mt-en-fr` checkpoint 只有 PyTorch 的权重，所以如果你尝试加载模型而没有使用 `from_pt=True` 参数在 `from_pretrained()` 方法中，你会得到一个错误。当你指定 `from_pt=True` ，库会自动下载并为你转换 PyTorch 权重。如你所见，使用🤗transormer 在两者之间切换非常简单
 
-</Tip>
+💡 `Helsinki-NLP/opus-mt-en-fr` checkpoint 只有 PyTorch 的权重，所以如果你尝试加载模型而没有使用 `from_pt=True` 参数在 `from_pretrained()` 方法中，你会得到一个错误。当您指定 `from_pt=True` ，库会自动下载并为你转换 PyTorch 权重。如您所见，使用🤗transormer 在两者之间切换非常简单
+
+</div>
 
 {/if}
 
 注意，这次我们使用的是一个已经在翻译任务上进行过训练的模型，实际上已经可以使用了，所以没有关于缺少权重或新初始化的权重的警告。
 
-### 数据整理 [[数据整理]]
+### 数据整理 
 
 我们需要一个数据整理器来处理动态批处理的填充。在本例中，我们不能像 [第三章](/course/chapter3) 那样只使用 `DataCollatorWithPadding` ，因为它只填充输入（输入 ID、注意掩码和词元类型 ID）。我们的标签也应该填充到标签中遇到的最大长度。而且，如前所述，用于填充标签的填充值应为 `-100` ，而不是 tokenizer 的填充词元，以确保在损失计算中忽略这些填充值。
 
@@ -387,9 +382,9 @@ tf_eval_dataset = model.prepare_tf_dataset(
 {/if}
 
 
-### 评估指标 [[评估指标]]
+### 评估指标 
 
-<Youtube id="M05L1DhFqcw"/>
+
 
 {#if fw === 'pt'}
 
@@ -570,9 +565,9 @@ def compute_metrics(eval_preds):
 
 现在这已经完成了，我们已经准备好微调我们的模型了！
 
-### 微调模型 [[微调模型]]
+### 微调模型 
 
-第一步是登录 Hugging Face，这样你就可以将结果上传到模型中心。有一个方便的功能可以帮助你在 notebook 中完成此操作：
+第一步是登录 Hugging Face，这样您就可以将结果上传到模型中心。有一个方便的功能可以帮助您在 notebook 中完成此操作：
 
 ```python
 from huggingface_hub import notebook_login
@@ -580,9 +575,9 @@ from huggingface_hub import notebook_login
 notebook_login()
 ```
 
-这将显示一个小部件，你可以在其中输入你的 Hugging Face 登录凭据。
+这将显示一个小部件，您可以在其中输入您的 Hugging Face 登录凭据。
 
-如果你不是在 notebook 上运行代码，只需在终端中输入以下行：
+如果您不是在 notebook 上运行代码，只需在终端中输入以下行：
 
 ```bash
 huggingface-cli login
@@ -643,13 +638,14 @@ model.fit(
 )
 ```
 
-请注意，你可以使用 `hub_model_id` 参数指定要推送到的存储库的名称（当你想把模型推送到指定的组织的时候，你也必须使用此参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/marian-finetuned-kde4-en- to-fr"` 到 `Seq2SeqTrainingArguments` 。默认情况下，使用的存储库将在你的账户中，并以你设置的输出目录命名，因此这里将是 `"sgugger/marian-finetuned-kde4-en-to-fr"` 。
+请注意，您可以使用 `hub_model_id` 参数指定要推送到的存储库的名称（当您想把模型推送到指定的组织的时候，您也必须使用此参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/marian-finetuned-kde4-en- to-fr"` 到 `Seq2SeqTrainingArguments` 。默认情况下，使用的存储库将在您的账户中，并以您设置的输出目录命名，因此这里将是 `"sgugger/marian-finetuned-kde4-en-to-fr"` 。
 
-<Tip>
+<div custom-style="Tip-green">
+
 
 💡 如果你正在使用的输出目录已经存在，它需要是你想要推送到的仓库的本地克隆。如果不是，当调用 `model.fit()` 时会收到错误，并需要设置一个新名称。
 
-</Tip>
+</div>
 
 最后，让我们看看训练结束后我们的指标是什么样的：
 
@@ -661,7 +657,7 @@ print(compute_metrics())
 {'bleu': 57.334066271545865}
 ```
 
-在这个阶段，你可以使用模型中心上的推理小部件来测试你的模型并与你的朋友分享。你已经成功地在翻译任务上微调了一个模型——恭喜！
+在这个阶段，您可以使用模型中心上的推理小部件来测试您的模型并与您的朋友分享。你已经成功地在翻译任务上微调了一个模型——恭喜！
 
 {:else}
 
@@ -693,13 +689,14 @@ args = Seq2SeqTrainingArguments(
 - 和上面我们讨论的那样，我们设置 `predict_with_generate=True` 。
 - 我们用 `push_to_hub=True` 在每个 epoch 结束时将模型上传到 Hub。
 
-请注意，你可以使用 `hub_model_id` 参数指定要推送到的存储库的名称（当你想把模型推送到指定的组织的时候，你也必须使用此参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/marian-finetuned-kde4-en- to-fr"` 到 `Seq2SeqTrainingArguments` 。默认情况下，使用的存储库将在你的账户中，并以你设置的输出目录命名，因此这里将是 `"sgugger/marian-finetuned-kde4-en-to-fr"` 。
+请注意，您可以使用 `hub_model_id` 参数指定要推送到的存储库的名称（当您想把模型推送到指定的组织的时候，您也必须使用此参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/marian-finetuned-kde4-en- to-fr"` 到 `Seq2SeqTrainingArguments` 。默认情况下，使用的存储库将在您的账户中，并以您设置的输出目录命名，因此这里将是 `"sgugger/marian-finetuned-kde4-en-to-fr"` 。
 
-<Tip>
+<div custom-style="Tip-green">
 
-💡如果你使用的输出目录已经存在，则它需要是你要推送到的存储库的本地克隆。如果不是，你将在定义你的 `Seq2SeqTrainer` 名称时会遇到错误，并且需要设置一个新名称。
 
-</Tip>
+💡如果您使用的输出目录已经存在，则它需要是您要推送到的存储库的本地克隆。如果不是，您将在定义您的 `Seq2SeqTrainer` 名称时会遇到错误，并且需要设置一个新名称。
+
+</div>
 
 最后，我们将所有内容传递给 `Seq2SeqTrainer` ：
 
@@ -739,7 +736,7 @@ BLEU 得分为 39 并不算太差，这反映了我们的模型已经擅长将�
 trainer.train()
 ```
 
-请注意，当训练发生时，每次保存模型时（这里是每个 epoch），它都会在后台上传到 Hub。这样，如有必要，你将能够在另一台机器上继续你的训练。
+请注意，当训练发生时，每次保存模型时（这里是每个 epoch），它都会在后台上传到 Hub。这样，如有必要，您将能够在另一台机器上继续您的训练。
 
 训练完成后，我们再次评估我们的模型——希望我们会看到 BLEU 分数有所提高！
 
@@ -764,7 +761,7 @@ trainer.evaluate(max_length=max_length)
 trainer.push_to_hub(tags="translation", commit_message="Training complete")
 ```
 
-如果你想检查命令执行的结果，此命令将返回它刚刚执行的提交的 URL，可以打开 url 进行检查：
+如果您想检查命令执行的结果，此命令将返回它刚刚执行的提交的 URL，可以打开 url 进行检查：
 
 ```python out
 'https://huggingface.co/sgugger/marian-finetuned-kde4-en-to-fr/commit/3601d621e3baae2bc63d3311452535f8f58f6ef3'
@@ -772,19 +769,19 @@ trainer.push_to_hub(tags="translation", commit_message="Training complete")
 
 在此阶段，你可以在 Model Hub 上使用推理小部件来测试你的模型，并与你的朋友分享。你已经成功地在翻译任务上进行了模型的微调，恭喜你！
 
-如果你想更深入地了解训练循环，我们现在将向你展示如何使用 🤗 Accelerate 做同样的事情。
+如果您想更深入地了解训练循环，我们现在将向您展示如何使用 🤗 Accelerate 做同样的事情。
 
 {/if}
 
 {#if fw === 'pt'}
 
-## 自定义训练循环 [[自定义训练循环]]
+## 自定义训练循环 
 
 我们现在来看一下完整的训练循环，这样你就可以轻松定制你需要的部分。它将与我们在 [第2节](https://chat.openai.com/course/chapter7/2) 和 [第3节](https://chat.openai.com/course/chapter3/4) 中做的非常相似。
 
-### 准备训练所需的一切 [[准备训练所需的一切]]
+### 准备训练所需的一切 
 
-你已经多次看到所有这些，因此这一块会简略进行。首先，我们将数据集设置为"torch"格式，以便我们得到 PyTorch 张量，然后从我们的数据集中构建 `DataLoader` ：
+您已经多次看到所有这些，因此这一块会简略进行。首先，我们将数据集设置为"torch"格式，以便我们得到 PyTorch 张量，然后从我们的数据集中构建 `DataLoader` ：
 
 ```py
 from torch.utils.data import DataLoader
@@ -815,7 +812,7 @@ from transformers import AdamW
 optimizer = AdamW(model.parameters(), lr=2e-5)
 ```
 
-一旦我们拥有所有这些对象，我们就可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果你想在 Colab 笔记本训练中使用 TPU，则需要将所有这些代码移动到训练函数中，这样不会执行实例化 `Accelerator` 的任何单元。
+一旦我们拥有所有这些对象，我们就可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果您想在 Colab 笔记本训练中使用 TPU，则需要将所有这些代码移动到训练函数中，这样不会执行实例化 `Accelerator` 的任何单元。
 
 ```py
 from accelerate import Accelerator
@@ -843,7 +840,7 @@ lr_scheduler = get_scheduler(
 )
 ```
 
-最后，要将我们的模型推送到 Hub，我们需要在一个工作文件夹中创建一个 `Repository` 对象。如果你尚未登录，请先登录 Hugging Face。我们将从我们想要为模型提供的模型 ID 中确定存储库名称（你可以用你自己的选择替换 `repo_name` ，只需要包含你的用户名，用函数 `get_full_repo_name()` 函数可以查看当前的用户名）：
+最后，要将我们的模型推送到 Hub，我们需要在一个工作文件夹中创建一个 `Repository` 对象。如果您尚未登录，请先登录 Hugging Face。我们将从我们想要为模型提供的模型 ID 中确定存储库名称（您可以用你自己的选择替换 `repo_name` ，只需要包含你的用户名，用函数 `get_full_repo_name()` 函数可以查看当前的用户名）：
 
 ```py
 from huggingface_hub import Repository, get_full_repo_name
@@ -866,7 +863,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 现在，我们可以通过调用 `repo.push_to_hub()` 方法上传我们在 `output_dir` 中保存的所有文件。这将帮助我们在每个 epoch 结束时上传中间模型。
 
-### 训练循环 [[训练循环]]
+### 训练循环 
 
 我们现在准备编写完整的训练循环。为了简化其评估部分，我们定义了这个 `postprocess()` 函数，它接受预测和标签，并将它们转换为我们的 `metric` 对象所期望的字符串列表：
 
@@ -959,7 +956,7 @@ epoch 2, BLEU score: 54.44
 
 {/if}
 
-## 使用微调后的模型 [[使用微调后的模型]]
+## 使用微调后的模型 
 
 我们已经向你展示了如何在模型 Hub 上使用我们微调的模型。要在本地的 `pipeline` 中使用它，我们只需要指定正确的模型标识符：
 
@@ -990,8 +987,9 @@ translator(
 
 另一个领域适应的好例子！
 
-<Tip>
+<div custom-style="Tip-green">
+
 
 ✏️ **轮到你了！** 模型对你之前找到的包含单词"email"的样本返回什么结果？
 
-</Tip>
+</div>

@@ -34,7 +34,7 @@
 - `post_processors` 包含你可以使用的各种类型的 `PostProcessor` （完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.processors) ）。
 - `decoders` 包含各种类型的 `Decoder` ，可以用来解码词元化后的输出（完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/components.html#decoders) ）。
 
-您可以 [在这里](https://huggingface.co/docs/tokenizers/python/latest/components.html) 找到完整的模块列表。
+你可以 [在这里](https://huggingface.co/docs/tokenizers/python/latest/components.html) 找到完整的模块列表。
 
 ## 获取语​​料库 [[获取语​​料库]]
 
@@ -112,7 +112,7 @@ hello how are u?
 
 <Tip>
 
-**更进一步**如果您在包含 unicode 字符的字符串上测试先前 normalizers 的两个版本，您肯定会注意到这两个 normalizers 并不完全等效。
+**更进一步**如果你在包含 unicode 字符的字符串上测试先前 normalizers 的两个版本，你肯定会注意到这两个 normalizers 并不完全等效。
 为了避免 `normalizers.Sequence` 过于复杂，我们的实现没有包含当 `clean_text` 参数设置为 `True` 时 `BertNormalizer` 需要的正则表达式替换 —— 这是 `BertNormalizer` 默认的会实现的。但不要担心：通过在 normalizer 序列中添加两个 `normalizers.Replace` 可以在不使用方便的 `BertNormalizer` 的情况下获得完全相同的标准化。
 
 </Tip>
@@ -416,7 +416,7 @@ from transformers import GPT2TokenizerFast
 wrapped_tokenizer = GPT2TokenizerFast(tokenizer_object=tokenizer)
 ```
 
-作为最后一个示例，我们将向您展示如何从零开始构建 Unigram 词元分析器。
+作为最后一个示例，我们将向你展示如何从零开始构建 Unigram 词元分析器。
 
 ## 从零开始构建 Unigram 词元分析器 [[从零开始构建 Unigram 词元分析器]]
 
@@ -559,4 +559,4 @@ from transformers import XLNetTokenizerFast
 wrapped_tokenizer = XLNetTokenizerFast(tokenizer_object=tokenizer)
 ```
 
-现在您已经了解了如何使用各种模块来构建现有的词元分析器，您应该能够使用 🤗 tokenizer 库编写您想要的任何词元分析器，并能够在 🤗 Transformers 中使用它。
+现在你已经了解了如何使用各种模块来构建现有的词元分析器，你应该能够使用 🤗 tokenizer 库编写你想要的任何词元分析器，并能够在 🤗 Transformers 中使用它。
