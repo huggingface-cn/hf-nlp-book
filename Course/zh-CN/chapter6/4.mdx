@@ -35,7 +35,7 @@ print(type(tokenizer.backend_tokenizer))
 <class 'tokenizers.Tokenizer'>
 ```
 
- `tokenizer` 对象的 `normalizer` 属性具有一个 `normalize_str()` 方法，我们可以使用该方法查看如何执行标准化：
+ `tokenizer` 对象的 `normalizer` 属性具有一个 `normalize_str()` 方法，我们可以使用该方法查看如何进行标准化：
 
 ```py
 print(tokenizer.backend_tokenizer.normalizer.normalize_str("Héllò hôw are ü?"))

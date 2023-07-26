@@ -23,7 +23,7 @@ Unigram 算法常用于 SentencePiece 中，该切分算法被 AlBERT，T5，mBA
 
 在训练的每一步，Unigram 算法都会在给定当前词汇的情况下计算语料库的损失。然后，对于词汇表中的每个符号，算法计算如果删除该符号，整体损失会增加多少，并寻找增加最少的符号。这些符号对语料库的整体损失影响较小，因此从某种意义上说，它们“相对不必要”并且是移除的最佳候选者。
 
-这个过程非常消耗计算资源，因此我们不只是删除与最低损失增长相关的单个符号，而是删除与最低损失增长相关的百分之＼(p\) (\(p\)是一个可以控制的超参数，通常是 10 或 20)的符号。然后重复此过程，直到词汇库达到所需大小。
+这个过程非常消耗计算资源，因此我们不只是删除与最低损失增长相关的单个符号，而是删除与最低损失增长相关的百分之/(p\) (\(p\)是一个可以控制的超参数，通常是 10 或 20)的符号。然后重复此过程，直到词汇库达到所需大小。
 
 注意，我们永远不会删除基础字符，以确保任何词都能被切分。
 
@@ -111,7 +111,7 @@ Character 4 (g): "un" "hug" (score 0.005442)
 
 我们已经了解了如何进行分词处理，接下来我们可以更详细地了解一下在训练过程中如何计算损失值。在训练的任何阶段，我们都会将语料库中的每个词进行分词，分词所使用的词表和 Unigram 模型是基于目前的情况（即根据每个词在语料库中出现的频率）进行确定的。然后，基于这种分词结果，我们就可以计算出损失值（loss）。
 
-语料库中的每个词都有一个分数，损失（loss）值是这些分数的负对数似然 ———— 即所有词的语料库中所有词的 `-log(P(word))` 总和 
+语料库中的每个词都有一个分数，损失（loss）值是这些分数的负对数似然 —— 即所有词的语料库中所有词的 `-log(P(word))` 总和 
 
 让我们回到我们的例子，以下是我们的语料库：
 
@@ -135,9 +135,9 @@ Character 4 (g): "un" "hug" (score 0.005442)
 10 * (-log(0.071428)) + 5 * (-log(0.007710)) + 12 * (-log(0.006168)) + 4 * (-log(0.001451)) + 5 * (-log(0.001701)) = 169.8
 ```
 
-现在，我们需要计算移除每个标记对损失值的影响。这个过程颇为繁琐，所以我们这里仅对两个单词进行演示，在我们编写代码来协助处理这个过程时，再处理全部标记。在这个（非常）特殊的例子中，我们有所有单词的两种等效的分词方式：例如，"pug"可以被分词为 `["p", "ug"]` ，获得的分数是笑傲明后天的。因此，去除词汇表中的 `"pu"` 损失值还会是一样的。
+现在，我们需要计算移除每个词元对损失值的影响。这个过程颇为繁琐，所以我们这里仅对两个单词进行演示，在我们编写代码来协助处理这个过程时，再处理全部词元化。在这个（非常）特殊的例子中，我们对所有单词的两种等效的分词方式：例如，"pug"也可以被分词为 `["p", "ug"]` ，获得的分数是相同的。因此，去除词汇表中的 `"pu"` 损失值还会是一样的。
 
-另一方面，去除 `"hug"` 损失变得更糟，因为 `"hug"` 和 `"hugs"` 的词元化会变成：
+但是，去除 `"hug"` 损失会变得更糟，因为 `"hug"` 和 `"hugs"` 的词元化会变成：
 
 ```
 "hug": ["hu", "g"] (score 0.006802)
@@ -150,7 +150,7 @@ Character 4 (g): "un" "hug" (score 0.005442)
 - 10 * (-log(0.071428)) + 10 * (-log(0.006802)) = 23.5
 ```
 
-因此，标记 `"pu"` 可能会从词汇表中移除，但 `"hug"` 则不会。
+因此， `"pu"` 词元可能会从词汇表中移除，但 `"hug"` 则不会。
 
 ## 实现 Unigram [[实现 Unigram]]
 
@@ -224,7 +224,7 @@ token_freqs = {token: freq for token, freq in token_freqs}
 
 </Tip>
 
-接下来，我们需要计算所有频率的总和，将频率转化为概率。在我们的模型中，我们将存储概率的对数，因为相较于相乘小数，对数相加在数值上更稳定，而且这将简化模型损失的计算：
+接下来，我们需要计算所有频率的总和，将频率转化为概率。在我们的模型中，我们将存储概率的对数，因为相较于小数相乘，对数相加在数值上更稳定，而且这将简化模型损失的计算：
 
 ```python
 from math import log
@@ -245,7 +245,7 @@ def encode_word(word, model):
         {"start": None, "score": None} for _ in range(len(word))
     ]
     for start_idx in range(len(word)):
-        # best_score_at_start应该由循环的前面的步骤正确填充
+        # best_score_at_start应该由循环的前面的步骤计算和填充
         best_score_at_start = best_segmentations[start_idx]["score"]
         for end_idx in range(start_idx + 1, len(word) + 1):
             token = word[start_idx:end_idx]
@@ -356,7 +356,7 @@ percent_to_remove = 0.1
 while len(model) > 100:
     scores = compute_scores(model)
     sorted_scores = sorted(scores.items(), key=lambda x: x[1])
-    # 删除分数最低的percent_to_remove标记。
+    # 删除分数最低的percent_to_remov词元。
     for i in range(int(len(model) * percent_to_remove)):
         _ = token_freqs.pop(sorted_scores[i][0])
 
@@ -364,7 +364,7 @@ while len(model) > 100:
     model = {token: -log(freq / total_sum) for token, freq in token_freqs.items()}
 ```
 
-然后，要对某些文本进行词元化，我们只需应用预分词然后使用我们的 encode_word()函数：
+然后，要对某些文本进行词元化，我们只需应用预分词然后使用我们的 `encode_word()` 函数：
 
 ```python
 def tokenize(text, model):
@@ -372,7 +372,6 @@ def tokenize(text, model):
     pre_tokenized_text = [word for word, offset in words_with_offsets]
     encoded_words = [encode_word(word, model)[0] for word in pre_tokenized_text]
     return sum(encoded_words, [])
-
 
 tokenize("This is the Hugging Face course.", model)
 ```

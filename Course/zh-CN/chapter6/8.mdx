@@ -9,7 +9,7 @@
 
 正如我们在前几节中看到的，词元化包括几个步骤：
 
-- 规范化（任何认为必要的文本清理，例如删除空格或重音符号、Unicode 规范化等） 
+- 标准化（任何认为必要的文本清理，例如删除空格或重音符号、Unicode 规范化等） 
 - 预分词（将输入拆分为单词） 
 - 通过模型处理输入（使用预先拆分的词来生成一系列词元） 
 - 后处理（添加词元分析器的特殊词元，生成注意力掩码和词元类型 ID） 
@@ -30,7 +30,7 @@
 - `normalizers` 包含所有可能使用的 `Normalizer` 类型（完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.normalizers) ）。
 - `pre_tokenizesr` 包含所有可能使用的 `PreTokenizer` 类型（完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.pre_tokenizers) ）。
 - `models` 包含了你可以使用的各种 `Model` 类型，如 `BPE` 、 `WordPiece` 和 `Unigram` （完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.models) ）。
-- `trainers` 包含所有不同类型的 `trainer` ，你可以使用它们在语料库上训练你的模型（每种模型类型一个；完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.trainers) ）。
+- `trainers` 包含所有不同类型的 `trainer` ，你可以使用它们在语料库上训练你的模型（每种模型一个；完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.trainers) ）。
 - `post_processors` 包含你可以使用的各种类型的 `PostProcessor` （完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.processors) ）。
 - `decoders` 包含各种类型的 `Decoder` ，可以用来解码词元化后的输出（完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/components.html#decoders) ）。
 
@@ -90,7 +90,7 @@ tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
 tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
 ```
 
-然而，通常来说，当你构建一个新的分词器时，你不会有🤗 Tokenizers 库中已经实现的 `normalizer` -- 所以我们来看看如何手动创建 `BERT normalizer` 。🤗 Tokenizers 库提供了一个 `Lowercase normalizer` 和一个 `StripAccents normalizer` ，并且你可以使用 Sequence 来组合多个标准化器：
+然而，通常来说，当你构建一个新的分词器时，你不会有🤗 Tokenizers 库中已经实现的 `normalizer` —— 所以我们来看看如何手动创建 `BERT normalizer` 。🤗 Tokenizers 库提供了一个 `Lowercase normalizer` 和一个 `StripAccents normalizer` ，并且你可以使用 Sequence 来组合多个标准化器：
 
 ```python
 tokenizer.normalizer = normalizers.Sequence(
@@ -100,7 +100,7 @@ tokenizer.normalizer = normalizers.Sequence(
 
 我们还使用了一个 `NFD Unicode normalizer` ，否则，否则 `StripAccents normalizer` 将无法正确识别带有重音的字符，因此没办法去除它们。
 
-正如我们之前看到的，我们可以使用 `normalizer` 的 `normalize_str()` 方法来查看它对给定文本的影响：
+正如我们之前看到的，我们可以使用 `normalizer` 的 `normalize_str()` 方法来对它进行测试：
 
 ```python
 print(tokenizer.normalizer.normalize_str("Héllò hôw are ü?"))
@@ -113,7 +113,7 @@ hello how are u?
 <Tip>
 
 **更进一步**如果您在包含 unicode 字符的字符串上测试先前 normalizers 的两个版本，您肯定会注意到这两个 normalizers 并不完全等效。
-为了避免 `normalizers.Sequence` 过于复杂，我们没有包含当 `clean_text` 参数设置为 `True` 时 `BertNormalizer` 需要的正则表达式替换 ———— 这是默认的选项。但不要担心：通过在 normalizer 序列中添加两个 `normalizers.Replace` 可以在不使用方便的 `BertNormalizer` 的情况下获得完全相同的规范化。
+为了避免 `normalizers.Sequence` 过于复杂，我们的实现没有包含当 `clean_text` 参数设置为 `True` 时 `BertNormalizer` 需要的正则表达式替换 —— 这是 `BertNormalizer` 默认的会实现的。但不要担心：通过在 normalizer 序列中添加两个 `normalizers.Replace` 可以在不使用方便的 `BertNormalizer` 的情况下获得完全相同的标准化。
 
 </Tip>
 
@@ -129,7 +129,7 @@ tokenizer.pre_tokenizer = pre_tokenizers.BertPreTokenizer()
 tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
 ```
 
-注意， `Whitespace` 预分词器根据空白和所有不是字母、数字或下划线的字符进行分割，因此在本次的例子中上会根据空格和标点符号进行分割的：
+注意， `Whitespace` 预分词器根据空白和所有不是字母、数字或下划线的字符进行分割，因此在本次的例子中上会根据空格和标点符号进行分割：
 
 ```python
 tokenizer.pre_tokenizer.pre_tokenize_str("Let's test my pre-tokenizer.")
@@ -212,7 +212,7 @@ print(cls_token_id, sep_token_id)
 (2, 3)
 ```
 
-编写 `TemplateProcessor` 的模板时，我们必须指定如何处理单个句子和一对句子。对于这两者，我们写下我们想使用的特殊词元；第一句（或单句）用$A 表示，而第二句（如果编码一对句子）用$B 表示。对于这些（特殊词元和句子），我们还需要在冒号后指定相应的词元类型 ID。
+编写 `TemplateProcessor` 的模板时，我们必须指定如何处理单个句子和一对句子。对于这两者，我们写下我们想使用的特殊词元；第一句（或单句）用 `$A` 表示，而第二句（如果编码一对句子）用 `$B` 表示。对于这些（特殊词元和句子），我们还需要在冒号后指定相应的词元类型 ID。
 
 因此，经典的 BERT 模板定义如下：
 
@@ -307,7 +307,7 @@ wrapped_tokenizer = BertTokenizerFast(tokenizer_object=tokenizer)
 
 然后，你就可以像使用其他的🤗 Transformers 词元分析器一样使用这个词元分析器了。你可以使用 `save_pretrained()` 方法来保存它，或者使用 `push_to_hub()` 方法将它上传到 Hub。
 
-既然我们已经看到了如何构建一个 WordPiece 分词器，那么让我们对 BPE 分词器做同样的事情。这次我们会快一些，因为你已经知道所有的步骤，只会强调其中的区别。
+既然我们已经看到了如何构建一个 WordPiece 分词器，那么让我们对 BPE 分词器做同样的事情。这次我们会快一些，因为你已经知道所有的步骤，我们主要强调其中的区别。
 
 ## 从头开始构建 BPE 词元分析器 [[从头开始构建 BPE 词元分析器]]
 
@@ -319,7 +319,7 @@ tokenizer = Tokenizer(models.BPE())
 
 同样，对于 BERT，如果我们有一个词汇表，我们也可以使用这个词汇表来初始化模型（在这种情况下，我们需要传入 `vocab` 和 `merges` ），但是因为我们将从头开始训练，所以我们不需要做这个。我们也不需要指定 `unk_token` ，因为 GPT-2 使用字节级 BPE，这不需要它。
 
-GPT-2 不使用 normalizer，因此我们跳过该步骤并直接进入预分词：
+GPT-2 不使用 `normalizer`，因此我们跳过该步骤并直接进入预分词：
 
 ```python
 tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
