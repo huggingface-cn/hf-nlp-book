@@ -1,0 +1,555 @@
+## 模块化构建词元分析器 
+
+
+
+正如我们在前几节中看到的，词元化包括几个步骤：
+
+- 标准化（任何认为必要的文本清理，例如删除空格或重音符号、Unicode 规范化等） 
+- 预分词（将输入拆分为单词） 
+- 通过模型处理输入（使用预先拆分的词来生成一系列词元） 
+- 后处理（添加词元分析器的特殊词元，生成注意力掩码和词元类型 ID） 
+
+作为提醒，这里再看一遍整个过程：
+
+![The tokenization pipeline.](./assets/tokenization_pipeline.svg "The tokenization pipeline.")
+
+Tokenizers 库旨在为每个步骤提供多个选项，你可以任意搭配这些选项。在这一节中，我们将看到如何从零开始构建词元分析器，而不是像我们在第二节中那样从旧的分词器训练新的分词器。然后，你将能够构建任何你能想到的类型的分词器！
+
+
+
+更精确地说，这个库围绕一个中心的 `Tokenizer` 类构建，包含了各个子模块的构建模块：
+
+- `normalizers` 包含所有可能使用的 `Normalizer` 类型（完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.normalizers)(https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.normalizers) ）。
+- `pre_tokenizesr` 包含所有可能使用的 `PreTokenizer` 类型（完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.pre_tokenizers)(https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.pre_tokenizers) ）。
+- `models` 包含了你可以使用的各种 `Model` 类型，如 `BPE` 、 `WordPiece` 和 `Unigram` （完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.models)(https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.models) ）。
+- `trainers` 包含所有不同类型的 `trainer` ，你可以使用它们在语料库上训练你的模型（每种模型一个；完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.trainers)(https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.trainers) ）。
+- `post_processors` 包含你可以使用的各种类型的 `PostProcessor` （完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.processors)(https://huggingface.co/docs/tokenizers/python/latest/api/reference.html#module-tokenizers.processors) ）。
+- `decoders` 包含各种类型的 `Decoder` ，可以用来解码词元化后的输出（完整列表 [在这里](https://huggingface.co/docs/tokenizers/python/latest/components.html#decoders)(https://huggingface.co/docs/tokenizers/python/latest/components.html#decoders) ）。
+
+你可以 [在这里](https://huggingface.co/docs/tokenizers/python/latest/components.html)(https://huggingface.co/docs/tokenizers/python/latest/components.html) 找到完整的模块列表。
+
+## 获取语​​料库 
+
+为了训练新的词元分析器，我们将使用一小部分文本语料库（这样示例运行得更快）。获取语​​料库的步骤与我们在在这章的开头采取的步骤类似，但这次我们将使用 [WikiText-2](https://huggingface.co/datasets/wikitext)(https://huggingface.co/datasets/wikitext) 数据集：
+
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("wikitext", name="wikitext-2-raw-v1", split="train")
+
+
+def get_training_corpus():
+    for i in range(0, len(dataset), 1000):
+        yield dataset[i : i + 1000]["text"]
+```
+
+**get_training_corpus()** 函数是一个生成器，每次调用的时候将产生 1,000 个文本，我们将用它来训练词元分析器。
+
+Tokenizers 也可以直接在文本文件上进行训练。以下是我们如何生成一个包含 WikiText-2 所有文本/输入的文本文件，这样我们就可以在本地离线使用：
+
+```python
+with open("wikitext-2.txt", "w", encoding="utf-8") as f:
+    for i in range(len(dataset)):
+        f.write(dataset[i]["text"] + "\n")
+```
+
+接下来，我们将展示如何模块化地构建你自己的 BERT、GPT-2 和 XLNet 词元分析器。这将包含主要的分词算法：WordPiece、BPE 和 Unigram 的例子。让我们从 BERT 开始吧！
+
+## 从头开始构建 WordPiece 词元分析器 
+
+要用Tokenizers 库构建一个分词器，我们首先实例化一个带有 `model` 的 `Tokenizer` 对象，然后将其 `normalizer` ， `pre_tokenizer` ， `post_processor` 和 `decoder` 属性设置为我们想要的值。
+
+以这个例子来说，我们将创建一个使用 WordPiece 模型的 `Tokenizer` ：
+```python
+from tokenizers import (
+    decoders,
+    models,
+    normalizers,
+    pre_tokenizers,
+    processors,
+    trainers,
+    Tokenizer,
+)
+
+tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
+```
+
+我们必须指定 `unk_token` ，这样当模型遇到它从未见过的字符时，它知道应该返回什么。我们在这里可以设置的其他参数包括我们模型的 `vocab` （我们要训练模型，所以我们不需要设置这个）和 `max_input_chars_per_word` ，它指定了每个词的最大长度（比 `max_input_chars_per_word` 长的词将被拆分）。
+
+分词的第一步是标准化，所以我们从这里开始。由于 BERT 被广泛使用，所以有一个 `BertNormalizer` ，我们可以为 BERT 设置经典选项： `lowercase（小写）` 和 `strip_accents（去除重音的字符）` ， `clean_text` 用于删除所有控制字符并将重复的空格替换为一个；以及 `handle_chinese_chars` ，它将在中文字符周围添加空格。要复现 `bert-base-uncased` 分词器，我们可以这样设置 `normalizer` ：
+
+```python
+tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
+```
+
+然而，通常来说，当你构建一个新的分词器时，你不会有Tokenizers 库中已经实现的 `normalizer` —— 所以我们来看看如何手动创建 `BERT normalizer` 。Tokenizers 库提供了一个 `Lowercase normalizer` 和一个 `StripAccents normalizer` ，并且你可以使用 Sequence 来组合多个标准化器：
+
+```python
+tokenizer.normalizer = normalizers.Sequence(
+    [normalizers.NFD(), normalizers.Lowercase(), normalizers.StripAccents()]
+)
+```
+
+我们还使用了一个 `NFD Unicode normalizer` ，否则，否则 `StripAccents normalizer` 将无法正确识别带有重音的字符，因此没办法去除它们。
+
+正如我们之前看到的，我们可以使用 `normalizer` 的 `normalize_str()` 方法来对它进行测试：
+
+```python
+print(tokenizer.normalizer.normalize_str("Héllò hôw are ü?"))
+```
+
+```python out
+hello how are u?
+```
+
+<div custom-style="Tip-green">
+
+
+**更进一步**如果你在包含 unicode 字符的字符串上测试先前 normalizers 的两个版本，你肯定会注意到这两个 normalizers 并不完全等效。
+为了避免 `normalizers.Sequence` 过于复杂，我们的实现没有包含当 `clean_text` 参数设置为 `True` 时 `BertNormalizer` 需要的正则表达式替换 —— 这是 `BertNormalizer` 默认的会实现的。但不要担心：通过在 normalizer 序列中添加两个 `normalizers.Replace` 可以在不使用方便的 `BertNormalizer` 的情况下获得完全相同的标准化。
+
+</div>
+
+下一步是预分词。同样，我们可以使用预构建的 `BertPreTokenizer` ：
+
+```python
+tokenizer.pre_tokenizer = pre_tokenizers.BertPreTokenizer()
+```
+
+或者我们可以从头开始构建它：
+
+```python
+tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
+```
+
+注意， `Whitespace` 预分词器根据空白和所有不是字母、数字或下划线的字符进行分割，因此在本次的例子中上会根据空格和标点符号进行分割：
+
+```python
+tokenizer.pre_tokenizer.pre_tokenize_str("Let's test my pre-tokenizer.")
+```
+
+```python out
+[('Let', (0, 3)), ("'", (3, 4)), ('s', (4, 5)), ('test', (6, 10)), ('my', (11, 13)), ('pre', (14, 17)),
+ ('-', (17, 18)), ('tokenizer', (18, 27)), ('.', (27, 28))]
+```
+
+如果你只想在空白上分割，则应该使用 `WhitespaceSplit` 预分词器：
+
+```python
+pre_tokenizer = pre_tokenizers.WhitespaceSplit()
+pre_tokenizer.pre_tokenize_str("Let's test my pre-tokenizer.")
+```
+
+```python out
+[("Let's", (0, 5)), ('test', (6, 10)), ('my', (11, 13)), ('pre-tokenizer.', (14, 28))]
+```
+
+就像标准化器一样，你可以使用 `Sequence` 来组合几个预分词器：
+
+```python
+pre_tokenizer = pre_tokenizers.Sequence(
+    [pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()]
+)
+pre_tokenizer.pre_tokenize_str("Let's test my pre-tokenizer.")
+```
+
+```python out
+[('Let', (0, 3)), ("'", (3, 4)), ('s', (4, 5)), ('test', (6, 10)), ('my', (11, 13)), ('pre', (14, 17)),
+ ('-', (17, 18)), ('tokenizer', (18, 27)), ('.', (27, 28))]
+```
+
+词元化流程的下一步是将输入数据传递给模型。我们已经在初始化时指定了我们的模型，但是我们还需要对其进行训练，这就需要一个 `WordPieceTrainer` 。在实例化一个Tokenizers 中的训练器时，一件很重要的事情是，你需要将你打算使用的所有特殊词元都传递给它——否则，由于它们不在训练语料库中，训练器就不会将它们添加到词汇表中：
+
+```python
+special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
+trainer = trainers.WordPieceTrainer(vocab_size=25000, special_tokens=special_tokens)
+```
+
+除了指定 `vocab_size` 和 `special_tokens` ，我们还可以设置 `min_frequency` （一个词元必须达到的最小的出现的次数才能被包含在词汇表中）或更改 `continuing_subword_prefix` （如果我们想使用其他的字符来替代 `##` ）。
+
+要使用我们之前定义的迭代器训练我们的模型，我们只需要执行以下命令：
+
+```python
+tokenizer.train_from_iterator(get_training_corpus(), trainer=trainer)
+```
+
+我们还可以使用文本文件来训练我们的词元分析器，它看起来像这样（我们需要先使用 `WordPiece` 初始化一个空的模型）：
+
+```python
+tokenizer.model = models.WordPiece(unk_token="[UNK]")
+tokenizer.train(["wikitext-2.txt"], trainer=trainer)
+```
+
+在这两种情况下，我们都可以通过调用 `encode()` 方法来测试词元分析器 
+
+```python
+encoding = tokenizer.encode("Let's test this tokenizer.")
+print(encoding.tokens)
+```
+
+```python out
+['let', "'", 's', 'test', 'this', 'tok', '##eni', '##zer', '.']
+```
+
+所得到的 `encoding` 是一个 `Encoding` 对象，它包含词元分析器的所有必要属性： `ids` 、 `type_ids` 、 `tokens` 、 `offsets` 、 `attention_mask` 、 `special_tokens_mask` 和 `overflowing` 。
+
+词元分析器管道的最后一步是后处理。我们需要在开头添加 `[CLS]` 词元，然后在结束时（或在每句话后，如果我们有一对句子）添加 `[SEP]` 词元。我们将使用 `TemplateProcessor` 来完成这个任务，但首先我们需要知道词汇表中 `[CLS]` 和 `[SEP]` 词元的 ID：
+
+```python
+cls_token_id = tokenizer.token_to_id("[CLS]")
+sep_token_id = tokenizer.token_to_id("[SEP]")
+print(cls_token_id, sep_token_id)
+```
+
+```python out
+(2, 3)
+```
+
+编写 `TemplateProcessor` 的模板时，我们必须指定如何处理单个句子和一对句子。对于这两者，我们写下我们想使用的特殊词元；第一句（或单句）用 `$A` 表示，而第二句（如果编码一对句子）用 `$B` 表示。对于这些（特殊词元和句子），我们还需要在冒号后指定相应的词元类型 ID。
+
+因此，经典的 BERT 模板定义如下：
+
+```python
+tokenizer.post_processor = processors.TemplateProcessing(
+    single=f"[CLS]:0 $A:0 [SEP]:0",
+    pair=f"[CLS]:0 $A:0 [SEP]:0 $B:1 [SEP]:1",
+    special_tokens=[("[CLS]", cls_token_id), ("[SEP]", sep_token_id)],
+)
+```
+
+请注意，我们需要传递特殊词元的 ID，这样词元分析器才能正确地将它们转换为它们的 ID。
+
+添加之后，我们再次对之前的例子进行词元化：
+
+```python
+encoding = tokenizer.encode("Let's test this tokenizer.")
+print(encoding.tokens)
+```
+
+```python out
+['[CLS]', 'let', "'", 's', 'test', 'this', 'tok', '##eni', '##zer', '.', '[SEP]']
+```
+
+在一对句子中，我们也得到了正确的结果：
+
+```python
+encoding = tokenizer.encode("Let's test this tokenizer...", "on a pair of sentences.")
+print(encoding.tokens)
+print(encoding.type_ids)
+```
+
+```python out
+['[CLS]', 'let', "'", 's', 'test', 'this', 'tok', '##eni', '##zer', '...', '[SEP]', 'on', 'a', 'pair', 'of', 'sentences', '.', '[SEP]']
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+```
+
+我们几乎从头开始构建了这个词元分析器——但是还有最后一步：指定一个解码器：
+
+```python
+tokenizer.decoder = decoders.WordPiece(prefix="##")
+```
+
+让我们在之前的 `encoding` 上测试一下它：
+
+```python
+tokenizer.decode(encoding.ids)
+```
+
+```python out
+"let's test this tokenizer... on a pair of sentences."
+```
+
+很好！我们可以将词元分析器保存在一个 JSON 文件中，如下所示：
+
+```python
+tokenizer.save("tokenizer.json")
+```
+
+然后，我们可以在一个 `Tokenizer` 对象中使用 `from_file()` 方法重新加载该文件：
+
+```python
+new_tokenizer = Tokenizer.from_file("tokenizer.json")
+```
+
+要在Transformers 中使用这个词元分析器，我们需要将它封装在一个 `PreTrainedTokenizerFast` 类中。我们可以使用通用类，或者，如果我们的词元分析器对应于一个现有的模型，则可以使用该类（例如这里的 `BertTokenizerFast` ）。如果你使用这个课程来构建一个全新的词元分析器，则必须需要使用通类。
+
+要将构建的分词器封装在 `PreTrainedTokenizerFast` 类中，我们可以将我们构建的词元分析器作为 `tokenizer_object` 传入，或者将我们保存的分词器文件作为 `tokenizer_file` 传入。要记住的关键一点是，我们需要手动设置所有的特殊词元，因为这个类不能从 `tokenizer` 对象推断出哪个符号是掩码符号， `[CLS]` 符号等：
+
+
+```python
+from transformers import PreTrainedTokenizerFast
+
+wrapped_tokenizer = PreTrainedTokenizerFast(
+    tokenizer_object=tokenizer,
+    # tokenizer_file="tokenizer.json", # 也可以从tokenizer文件中加载
+    unk_token="[UNK]",
+    pad_token="[PAD]",
+    cls_token="[CLS]",
+    sep_token="[SEP]",
+    mask_token="[MASK]",
+)
+```
+
+如果你使用的是其他的词元分析器类（如 `BertTokenizerFast` ），你只需要指定那些与默认值不同的特殊符号（这里没有）：
+
+```python
+from transformers import BertTokenizerFast
+
+wrapped_tokenizer = BertTokenizerFast(tokenizer_object=tokenizer)
+```
+
+然后，你就可以像使用其他的Transformers 词元分析器一样使用这个词元分析器了。你可以使用 `save_pretrained()` 方法来保存它，或者使用 `push_to_hub()` 方法将它上传到 Hub。
+
+既然我们已经看到了如何构建一个 WordPiece 分词器，那么让我们对 BPE 分词器做同样的事情。这次我们会快一些，因为你已经知道所有的步骤，我们主要强调其中的区别。
+
+## 从头开始构建 BPE 词元分析器 
+
+现在让我们构建一个 GPT-2 词元分析器。与 BERT 词元分析器一样，我们首先通过 BPE model 初始化一个 `Tokenizer` ：
+
+```python
+tokenizer = Tokenizer(models.BPE())
+```
+
+同样，对于 BERT，如果我们有一个词汇表，我们也可以使用这个词汇表来初始化模型（在这种情况下，我们需要传入 `vocab` 和 `merges` ），但是因为我们将从头开始训练，所以我们不需要做这个。我们也不需要指定 `unk_token` ，因为 GPT-2 使用字节级 BPE，这不需要它。
+
+GPT-2 不使用 `normalizer` ，因此我们跳过该步骤并直接进入预分词：
+
+```python
+tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
+```
+我们在这里给 `ByteLevel` 添加的选项是不在句子的开始添加空格（默认为 ture）。我们可以看一下之前的示例文本的预分词：
+
+```python
+tokenizer.pre_tokenizer.pre_tokenize_str("Let's test pre-tokenization!")
+```
+
+```python out
+[('Let', (0, 3)), ("'s", (3, 5)), ('Ġtest', (5, 10)), ('Ġpre', (10, 14)), ('-', (14, 15)),
+ ('tokenization', (15, 27)), ('!', (27, 28))]
+```
+
+接下来是需要训练的模型。对于 GPT-2，唯一的特殊符号是文本结束符：
+
+```python
+trainer = trainers.BpeTrainer(vocab_size=25000, special_tokens=["<|endoftext|>"])
+tokenizer.train_from_iterator(get_training_corpus(), trainer=trainer)
+```
+
+就像 `WordPieceTrainer` 一样，除了 `vocab_size` 和 `special_tokens` ，我们也可以指定 `min_frequency` ，或者如果我们需要添加一个词尾后缀（如 `</w>` ），我们可以用 `end_of_word_suffix` 设置它。
+
+这个词元分析器也可以在文本文件上训练：
+
+```python
+tokenizer.model = models.BPE()
+tokenizer.train(["wikitext-2.txt"], trainer=trainer)
+```
+
+让我们看一下示例文本的词元化后的结果：
+
+```python
+encoding = tokenizer.encode("Let's test this tokenizer.")
+print(encoding.tokens)
+```
+
+```python out
+['L', 'et', "'", 's', 'Ġtest', 'Ġthis', 'Ġto', 'ken', 'izer', '.']
+```
+
+我们对 GPT-2 词元分析器添加字节级后处理，如下所示：
+
+```python
+tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
+```
+ `trim_offsets = False` 这个选项告诉 post-processor，我们应该让那些以'Ġ'开始的词元的偏移量保持不变：这样，偏移量的开始将指向单词前的空格，而不是单词的第一个字符（因为空格在技术上是词元的一部分）。让我们看一下我们刚刚编码的文本的结果，其中 `'Ġtest'` 是索引 4 的词元：
+
+```python
+sentence = "Let's test this tokenizer."
+encoding = tokenizer.encode(sentence)
+start, end = encoding.offsets[4]
+sentence[start:end]
+```
+
+```python out
+' test'
+```
+
+最后，我们添加一个字节级解码器：
+
+```python
+tokenizer.decoder = decoders.ByteLevel()
+```
+
+我们可以再次检查它是否工作正常：
+
+```python
+tokenizer.decode(encoding.ids)
+```
+
+```python out
+"Let's test this tokenizer."
+```
+
+太好了！现在我们完成了，我们可以像之前一样保存词元分析器，并且如果我们想在Transformers 中使用它，可以将它封装在 `PreTrainedTokenizerFast` 类或者 `GPT2TokenizerFast` 类中：
+
+```python
+from transformers import PreTrainedTokenizerFast
+
+wrapped_tokenizer = PreTrainedTokenizerFast(
+    tokenizer_object=tokenizer,
+    bos_token="<|endoftext|>",
+    eos_token="<|endoftext|>",
+)
+```
+
+或者：
+
+```python
+from transformers import GPT2TokenizerFast
+
+wrapped_tokenizer = GPT2TokenizerFast(tokenizer_object=tokenizer)
+```
+
+作为最后一个示例，我们将向你展示如何从零开始构建 Unigram 词元分析器。
+
+## 从零开始构建 Unigram 词元分析器 
+
+现在让我们构建一个 XLNet 词元分析器。与之前的词元分析器一样，我们首先使用 Unigram model 初始化一个 `Tokenizer` ：
+
+```python
+tokenizer = Tokenizer(models.Unigram())
+```
+
+同样，如果我们有词汇表，我们可以用词汇表初始化这个模型。
+
+对于标准化，XLNet 进行了一些替换（来自 SentencePiece）：
+
+```python
+from tokenizers import Regex
+
+tokenizer.normalizer = normalizers.Sequence(
+    [
+        normalizers.Replace("``", '"'),
+        normalizers.Replace("''", '"'),
+        normalizers.NFKD(),
+        normalizers.StripAccents(),
+        normalizers.Replace(Regex(" {2,}"), " "),
+    ]
+)
+```
+
+这会将<code>``</code>和<code>''</code>替换为<code>"</code>，将任何连续两个或更多的空格替换为一个空格，同时还将去掉待分词文本中的重音。
+
+任何 SentencePiece 分词器使用的预分词器是 `Metaspace` ：
+
+```python
+tokenizer.pre_tokenizer = pre_tokenizers.Metaspace()
+```
+
+我们可以像以前一样查看示例文本的预分词：
+
+```python
+tokenizer.pre_tokenizer.pre_tokenize_str("Let's test the pre-tokenizer!")
+```
+
+```python out
+[("▁Let's", (0, 5)), ('▁test', (5, 10)), ('▁the', (10, 14)), ('▁pre-tokenizer!', (14, 29))]
+```
+
+接下来是需要训练的模型。XLNet 有不少特殊的词元：
+
+```python
+special_tokens = ["<cls>", "<sep>", "<unk>", "<pad>", "<mask>", "<s>", "</s>"]
+trainer = trainers.UnigramTrainer(
+    vocab_size=25000, special_tokens=special_tokens, unk_token="<unk>"
+)
+tokenizer.train_from_iterator(get_training_corpus(), trainer=trainer)
+```
+
+对于 `UnigramTrainer` 来说，一个非常重要的参数是 `unk_token` 。我们也可以传递一些 Unigram 算法独有的其他参数，例如我们在每个删除词元时的 `shrinking_factor` （默认为 0.75），或者指定词元的 `max_piece_length` 最大长度（默认为 16）。
+
+这个词元分析器也可以在文本文件上训练：
+
+```python
+tokenizer.model = models.Unigram()
+tokenizer.train(["wikitext-2.txt"], trainer=trainer)
+```
+
+让我们看一下示例文本的词元化后的结果：
+
+```python
+encoding = tokenizer.encode("Let's test this tokenizer.")
+print(encoding.tokens)
+```
+
+```python out
+['▁Let', "'", 's', '▁test', '▁this', '▁to', 'ken', 'izer', '.']
+```
+
+XLNet 的一个特点是它将 `<cls>` 词元放在句子的末尾，词元类型 ID 为 2（以区别于其他词元）。因此，它在左边填充。我们可以像对待 BERT 一样，用模板处理所有特殊词元和词元类型 ID，但首先我们需要获取 `<cls>` 和 `<sep>` 词元的 ID：
+
+```python
+cls_token_id = tokenizer.token_to_id("<cls>")
+sep_token_id = tokenizer.token_to_id("<sep>")
+print(cls_token_id, sep_token_id)
+```
+
+```python out
+0 1
+```
+
+模板如下所示：
+
+```python
+tokenizer.post_processor = processors.TemplateProcessing(
+    single="$A:0 <sep>:0 <cls>:2",
+    pair="$A:0 <sep>:0 $B:1 <sep>:1 <cls>:2",
+    special_tokens=[("<sep>", sep_token_id), ("<cls>", cls_token_id)],
+)
+```
+
+我们可以通过编码一对句子来测试它是否有效：
+
+```python
+encoding = tokenizer.encode("Let's test this tokenizer...", "on a pair of sentences!")
+print(encoding.tokens)
+print(encoding.type_ids)
+```
+
+```python out
+['▁Let', "'", 's', '▁test', '▁this', '▁to', 'ken', 'izer', '.', '.', '.', '<sep>', '▁', 'on', '▁', 'a', '▁pair', 
+  '▁of', '▁sentence', 's', '!', '<sep>', '<cls>']
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]
+```
+
+最后，我们添加一个 `Metaspace` 解码器：
+
+```python
+tokenizer.decoder = decoders.Metaspace()
+```
+
+我们完成了这个词元分析器！我们可以像以前一样保存词元分析器，如果我们想在 Transformers 中使用它，可以将它封装在 `PreTrainedTokenizerFast` 类或 `XLNetTokenizerFast` 类中。使用 `PreTrainedTokenizerFast` 类时需要注意的一点是，除了特殊词元之外，我们还需要告诉Transformers 库在左边填充：
+```python
+from transformers import PreTrainedTokenizerFast
+
+wrapped_tokenizer = PreTrainedTokenizerFast(
+    tokenizer_object=tokenizer,
+    bos_token="<s>",
+    eos_token="</s>",
+    unk_token="<unk>",
+    pad_token="<pad>",
+    cls_token="<cls>",
+    sep_token="<sep>",
+    mask_token="<mask>",
+    padding_side="left",
+)
+```
+
+或者：
+
+```python
+from transformers import XLNetTokenizerFast
+
+wrapped_tokenizer = XLNetTokenizerFast(tokenizer_object=tokenizer)
+```
+
+现在你已经了解了如何使用各种模块来构建现有的词元分析器，你应该能够使用 tokenizer 库编写你想要的任何词元分析器，并能够在 Transformers 中使用它。

@@ -339,7 +339,7 @@ embeddings_dataset = comments_dataset.map(
 
 现在我们有了一个文本嵌入数据集，我们需要一些方法来搜索它们。为此，我们将使用🤗 Datasets 中一种特殊的数据结构，称为 FAISS 指数。 [FAISS](https://faiss.ai/) （Facebook AI Similarity Search 的缩写）是一个库，提供了用于快速搜索和聚类嵌入向量的高效算法。
 
-FAISS 背后的基本思想是创建一个特殊的数据结构，称为 _index（索引）_ 它可以找到哪些嵌入与输入嵌入相似。在 🤗 Datasets 中创建一个 FAISS index（索引）很简单——我们使用 `Dataset.add_faiss_index()` 函数并指定我们要索引的数据集的哪一列：
+FAISS 背后的基本思想是创建一个特殊的数据结构，称为 `index（索引）` 它可以找到哪些嵌入与输入嵌入相似。在 🤗 Datasets 中创建一个 FAISS index（索引）很简单——我们使用 `Dataset.add_faiss_index()` 函数并指定我们要索引的数据集的哪一列：
 
 ```py
 embeddings_dataset.add_faiss_index(column="embeddings")

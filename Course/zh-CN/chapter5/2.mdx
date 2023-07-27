@@ -145,7 +145,7 @@ squad_it_dataset = load_dataset("json", data_files=data_files, field="data")
 
 ## 加载远程数据集 [[加载远程数据集]]
 
-如果你在公司担任数据研究员或编码员，那么你要分析的数据集很有可能存储在某个远程服务器上。幸运的是，加载远程文件就像加载本地文件一样简单！我们只需要将 `load_dataset()` 的 `data_files` 参数指向存储远程文件的一个或多个 URL。例如，对于托管在 GitHub 上的 SQuAD-it 数据集，我们可以将 `data_files` 设置为指向 _SQuAD_it-*.json.gz_ 的网址，如下所示：
+如果你在公司担任数据研究员或编码员，那么你要分析的数据集很有可能存储在某个远程服务器上。幸运的是，加载远程文件就像加载本地文件一样简单！我们只需要将 `load_dataset()` 的 `data_files` 参数指向存储远程文件的一个或多个 URL。例如，对于托管在 GitHub 上的 SQuAD-it 数据集，我们可以将 `data_files` 设置为指向 `SQuAD_it-*.json.gz` 的网址，如下所示：
 
 ```py
 url = "https://github.com/crux82/squad-it/raw/master/"
@@ -156,7 +156,7 @@ data_files = {
 squad_it_dataset = load_dataset("json", data_files=data_files, field="data")
 ```
 
-这将返回和上面的本地例子相同的 `DatasetDict` 对象，但省去了我们手动下载和解压 _SQuAD_it-*.json.gz_ 文件的步骤。这是我们对加载未托管在 Hugging Face Hub 的数据集的各种方法的总结。既然我们已经有了一个可以使用的数据集，让我们开始大展身手吧！
+这将返回和上面的本地例子相同的 `DatasetDict` 对象，但省去了我们手动下载和解压 `SQuAD_it-*.json.gz` 文件的步骤。这是我们对加载未托管在 Hugging Face Hub 的数据集的各种方法的总结。既然我们已经有了一个可以使用的数据集，让我们开始大展身手吧！
 
 <Tip>
 

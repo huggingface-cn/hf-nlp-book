@@ -1,6 +1,6 @@
 
 
-# 微调掩码语言模型 
+# 微调遮罩语言模型 
 
 {#if fw === 'pt'}
 
@@ -14,13 +14,13 @@
 
 对于许多涉及 Transformer 模型的 NLP 程序，你可以简单地从 Hugging Face Hub 中获取一个预训练的模型，然后直接在你的数据上对其进行微调，以完成手头的任务。只要用于预训练的语料库与用于微调的语料库没有太大区别，迁移学习通常会产生很好的结果。
 
-但是，在某些情况下，你需要先微调数据上的语言模型，然后再训练特定于任务的 head。例如，如果您的数据集包含法律合同或科学文章，像 BERT 这样的普通 Transformer 模型通常会将您语料库中的特定领域词视为稀有词元，结果性能可能不尽如人意。通过在域内数据上微调语言模型，你可以提高许多下游任务的性能，这意味着您通常只需执行一次此步骤！
+但是，在某些情况下，你需要先微调数据上的语言模型，然后再训练特定于任务的 head。例如，如果你的数据集包含法律合同或科学文章，像 BERT 这样的普通 Transformer 模型通常会将你语料库中的特定领域词视为稀有词元，结果性能可能不尽如人意。通过在域内数据上微调语言模型，你可以提高许多下游任务的性能，这意味着你通常只需执行一次此步骤！
 
-这种在域内数据上微调预训练语言模型的过程通常称为 _领域适应_。它于 2018 年由 [ULMFiT](https://arxiv.org/abs/1801.06146) 推广，这是使迁移学习真正适用于 NLP 的首批神经架构之一 (基于 LSTM)。下图显示了使用 ULMFiT 进行域自适应的示例；在本节中，我们将做类似的事情，但使用的是 Transformer 而不是 LSTM!
+这种在域内数据上微调预训练语言模型的过程通常称为 _领域适应_。它于 2018 年由 [ULMFiT](https://arxiv.org/abs/1801.06146)(https://arxiv.org/abs/1801.06146) 推广，这是使迁移学习真正适用于 NLP 的首批神经架构之一 (基于 LSTM)。下图显示了使用 ULMFiT 进行域自适应的示例；在本节中，我们将做类似的事情，但使用的是 Transformer 而不是 LSTM!
 
 ![ULMFiT.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/ulmfit.svg "ULMFiT.")
 
-在本节结束时，你将在 Hub 上拥有一个 [掩码语言模型(masked language model)](https://huggingface.co/huggingface-course/distilbert-base-uncased-finetuned-imdb?text=This+is+a+great+%5BMASK%5D.) , 该模型可以自动完成句子，如下所示：
+在本节结束时，你将在 Hub 上拥有一个 [掩码语言模型(masked language model)](https://huggingface.co/huggingface-course/distilbert-base-uncased-finetuned-imdb?text=This+is+a+great+%5BMASK%5D.)(https://huggingface.co/huggingface-course/distilbert-base-uncased-finetuned-imdb?text=This+is+a+great+%5BMASK%5D.) , 该模型可以自动完成句子，如下所示：
 
 
 
@@ -31,16 +31,16 @@
 <div custom-style="Tip-green">
 
 
-🙋 如果您对“掩码语言建模”和“预训练模型”这两个术语感到陌生，请查看 [第一章](/course/chapter1) , 我们在其中解释了所有这些核心概念，并附有视频！
+🙋 如果你对“掩码语言建模”和“预训练模型”这两个术语感到陌生，请查看第一章, 我们在其中解释了所有这些核心概念，并附有视频！
 
 </div>
 
 ## 选择用于掩码语言建模的预训练模型 
 
-首先，让我们为掩码语言建模选择一个合适的预训练模型。如以下屏幕截图所示，你可以通过在 [Hugging Face Hub](https://huggingface.co/models?pipeline_tag=fill-mask&sort=downloads) 上选择"Fill-Mask"过滤器：
+首先，让我们为掩码语言建模选择一个合适的预训练模型。如以下屏幕截图所示，你可以通过在 [Hugging Face Hub](https://huggingface.co/models?pipeline_tag=fill-mask&sort=downloads)(https://huggingface.co/models?pipeline_tag=fill-mask&sort=downloads) 上选择"Fill-Mask"过滤器：
 
 ![Hub models.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/mlm-models.png "Hub models.")
-尽管 BERT 和 RoBERTa 系列模型的下载量最大，但我们将使用名为 [DistilBERT](https://huggingface.co/distilbert-base-uncased) 的模型。它可以更快地训练，而对下游性能几乎没有损失。这个模型使用一种称为 [_知识蒸馏_](https://en.wikipedia.org/wiki/Knowledge_distillation) 的特殊技术进行训练，其中使用像 BERT 这样的大型“教师模型”来指导参数少得多的“学生模型”的训练。在本节中对知识蒸馏细节的解释会使我们离题太远，但如果你有兴趣，可以阅读 [_Natural Language Processing with Transformers_](https://www.oreilly.com/library/view/natural-language-processing/9781098136789/) (俗称 Transformers 教科书)相关内容。
+尽管 BERT 和 RoBERTa 系列模型的下载量最大，但我们将使用名为 [DistilBERT](https://huggingface.co/distilbert-base-uncased)(https://huggingface.co/distilbert-base-uncased) 的模型。它可以更快地训练，而对下游性能几乎没有损失。这个模型使用一种称为 [_知识蒸馏_](https://en.wikipedia.org/wiki/Knowledge_distillation)(https://en.wikipedia.org/wiki/Knowledge_distillation) 的特殊技术进行训练，其中使用像 BERT 这样的大型“教师模型”来指导参数少得多的“学生模型”的训练。在本节中对知识蒸馏细节的解释会使我们离题太远，但如果你有兴趣，可以阅读 [_Natural Language Processing with Transformers_](https://www.oreilly.com/library/view/natural-language-processing/9781098136789/)(https://www.oreilly.com/library/view/natural-language-processing/9781098136789/) (俗称 Transformers 教科书)相关内容。
 
 {#if fw === 'pt'}
 
@@ -111,7 +111,7 @@ DistilBERT 大约有 6700 万个参数，大约比 BERT 基本模型小两倍，
 text = "This is a great [MASK]."
 ```
 
-作为人类，我们可以想象 `[MASK]` 词元有很多可能性，例如 "day"、"ride" 或者 "painting"。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的词元分析器来生成模型的输入，所以让我们也从 Hub 下载它：
+作为人类，我们可以想象 `[MASK]` 词元有很多可能性，例如 "day"、"ride" 或者 "painting"。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia)(https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus)(https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的词元分析器来生成模型的输入，所以让我们也从 Hub 下载它：
 
 ```python
 from transformers import AutoTokenizer
@@ -172,7 +172,7 @@ for token in top_5_tokens:
 
 ## 数据集 
 
-为了展示领域适应性，我们将使用著名的 [大型电影评论数据集(Large Movie Review Dataset)](https://huggingface.co/datasets/imdb) (或者简称为 IMDb), 这是一个电影评论语料库，通常用于对情感分析模型进行基准测试。通过在这个语料库上对 DistilBERT 进行微调，我们期望语言模型会从其预训练的维基百科的事实性数据，适应到电影评论更主观的元素。我们可以使用🤗 Datasets 中的 `load_dataset()` 函数从 Hugging Face 中获取数据：
+为了展示领域适应性，我们将使用著名的 [大型电影评论数据集(Large Movie Review Dataset)](https://huggingface.co/datasets/imdb)(https://huggingface.co/datasets/imdb) (或者简称为 IMDb), 这是一个电影评论语料库，通常用于对情感分析模型进行基准测试。通过在这个语料库上对 DistilBERT 进行微调，我们期望语言模型会从其预训练的维基百科的事实性数据，适应到电影评论更主观的元素。我们可以使用Datasets 中的 `load_dataset()` 函数从 Hugging Face 中获取数据：
 
 ```python
 from datasets import load_dataset
@@ -229,7 +229,7 @@ for row in sample:
 
 </div>
 
-现在我们已经快速浏览了一下数据，接下来我们要深入准备这些数据以供进行掩码语言建模。如我们所见，与我们在 [第三章](https://chat.openai.com/course/chapter3) 看到的序列分类任务相比，这里需要采取一些额外的步骤。让我们开始吧！
+现在我们已经快速浏览了一下数据，接下来我们要深入准备这些数据以供进行掩码语言建模。如我们所见，与我们在第三章看到的序列分类任务相比，这里需要采取一些额外的步骤。让我们开始吧！
 
 ## 预处理数据 
 
@@ -237,9 +237,9 @@ for row in sample:
 
 对于自回归和掩码语言建模，常见的预处理步骤是将所有的示例连接起来，然后将整个语料库切割为等大小的块。这与我们通常的做法有很大的不同，我们通常只是对单个的例子进行词元化。为什么要将所有的内容连接在一起呢？原因是如果单个例子太长，可能会被截断，这会导致我们失去可能对语言建模任务有用的信息！
 
-因此，我们将像往常一样首先对我们的语料库词元化，但是不在我们的词元分析器中设置 `truncation=True` 选项。我们还将获取可用的单词 ID ((如果我们使用快速词元分析器，它们是可用的，如 [第六章](/course/chapter6/3) 中所述), 因为我们稍后将需要它们来进行全字屏蔽。我们将把它包装在一个简单的函数中，当我们在做的时候，我们将删除 `text` 和 `label` 列，因为我们不再需要它们：
+因此，我们将像往常一样首先对我们的语料库词元化，但是不在我们的词元分析器中设置 `truncation=True` 选项。我们还将获取可用的单词 ID ((如果我们使用快速词元分析器，它们是可用的，如第六章中所述), 因为我们稍后将需要它们来进行全字屏蔽。我们将把它包装在一个简单的函数中，当我们在做的时候，我们将删除 `text` 和 `label` 列，因为我们不再需要它们：
 
-所以我们首先像往常一样对语料库进行分词，但是在分词器中_不_设置 `truncation=True` 选项。如果词 ID 可用（如果我们使用的是快速分词器，如 [第6章](https://chat.openai.com/course/chapter6/3) 所述，它们就会可用），我们也会抓取它们，因为我们稍后需要用它们进行全词遮罩。我们将这一部分包装成一个简单的函数，顺便我们还将删除不再需要的 `text` 和 `label` 列：
+所以我们首先像往常一样对语料库进行分词，但是在分词器中_不_设置 `truncation=True` 选项。如果词 ID 可用（如果我们使用的是快速分词器，如第6章所述，它们就会可用），我们也会抓取它们，因为我们稍后需要用它们进行全词遮罩。我们将这一部分包装成一个简单的函数，顺便我们还将删除不再需要的 `text` 和 `label` 列：
 
 ```python
 def tokenize_function(examples):
@@ -285,12 +285,12 @@ tokenizer.model_max_length
 512
 ```
 
-该值来自于与检查点相关联的 *tokenizer_config.json* 文件；在这种情况下，我们可以看到上下文大小是 512 个词元，就像 BERT 一样。
+该值来自于与检查点相关联的 `tokenizer_config.json` 文件；在这种情况下，我们可以看到上下文大小是 512 个词元，就像 BERT 一样。
 
 <div custom-style="Tip-green">
 
 
-✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096) , 它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。为这些检查点之一实例化词元分析器，并验证 `model_max_length` 是否与模型卡上引用的内容一致。
+✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base)(https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096)(hf.co/allenai/longformer-base-4096) , 它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。为这些检查点之一实例化词元分析器，并验证 `model_max_length` 是否与模型卡上引用的内容一致。
 
 </div>
 
@@ -411,7 +411,7 @@ DatasetDict({
 })
 ```
 
-你可以看到，对文本进行分组，然后对文本进行分块，产生的例子比我们最初的 25,000 用于 `train` 和 `test` 拆分的示例多得多。那是因为我们现在有了涉及 _连续词元_ 的例子，它们横跨原始语料库的多个例子。你可以通过在其中一个块中查找特殊的 `[SEP]` 和 `[CLS]` 词元来明确的看到这一点：
+你可以看到，对文本进行分组，然后对文本进行分块，产生的例子比我们最初的 25,000 用于 `train` 和 `test` 拆分的示例多得多。那是因为我们现在有了涉及 `连续词元` 的例子，它们横跨原始语料库的多个例子。你可以通过在其中一个块中查找特殊的 `[SEP]` 和 `[CLS]` 词元来明确的看到这一点：
 
 ```python
 tokenizer.decode(lm_datasets["train"][1]["input_ids"])
@@ -435,7 +435,7 @@ tokenizer.decode(lm_datasets["train"][1]["labels"])
 
 ## 使用 `Trainer` API 微调 DistilBERT 
 
-微调屏蔽语言模型几乎与微调序列分类模型相同，就像我们在 [第三章](/course/chapter3) 所作的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些词元。幸运的是，🤗 Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将词元分析器和一个 `mlm_probability` 参数（指定掩盖词元的比例）传递给它。我们将选择 15%，这是 BERT 所使用的数量，也是文献中常见的选择：
+微调屏蔽语言模型几乎与微调序列分类模型相同，就像我们在第三章所作的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些词元。幸运的是，Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将词元分析器和一个 `mlm_probability` 参数（指定掩盖词元的比例）传递给它。我们将选择 15%，这是 BERT 所使用的数量，也是文献中常见的选择：
 
 ```python
 from transformers import DataCollatorForLanguageModeling
@@ -471,7 +471,7 @@ for chunk in data_collator(samples)["input_ids"]:
 
 {#if fw === 'pt'}
 
-随机掩码的一个副作用是，当使用 `Trainer` 时，我们的评估指标将不是确定性的，因为我们对训练集和测试集使用相同的数据整理器。稍后我们会看到，当我们使用 🤗 Accelerate 进行微调时，我们将如何利用自定义评估循环的灵活性来冻结随机性。
+随机掩码的一个副作用是，当使用 `Trainer` 时，我们的评估指标将不是确定性的，因为我们对训练集和测试集使用相同的数据整理器。稍后我们会看到，当我们使用 Accelerate 进行微调时，我们将如何利用自定义评估循环的灵活性来冻结随机性。
 
 {/if}
 
@@ -584,7 +584,7 @@ for chunk in batch["input_ids"]:
 
 </div>
 
-现在我们有了两个数据整理器，剩下的微调步骤都是标准的。如果你在 Google Colab 上运行并且没有幸运地得到神秘的 P100 GPU😭，那么训练可能会需要一些时间，所以我们首先将训练集的大小降低到几千个例子。不用担心，我们仍然可以得到一个相当不错的语言模型！在 🤗 Datasets 中快速下采样数据集的方法是使用我们在 [第五章](/course/chapter5) 中看到的 `Dataset.train_test_split()` 函数：
+现在我们有了两个数据整理器，剩下的微调步骤都是标准的。如果你在 Google Colab 上运行并且没有幸运地得到神秘的 P100 GPU😭，那么训练可能会需要一些时间，所以我们首先将训练集的大小降低到几千个例子。不用担心，我们仍然可以得到一个相当不错的语言模型！在 Datasets 中快速下采样数据集的方法是使用我们在第五章中看到的 `Dataset.train_test_split()` 函数：
 
 ```python
 train_size = 10_000
@@ -627,7 +627,7 @@ huggingface-cli login
 
 {#if fw === 'tf'}
 
-登录后，我们可以创建我们的“tf.data”数据集。为此，我们将使用 `prepare_tf_dataset()` 方法，该方法会使用我们的模型自动推断哪些列应进入数据集。如果您想准确控制要使用的列，可以改用 `Dataset.to_tf_dataset()` 方法。为了简单起见，我们在这里只使用标准数据整理器，但你也可以尝试全词屏蔽(whole word masking)整理器，并作为一个练习比较结果：
+登录后，我们可以创建我们的“tf.data”数据集。为此，我们将使用 `prepare_tf_dataset()` 方法，该方法会使用我们的模型自动推断哪些列应进入数据集。如果你想准确控制要使用的列，可以改用 `Dataset.to_tf_dataset()` 方法。为了简单起见，我们在这里只使用标准数据整理器，但你也可以尝试全词屏蔽(whole word masking)整理器，并作为一个练习比较结果：
 
 ```python
 tf_train_dataset = model.prepare_tf_dataset(
@@ -645,9 +645,9 @@ tf_eval_dataset = model.prepare_tf_dataset(
 )
 ```
 
-接下来，我们设置我们的训练超参数并编译我们的模型。我们使用🤗 Transformers 库的 `create_optimizer()` 函数，它提供了一个带有线性学习率衰减的 `AdamW` 优化器。我们还使用模型内置的损失，这是在 `compile()` 的参数中没有指定损失时的默认设置，并将训练精度设为 `"mixed_float16"` 。注意，如果你使用的是 Colab GPU 或者其他不支持加速的 float16 的 GPU，你可能应该注释掉这一行。
+接下来，我们设置我们的训练超参数并编译我们的模型。我们使用Transformers 库的 `create_optimizer()` 函数，它提供了一个带有线性学习率衰减的 `AdamW` 优化器。我们还使用模型内置的损失，这是在 `compile()` 的参数中没有指定损失时的默认设置，并将训练精度设为 `"mixed_float16"` 。注意，如果你使用的是 Colab GPU 或者其他不支持加速的 float16 的 GPU，你可能应该注释掉这一行。
 
-另外，我们设置了一个 `PushToHubCallback` ，它将在每个 epoch 后将模型保存到 Hub。你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，要将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) ，我们添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。默认情况下，使用的仓库将在你的账户中，并以你设置的输出目录命名，所以在我们的示例中，它将是 `"lewtun/distilbert-finetuned-imdb"` 。
+另外，我们设置了一个 `PushToHubCallback` ，它将在每个 epoch 后将模型保存到 Hub。你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，要将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) ，我们添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。默认情况下，使用的仓库将在你的账户中，并以你设置的输出目录命名，所以在我们的示例中，它将是 `"lewtun/distilbert-finetuned-imdb"` 。
 
 ```python
 from transformers import create_optimizer
@@ -702,7 +702,7 @@ training_args = TrainingArguments(
 
 在这里，我们调整了一些默认选项，包括 `logging_steps` , 以确保我们可以跟踪每个 epoch 的训练损失。我们还使用了 `fp16=True` 来实现混合精度训练，从而进一步提高训练速度。默认情况下， `Trainer` 将删除模型的 `forward()` 方法中未使用的列。这意味着，如果你使用全词屏蔽(whole word masking)数据整理器，你还需要设置 `remove_unused_columns=False` , 以确保我们不会在训练期间丢失 `word_ids` 列。
 
-请注意，你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` organization](https://huggingface.co/huggingface-course) 时，我们在 `TrainingArguments` 中添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。默认情况下，使用的存储库将在你的账户中并以你设置的输出目录命名，因此在我们的示例中，它将是 `"lewtun/distilbert-finetuned-imdb"` 。
+请注意，你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` organization](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) 时，我们在 `TrainingArguments` 中添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。默认情况下，使用的存储库将在你的账户中并以你设置的输出目录命名，因此在我们的示例中，它将是 `"lewtun/distilbert-finetuned-imdb"` 。
 
 现在，我们拥有了初始化 `Trainer` 所需的所有要素。这里我们只使用了标准的 `data_collator` ，但你可以尝试使用全词屏蔽作为一个练习数据整理器，并将结果进行比较：
 
@@ -816,13 +816,13 @@ trainer.push_to_hub()
 
 {#if fw === 'pt'} 
 
-在我们的使用案例中，我们不需要对训练循环做任何特殊的处理，但在某些情况下，你可能需要实现一些自定义逻辑。对于这些应用，你可以使用 🤗 Accelerate——让我们看一看！
+在我们的使用案例中，我们不需要对训练循环做任何特殊的处理，但在某些情况下，你可能需要实现一些自定义逻辑。对于这些应用，你可以使用 Accelerate——让我们看一看！
 
-## 使用 🤗 Accelerate 微调 DistilBERT 
+## 使用 Accelerate 微调 DistilBERT 
 
-正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与 [第3章](https://chat.openai.com/course/chapter3) 中的文本分类示例非常相似。事实上，唯一的微妙之处是使用了一个特殊的数据整理器，我们已经在本节的早些时候讨论过这个问题了！
+正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与第3章中的文本分类示例非常相似。事实上，唯一的微妙之处是使用了一个特殊的数据整理器，我们已经在本节的早些时候讨论过这个问题了！
 
-然而，我们注意到 `DataCollatorForLanguageModeling` 在每次评估时也会应用随机遮罩，所以我们在每次训练运行时都会看到困惑度分数的波动。消除这种随机性的一种方法是在整个测试集上一次性_应用_遮罩，然后在评估过程中使用 🤗 Transformers 的默认数据整理器来收集批次。要理解这是如何工作的，让我们实现一个简单的函数，该函数在批次上应用遮罩，这与我们首次遇到 `DataCollatorForLanguageModeling` 的情况类似：
+然而，我们注意到 `DataCollatorForLanguageModeling` 在每次评估时也会应用随机遮罩，所以我们在每次训练运行时都会看到困惑度分数的波动。消除这种随机性的一种方法是在整个测试集上一次性_应用_遮罩，然后在评估过程中使用 Transformers 的默认数据整理器来收集批次。要理解这是如何工作的，让我们实现一个简单的函数，该函数在批次上应用遮罩，这与我们首次遇到 `DataCollatorForLanguageModeling` 的情况类似：
 
 ```python
 def insert_random_mask(batch):
@@ -850,7 +850,7 @@ eval_dataset = eval_dataset.rename_columns(
 )
 ```
 
-然后我们可以像往常一样设置数据加载器，但我们将使用🤗 Transformers 中的 `default_data_collator` 作为评估集：
+然后我们可以像往常一样设置数据加载器，但我们将使用Transformers 中的 `default_data_collator` 作为评估集：
 
 ```python
 from torch.utils.data import DataLoader
@@ -868,7 +868,7 @@ eval_dataloader = DataLoader(
 )
 ```
 
-从这里开始，我们遵循🤗 Accelerate 的标准步骤。第一个任务是重新加载预训练模型：
+从这里开始，我们遵循Accelerate 的标准步骤。第一个任务是重新加载预训练模型：
 
 ```
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
@@ -910,7 +910,7 @@ lr_scheduler = get_scheduler(
 )
 ```
 
-在开始训练之前，我们还需要做的最后一件事就是在 Hugging Face Hub 上创建一个模型仓库！我们可以使用🤗 Hub 库，生成我们仓库的全名：
+在开始训练之前，我们还需要做的最后一件事就是在 Hugging Face Hub 上创建一个模型仓库！我们可以使用Hub 库，生成我们仓库的全名：
 
 ```python
 from huggingface_hub import get_full_repo_name
@@ -924,7 +924,7 @@ repo_name
 'lewtun/distilbert-base-uncased-finetuned-imdb-accelerate'
 ```
 
-然后，我们可以使用🤗 Hub 的 `Repository` 类创建并克隆仓库：
+然后，我们可以使用Hub 的 `Repository` 类创建并克隆仓库：
 
 ```python
 from huggingface_hub import Repository
@@ -997,7 +997,7 @@ for epoch in range(num_train_epochs):
 
 ## 使用我们微调的模型 
 
-你可以通过在 Hub 上使用模型的部件或者在本地使用🤗 Transformers 的 `pipeline` 与微调模型进行交互。让我们使用后者通过 `fill-mask` pipeline 下载我们的模型：
+你可以通过在 Hub 上使用模型的部件或者在本地使用Transformers 的 `pipeline` 与微调模型进行交互。让我们使用后者通过 `fill-mask` pipeline 下载我们的模型：
 
 ```python
 from transformers import pipeline
@@ -1028,11 +1028,11 @@ for pred in preds:
 
 
 
-这标志着我们第一次训练语言模型的实验的结束。在 [第6节](https://chat.openai.com/course/en/chapter7/section6) 中，你将学习如何从头开始训练一个自动回归模型，比如 GPT-2；如果你想看看如何预训练你自己的 Transformer 模型，就赶快去那里看看吧！
+这标志着我们第一次训练语言模型的实验的结束。在第6节中，你将学习如何从头开始训练一个自动回归模型，比如 GPT-2；如果你想看看如何预训练你自己的 Transformer 模型，就赶快去那里看看吧！
 
 <div custom-style="Tip-green">
 
 
-✏️ **试试看！** 为了量化域适应的好处，微调 IMDb 标签上的分类器和预先训练和微调的 Distil BERT 检查点。如果你需要复习文本分类，请查看 [第三章](/course/chapter3) 。
+✏️ **试试看！** 为了量化域适应的好处，微调 IMDb 标签上的分类器和预先训练和微调的 Distil BERT 检查点。如果你需要复习文本分类，请查看第三章。
 
 </div>

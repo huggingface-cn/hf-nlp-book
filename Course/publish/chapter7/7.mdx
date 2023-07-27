@@ -16,22 +16,22 @@
 
 
 
-我们将使用 [SQuAD 数据集](https://rajpurkar.github.io/SQuAD-explorer/) 微调一个 BERT 模型，其中包括群众工作者对一组维基百科文章提出的问题。以下是一个小的测试样例：
+我们将使用 [SQuAD 数据集](https://rajpurkar.github.io/SQuAD-explorer/)(https://rajpurkar.github.io/SQuAD-explorer/) 微调一个 BERT 模型，其中包括群众工作者对一组维基百科文章提出的问题。以下是一个小的测试样例：
 
 
 
-本节使用的代码已经上传到了 Hub。你可以在 [这里](https://huggingface.co/huggingface-course/bert-finetuned-squad?context=%F0%9F%A4%97+Transformers+is+backed+by+the+three+most+popular+deep+learning+libraries+%E2%80%94+Jax%2C+PyTorch+and+TensorFlow+%E2%80%94+with+a+seamless+integration+between+them.+It%27s+straightforward+to+train+your+models+with+one+before+loading+them+for+inference+with+the+other.&question=Which+deep+learning+libraries+back+%F0%9F%A4%97+Transformers%3F) 找到它并尝试用它进行预测。
+本节使用的代码已经上传到了 Hub。你可以在 [这里](https://huggingface.co/huggingface-course/bert-finetuned-squad?context=%F0%9F%A4%97+Transformers+is+backed+by+the+three+most+popular+deep+learning+libraries+%E2%80%94+Jax%2C+PyTorch+and+TensorFlow+%E2%80%94+with+a+seamless+integration+between+them.+It%27s+straightforward+to+train+your+models+with+one+before+loading+them+for+inference+with+the+other.&question=Which+deep+learning+libraries+back+%F0%9F%A4%97+Transformers%3F)(https://huggingface.co/huggingface-course/bert-finetuned-squad?context=%F0%9F%A4%97+Transformers+is+backed+by+the+three+most+popular+deep+learning+libraries+%E2%80%94+Jax%2C+PyTorch+and+TensorFlow+%E2%80%94+with+a+seamless+integration+between+them.+It%27s+straightforward+to+train+your+models+with+one+before+loading+them+for+inference+with+the+other.&question=Which+deep+learning+libraries+back+%F0%9F%A4%97+Transformers%3F) 找到它并尝试用它进行预测。
 
 <div custom-style="Tip-green">
 
 
-💡 像 BERT 这样的纯编码器模型往往很擅长提取诸如 "谁发明了 Transformer 架构？"之类的事实性问题的答案。但在给出诸如 "为什么天空是蓝色的？" 之类的开放式问题时表现不佳。通常使用编码器-解码器模型如 T5 和 BART 来以类似于 [文本摘要](https://chat.openai.com/course/chapter7/5) 的方式整合信息。如果你对这种*生成式*问题回答感兴趣，我们推荐你查看我们基于 [ELI5 数据集](https://huggingface.co/datasets/eli5) 的 [演示](https://yjernite.github.io/lfqa.html) 。
+💡 像 BERT 这样的纯编码器模型往往很擅长提取诸如 "谁发明了 Transformer 架构？"之类的事实性问题的答案。但在给出诸如 "为什么天空是蓝色的？" 之类的开放式问题时表现不佳。通常使用编码器-解码器模型如 T5 和 BART 来以类似于 [文本摘要](https://chat.openai.com/course/chapter7/5)(https://chat.openai.com/course/chapter7/5) 的方式整合信息。如果你对这种*生成式*问题回答感兴趣，我们推荐你查看我们基于 [ELI5 数据集](https://huggingface.co/datasets/eli5)(https://huggingface.co/datasets/eli5) 的 [演示](https://yjernite.github.io/lfqa.html)(https://yjernite.github.io/lfqa.html) 。
 
 </div>
 
 ## 准备数据 
 
-作为抽取式问题回答的学术基准最常用的数据集是 [SQuAD](https://rajpurkar.github.io/SQuAD-explorer/) ，所以我们在这里将使用它。还有一个更难的 [SQuAD v2](https://huggingface.co/datasets/squad_v2) 基准，其中包含一些没有答案的问题。只要你自己的数据集包含了 Context 列、问题列和答案列，你应该能够适用下面的步骤。
+作为抽取式问题回答的学术基准最常用的数据集是 [SQuAD](https://rajpurkar.github.io/SQuAD-explorer/)(https://rajpurkar.github.io/SQuAD-explorer/) ，所以我们在这里将使用它。还有一个更难的 [SQuAD v2](https://huggingface.co/datasets/squad_v2)(https://huggingface.co/datasets/squad_v2) 基准，其中包含一些没有答案的问题。只要你自己的数据集包含了 Context 列、问题列和答案列，你应该能够适用下面的步骤。
 
 ### SQuAD 数据集 
 
@@ -103,7 +103,7 @@ print(raw_datasets["validation"][2]["answers"])
 {'text': ['Santa Clara, California', "Levi's Stadium", "Levi's Stadium in the San Francisco Bay Area at Santa Clara, California."], 'answer_start': [403, 355, 355]}
 ```
 
-我们不会深入探究评估样本，因为所有的东西都将由🤗 Datasets 指标帮我们打包，但简短的解释是，有些问题有多个可能的答案，评估时将比较一个预测的答案和所有可接受的答案，然后取得最佳分数。比如我们看看索引 2 处的样本：
+我们不会深入探究评估样本，因为所有的东西都将由Datasets 指标帮我们打包，但简短的解释是，有些问题有多个可能的答案，评估时将比较一个预测的答案和所有可接受的答案，然后取得最佳分数。比如我们看看索引 2 处的样本：
 
 ```py
 print(raw_datasets["validation"][2]["context"])
@@ -132,7 +132,7 @@ model_checkpoint = "bert-base-cased"
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-如前所述，我们将对 BERT 模型进行微调，但你可以使用任何其他模型类型，只要它实现了快速词元分析器即可。你可以在 [这个大表格](https://huggingface.co/transformers/#supported-frameworks) 中看到所有带有快速版本的架构，要检查你正在使用的 `tokenizer` 对象是否真的是由🤗 Tokenizers 支持的，你可以查看它的 `is_fast` 属性：
+如前所述，我们将对 BERT 模型进行微调，但你可以使用任何其他模型类型，只要它实现了快速词元分析器即可。你可以在 [这个大表格](https://huggingface.co/transformers/#supported-frameworks)(https://huggingface.co/transformers/#supported-frameworks) 中看到所有带有快速版本的架构，要检查你正在使用的 `tokenizer` 对象是否真的是由Tokenizers 支持的，你可以查看它的 `is_fast` 属性：
 
 ```py
 tokenizer.is_fast
@@ -173,7 +173,7 @@ tokenizer.decode(inputs["input_ids"])
 
 ![One-hot encoded labels for question answering.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/qa_labels.svg "One-hot encoded labels for question answering.")
 
-在这种情况下，Context 不会太长，但是数据集中的一些示例的 Context 很长，会超过我们设置的最大长度(本例中为 384)。正如我们在 [第六章](/course/chapter6/4) 中所看到的，当我们探索 `question-answering` 管道的内部结构时，我们会通过将一个样本的较长的 Context 划分成多个训练特征，并在这些特征之间滑动窗口，来处理较长的 Context。
+在这种情况下，Context 不会太长，但是数据集中的一些示例的 Context 很长，会超过我们设置的最大长度(本例中为 384)。正如我们在第六章中所看到的，当我们探索 `question-answering` 管道的内部结构时，我们会通过将一个样本的较长的 Context 划分成多个训练特征，并在这些特征之间滑动窗口，来处理较长的 Context。
 
 要了解在这个过程中对当前示例进行了哪些处理，我们可以将长度限制为 100，并使用长度为 50 的词元窗口。我们设置：
 
@@ -205,7 +205,7 @@ for ids in inputs["input_ids"]:
 
 如我们所见，我们的示例被分成四个输入，每个输入都包含问题和 Context 的一部分。请注意，问题的答案 ("Bernadette Soubirous") 仅出现在第三个也是最后一个输入中，因此通过以这种方式处理较长的 Context 时，我们可能创建一些答案不包含在 Context 中的训练示例。我们把这些示例的标签设置为 `start_position = end_position = 0` (因此我们预测 `[CLS]` 词元)。如果不幸答案被截断，我们只有答案的开头（或结束），我们也这样设置这些标签。对于答案完全在 Context 中的示例，标签将是答案开始的词元的索引和答案结束的词元的索引。
 
-数据集为我们提供了 Context 中答案的开始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到词元索引，我们将需要使用我们在 [第六章](/course/chapter6/4) 中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的词元分析器返回这些内容：
+数据集为我们提供了 Context 中答案的开始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到词元索引，我们将需要使用我们在第六章中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的词元分析器返回这些内容：
 
 ```py
 inputs = tokenizer(
@@ -418,7 +418,7 @@ def preprocess_training_examples(examples):
     return inputs
 ```
 
-请注意，我们定义了两个常量来确定所使用的最大长度以及滑动窗口的长度，并且在之前词元化之前对数据进行了一些清洗：SQuAD 数据集中的一些问题在开头和结尾有额外的空格，这些空格没有任何意义（如果您使用像 RoBERTa 这样的模型，它们会占用词元化时的空间），因此我们去掉了这些额外的空格。
+请注意，我们定义了两个常量来确定所使用的最大长度以及滑动窗口的长度，并且在之前词元化之前对数据进行了一些清洗：SQuAD 数据集中的一些问题在开头和结尾有额外的空格，这些空格没有任何意义（如果你使用像 RoBERTa 这样的模型，它们会占用词元化时的空间），因此我们去掉了这些额外的空格。
 
 要将此函数应用于整个训练集，我们使用 `Dataset.map()` 方法并传递 `batched=True` 参数。这是必要的，因为我们正在更改数据集的长度（因为一个示例可能会产生多个训练特征）：
 
@@ -497,13 +497,13 @@ len(raw_datasets["validation"]), len(validation_dataset)
 
 ## 使用 `Trainer` API 微调模型 
 
-这个例子的训练代码与前面的部分非常相似，最困难的部分是编写 `compute_metrics()` 函数。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，🤗 Datasets 库中的指标就可以为我们做大部分工作。
+这个例子的训练代码与前面的部分非常相似，最困难的部分是编写 `compute_metrics()` 函数。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，Datasets 库中的指标就可以为我们做大部分工作。
 
 {:else}
 
 ## 使用 Keras 微调模型 
 
-这个例子的训练代码与前面的部分非常相似，最困难的部分是计算评估指标。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，🤗 Datasets 库中的指标就可以为我们做大部分工作。
+这个例子的训练代码与前面的部分非常相似，最困难的部分是计算评估指标。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，Datasets 库中的指标就可以为我们做大部分工作。
 
 {/if}
 
@@ -519,7 +519,7 @@ len(raw_datasets["validation"]), len(validation_dataset)
 
 {/if}
 
-模型将输出答案在输入 ID 中是答案的起始和结束位置输出 Logit, 正如我们在探索 [`question-answering` pipeline](/course/chapter6/3b) 时看到的那样。后处理步骤将类似于我们在那里所做的，所以这里简单回顾一下我们所采取的操作：
+模型将输出答案在输入 ID 中是答案的起始和结束位置输出 Logit, 正如我们在探索 [`question-answering` pipeline](/course/chapter6/3b)(/course/chapter6/3b) 时看到的那样。后处理步骤将类似于我们在那里所做的，所以这里简单回顾一下我们所采取的操作：
 
 - 我们屏蔽了除了 Context 之外的词元对应的起始和结束对数几率。
 - 然后，我们使用 softmax 将起始和结束 logits 转换为概率。
@@ -662,7 +662,7 @@ for example in small_eval_set:
     predicted_answers.append({"id": example_id, "prediction_text": best_answer["text"]})
 ```
 
-预测答案的最终格式已经是我们将使用的评估指标所期望的格式。在这种情况下，我们可以借助🤗 Evaluate 库来加载它：
+预测答案的最终格式已经是我们将使用的评估指标所期望的格式。在这种情况下，我们可以借助Evaluate 库来加载它：
 
 ```python
 import evaluate
@@ -700,17 +700,17 @@ metric.compute(predictions=predicted_answers, references=theoretical_answers)
 {'exact_match': 83.0, 'f1': 88.25}
 ```
 
-考虑到根据 [论文](https://arxiv.org/abs/1910.01108v2) 所述，DistilBERT 在 SQuAD 上微调后整体数据集的得分为 79.1 和 86.9，这个结果相当不错。
+考虑到根据 [论文](https://arxiv.org/abs/1910.01108v2)(https://arxiv.org/abs/1910.01108v2) 所述，DistilBERT 在 SQuAD 上微调后整体数据集的得分为 79.1 和 86.9，这个结果相当不错。
 
 {#if fw === 'pt'}
 
-现在，让我们将刚才所做的一切放入 `compute_metrics()` 函数中，我们将在 `Trainer` 中使用它。通常， `compute_metrics()` 函数只接收一个包含逻辑回归和标签的元组 `eval_preds` 。但是在这里，我们需要更多的信息，因为我们需要在特征数据集中查找偏移量，并在示例数据集中查找原始 Context，所以我们无法在训练过程中使用此函数来获取常规的评估结果。我们只会在训练结束时使用它来检查结果。
+现在，让我们将刚才所做的放入 `compute_metrics()` 函数中，我们将在 `Trainer` 中使用它。通常， `compute_metrics()` 函数只接收一个包含逻辑回归和标签的 `eval_preds` 元组。但是在这里，我们需要更多的信息，因为我们需要在特征数据集中查找偏移量，并在示例数据集中查找原始 Context，因此我们无法在训练过程中使用此函数来获取常规的评估结果。我们只会在训练结束时使用它来检查结果。
 
  `compute_metrics()` 函数与之前的步骤相同；我们只是添加了一个小的检查，以防我们找不到任何有效的答案（在这种情况下，我们的预测会输出一个空字符串）。
 
 {:else}
 
-现在，让我们将刚才所做的一切放入 `compute_metrics()` 函数中，我们将在训练模型时使用该函数。我们需要传递的不仅仅是输出的 logits，因为我们必须在特征数据集中查找偏移量，并在示例数据集中查找原始上下文：
+现在，让我们将刚才所做的放入 `compute_metrics()` 函数中，我们将在训练模型时使用该函数。我们需要传递的不仅仅是输出的 logits，因为我们必须在特征数据集中查找偏移量，并在示例数据集中查找原始上下文：
 
 {/if}
 
@@ -817,9 +817,9 @@ huggingface-cli login
 
 {#if fw === 'pt'}
 
-完成后，我们就可以定义我们的 `TrainingArguments` 。正如我们在定义计算评估函数时所说的，由于 `compute_metrics()` 函数的输入参数限制，我们无法使用常规的方法来编写评估循环。不过，我们可以编写自己的 `Trainer` 子类来实现这一点（你可以在 [问答示例脚本](https://github.com/huggingface/transformers/blob/master/examples/pytorch/question-answering/trainer_qa.py) 中找到该方法），但这在本节中有些冗长。因此，我们在这里将仅在训练结束时评估模型，并在下面的"自定义训练循环"中向您展示如何使用常规的方法进行评估。
+完成后，我们就可以定义我们的 `TrainingArguments` 。正如我们在定义计算评估函数时所说的，由于 `compute_metrics()` 函数的输入参数限制，我们无法使用常规的方法来编写评估循环。不过，我们可以编写自己的 `Trainer` 子类来实现这一点（你可以在 [问答示例脚本](https://github.com/huggingface/transformers/blob/master/examples/pytorch/question-answering/trainer_qa.py)(https://github.com/huggingface/transformers/blob/master/examples/pytorch/question-answering/trainer_qa.py) 中找到该方法），但这在本节中有些冗长。因此，我们在这里将仅在训练结束时评估模型，并在下面的"自定义训练循环"中向你展示如何使用常规的方法进行评估。
 
-这确实是 `Trainer` API 局限性的地方，而🤗 Accelerate 库则表现出色：定制化特定用例的类可能会很繁琐，但定制化调整训练循环却很简单。
+这确实是 `Trainer` API 局限性的地方，而Accelerate 库则表现出色：定制化特定用例的类可能会很繁琐，但定制化调整训练循环却很简单。
 
 让我们来看看我们的 `TrainingArguments` ：
 
@@ -895,14 +895,14 @@ tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 {/if}
 
-默认情况下，使用的存储库将位于您的仓库中，并以您设置的输出目录命名，所以在我们的例子中它将位于 `"sgugger/bert-finetuned-squad"` 中。我们可以通过传递一个 `hub_model_id` 来覆盖这个设置；例如，要将模型推送到我们使用的 `huggingface_course` 组织中，我们使用了 `hub_model_id="huggingface_course/bert-finetuned-squad"` （这是我们在本节开始时演示的模型）。
+默认情况下，使用的存储库将位于你的仓库中，并以你设置的输出目录命名，所以在我们的例子中它将位于 `"sgugger/bert-finetuned-squad"` 中。我们可以通过传递一个 `hub_model_id` 来覆盖这个设置；例如，要将模型推送到我们使用的 `huggingface_course` 组织中，我们使用了 `hub_model_id="huggingface_course/bert-finetuned-squad"` （这是我们在本节开始时演示的模型）。
 
 {#if fw === 'pt'}
 
 <div custom-style="Tip-green">
 
 
-💡 如果您正在使用的输出目录已经存在，则它需要是您要推送到的存储库的本地克隆（因此如果在定义您的 `Trainer` 时出现错误，请设置一个新的名称）。
+💡 如果你正在使用的输出目录已经存在，则它需要是你要推送到的存储库的本地克隆（因此如果在定义你的 `Trainer` 时出现错误，请设置一个新的名称）。
 
 </div>
 
@@ -934,7 +934,7 @@ model.fit(tf_train_dataset, callbacks=[callback], epochs=num_train_epochs)
 
 {/if}
 
-请注意，在训练过程中，每次模型保存（例如，每个 epoch 结束时），模型都会在后台上传到 Hub。这样，如果需要的话，您就可以在另一台机器上恢复训练。整个训练过程需要一些时间（在 Titan RTX 上略超过一个小时），所以您可以喝杯咖啡或者重新阅读一些您觉得更具挑战性的课程部分来消磨时间。还要注意，一旦第一个 epoch 完成，您将看到一些权重上传到 Hub，并且您可以在其页面上开始使用您的模型进行测试。
+请注意，在训练过程中，每次模型保存（例如，每个 epoch 结束时），模型都会在后台上传到 Hub。这样，如果需要的话，你就可以在另一台机器上恢复训练。整个训练过程需要一些时间（在 Titan RTX 上略超过一个小时），所以你可以喝杯咖啡或者重新阅读一些你觉得更具挑战性的课程部分来消磨时间。还要注意，一旦第一个 epoch 完成，你将看到一些权重上传到 Hub，并且你可以在其页面上开始使用你的模型进行测试。
 
 {#if fw === 'pt'}
 
@@ -986,7 +986,7 @@ trainer.push_to_hub(commit_message="Training complete")
 
 {/if}
 
-在这个阶段，您可以使用模型库中的推理小部件来测试模型，并与您的朋友、家人和同伴分享。恭喜您成功地在问答任务上对模型进行了微调！
+在这个阶段，你可以使用模型库中的推理小部件来测试模型，并与你的朋友、家人和同伴分享。恭喜你成功地在问答任务上对模型进行了微调！
 
 <div custom-style="Tip-green">
 
@@ -997,11 +997,11 @@ trainer.push_to_hub(commit_message="Training complete")
 
 {#if fw === 'pt'}
 
-如果你想更深入地了解训练循环，我们现在将向你展示如何使用 🤗 Accelerate 来做同样的事情。
+如果你想更深入地了解训练循环，我们现在将向你展示如何使用 Accelerate 来做同样的事情。
 
 ## 自定义训练循环 
 
-现在，让我们来看一下完整的训练循环，这样您就可以轻松地自定义所需的部分。它看起来很像 [第3章](https://www.hubchat.top/course/chapter3/4) 中的训练循环，只是评估循环有所不同。由于我们不再受 `Trainer` 类的限制，因此我们可以在模型训练的过程中定期评估模型。
+现在，让我们来看一下完整的训练循环，这样你就可以轻松地自定义所需的部分。它看起来很像第3章中的训练循环，只是评估循环有所不同。由于我们不再受 `Trainer` 类的限制，因此我们可以在模型训练的过程中定期评估模型。
 
 ### 为训练做准备 
 
@@ -1040,7 +1040,7 @@ from torch.optim import AdamW
 optimizer = AdamW(model.parameters(), lr=2e-5)
 ```
 
-当我们拥有了所有这些对象，我们可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果您想在 Colab 笔记本上使用 TPU 进行训练，您需要将所有这些代码移到一个训练函数中，并且不应该对 `Accelerator` 的单元格执行任何实例化。我们可以通过向 `Accelerator` 传递 `fp16=True` 来强制使用混合精度训练（或者，如果您将代码作为脚本执行，只需确保填写适当的🤗 Accelerate `config` ）。
+当我们拥有了所有这些对象，我们可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果你想在 Colab 笔记本上使用 TPU 进行训练，你需要将所有这些代码移到一个训练函数中，并且不应该对 `Accelerator` 的单元格执行任何实例化。我们可以通过向 `Accelerator` 传递 `fp16=True` 来强制使用混合精度训练（或者，如果你将代码作为脚本执行，只需确保填写适当的Accelerate `config` ）。
 
 ```py
 from accelerate import Accelerator
@@ -1068,7 +1068,7 @@ lr_scheduler = get_scheduler(
 )
 ```
 
-要将模型推送到 Hub，我们需要在工作文件夹中创建一个 `Repository` 对象。如果您尚未登录 Hugging Face Hub，请先登录。我们将根据我们给模型指定的模型 ID 确定仓库名称（可以根据自己的选择替换 `repo_name` ；它只需要包含您的用户名，使用 `get_full_repo_name()` 函数可以获取）:
+要将模型推送到 Hub，我们需要在工作文件夹中创建一个 `Repository` 对象。如果你尚未登录 Hugging Face Hub，请先登录。我们将根据我们给模型指定的模型 ID 确定仓库名称（可以根据自己的选择替换 `repo_name` ；它只需要包含你的用户名，使用 `get_full_repo_name()` 函数可以获取）:
 
 ```py
 from huggingface_hub import Repository, get_full_repo_name
@@ -1097,7 +1097,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 - 训练本身，即对 `train_dataloader` 进行迭代，模型前向传播、反向传播和优化器更新。
 - 评估，其中我们在将 `start_logits` 和 `end_logits` 的所有值收集起来之前，遍历整个评估数据集。完成评估循环后，我们将所有结果连接起来。请注意，由于 `Accelerator` 可能在最后添加了一些样本以确保每个进程中的示例数相同，因此我们需要进行截断。
-- 保存和上传，首先保存模型和分词器，然后调用 `repo.push_to_hub()` 。与之前一样，我们使用 `blocking=False` 参数告诉🤗 Hub 库在异步过程中推送。这样，训练将继续进行，而这个（需要很长时间的）指令将在后台异步执行。
+- 保存和上传，首先保存模型和分词器，然后调用 `repo.push_to_hub()` 。与之前一样，我们使用 `blocking=False` 参数告诉Hub 库在异步过程中推送。这样，训练将继续进行，而这个（需要很长时间的）指令将在后台异步执行。
 
 这是训练循环的完整代码：
 
@@ -1153,7 +1153,7 @@ for epoch in range(num_train_epochs):
         )
 ```
 
-如果这是您第一次看到使用🤗 Accelerate 保存的模型，请花点时间了解一下与之相关的三行代码
+如果这是你第一次看到使用Accelerate 保存的模型，请花点时间了解一下与之相关的三行代码
 
 ```py
 accelerator.wait_for_everyone()
@@ -1163,26 +1163,26 @@ unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
 
 第一行很好理解：它告诉所有进程在继续之前等待所有进程都到达该阶段。这是为了确保我们在保存之前，在每个进程中都有相同的模型。然后，我们获取 `unwrapped_model` ，它是我们定义的基本模型。 `accelerator.prepare()` 方法会更改模型来适应分布式训练，因此它不再具有 `save_pretrained()` 方法；使用 `accelerator.unwrap_model()` 方法可以撤消这个更改。最后，我们调用 `save_pretrained()` ，但告诉该方法使用 `accelerator.save()` 而不是 `torch.save()` 。
 
-完成后，您应该拥有一个产生与使用 `Trainer` 训练的模型非常相似的结果的模型。您可以在 [*huggingface-course/bert-finetuned-squad-accelerate*](https://huggingface.co/huggingface-course/bert-finetuned-squad-accelerate) 查看我们使用此代码训练的模型。如果您想测试对训练循环进行的任何调整，可以直接通过编辑上面显示的代码来实现！
+完成后，你应该拥有一个产生与使用 `Trainer` 训练的模型非常相似的结果的模型。你可以在 [*huggingface-course/bert-finetuned-squad-accelerate*](https://huggingface.co/huggingface-course/bert-finetuned-squad-accelerate)(https://huggingface.co/huggingface-course/bert-finetuned-squad-accelerate) 查看我们使用此代码训练的模型。如果你想测试对训练循环进行的任何调整，可以直接通过编辑上面显示的代码来实现！
 
 {/if}
 
 ## 使用微调模型 
 
-我们已经向您展示了如何使用在模型中心上进行微调的模型，并使用推理小部件进行测试。要在本地使用 `pipeline` 来使用微调的模型，您只需指定模型标识符：
+我们已经向你展示了如何使用在模型中心上进行微调的模型，并使用推理小部件进行测试。要在本地使用 `pipeline` 来使用微调的模型，你只需指定模型标识符：
 
 ```py
 from transformers import pipeline
 
-# 将其替换为您自己的检查点
+# 将其替换为你自己的检查点
 model_checkpoint = "huggingface-course/bert-finetuned-squad"
 question_answerer = pipeline("question-answering", model=model_checkpoint)
 
 context = """
-🤗 Transformers is backed by the three most popular deep learning libraries — Jax, PyTorch and TensorFlow — with a seamless integration
+Transformers is backed by the three most popular deep learning libraries — Jax, PyTorch and TensorFlow — with a seamless integration
 between them. It's straightforward to train your models with one before loading them for inference with the other.
 """
-question = "Which deep learning libraries back 🤗 Transformers?"
+question = "Which deep learning libraries back Transformers?"
 question_answerer(question=question, context=context)
 ```
 

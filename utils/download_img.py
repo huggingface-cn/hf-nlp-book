@@ -6,8 +6,8 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 # 你的文件夹路径
-directory = 'Course\publish\chapter1'
-if 'directory' not in os.listdir(directory):
+directory = 'Course\publish\chapter9'
+if 'assets' not in os.listdir(directory):
     os.makedirs(os.path.join(directory, 'assets'))
 for filename in os.listdir(directory):
     if filename.endswith(".md") or filename.endswith(".mdx"):
@@ -20,12 +20,15 @@ for filename in os.listdir(directory):
 
             for url in img_urls:
                 if url.startswith('http'):
+                    url=url.split('"')[0].strip()
                     # 解析url以获取文件名
                     a = urlparse(url)
                     img_name = os.path.basename(a.path)
 
                     # 下载图片
                     session = requests.Session()
+                    proxies = {'http':'http://localhost:8466', 'https': 'https://localhost:8466'}
+                    session.proxies = proxies
                     session.trust_env = False
                     try:
                         response = session.get(url)

@@ -29,22 +29,22 @@
 <img class="hidden dark:block lg:w-3/5" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner-dark.png" alt="One-hot encoded labels for question answering."/>
 </a>
 
-您可以 [在这里](https://huggingface.co/huggingface-course/bert-finetuned-ner?text=My+name+is+Sylvain+and+I+work+at+Hugging+Face+in+Brooklyn) 。找到我们将训练并上传到 Hub 的模型，可以尝试输入一些句子看看模型的预测结果。
+你可以 [在这里](https://huggingface.co/huggingface-course/bert-finetuned-ner?text=My+name+is+Sylvain+and+I+work+at+Hugging+Face+in+Brooklyn)(https://huggingface.co/huggingface-course/bert-finetuned-ner?text=My+name+is+Sylvain+and+I+work+at+Hugging+Face+in+Brooklyn) 。找到我们将训练并上传到 Hub 的模型，可以尝试输入一些句子看看模型的预测结果。
 
 ## 准备数据 
 
-首先，我们需要一个适合词元分类的数据集。在本节中，我们将使用 [CoNLL-2003 数据集](https://huggingface.co/datasets/conll2003) , 该数据集包含了来自路透社的新闻故事。
+首先，我们需要一个适合词元分类的数据集。在本节中，我们将使用 [CoNLL-2003 数据集](https://huggingface.co/datasets/conll2003)(https://huggingface.co/datasets/conll2003) , 该数据集包含了来自路透社的新闻故事。
 
 <div custom-style="Tip-green">
 
 
-💡 只要你的数据集由带有相应标签的分词文本组成，您就能够将这里描述的数据处理过程应用到您自己的数据集。如果需要复习如何在 `Dataset` 中加载自定义数据，请参阅 [第五章](/course/chapter5) 。
+💡 只要你的数据集由带有相应标签的分词文本组成，你就能够将这里描述的数据处理过程应用到你自己的数据集。如果需要复习如何在 `Dataset` 中加载自定义数据，请参阅第五章。
 
 </div>
 
 ### CoNLL-2003 数据集 
 
-要加载 CoNLL-2003 数据集，我们可以使用🤗 Datasets 库的 `load_dataset()` 方法：
+要加载 CoNLL-2003 数据集，我们可以使用Datasets 库的 `load_dataset()` 方法：
 
 ```py
 from datasets import load_dataset
@@ -52,7 +52,7 @@ from datasets import load_dataset
 raw_datasets = load_dataset("conll2003")
 ```
 
-这将下载并缓存数据集，就像和我们在 [第三章](/course/chapter3) 加载 GLUE MRPC 数据集一样。检查这个对象可以让我们看到存在哪些列，以及训练集、验证集和测试集之间是如何分割的：
+这将下载并缓存数据集，就像和我们在第三章加载 GLUE MRPC 数据集一样。检查这个对象可以让我们看到存在哪些列，以及训练集、验证集和测试集之间是如何分割的：
 
 ```py
 raw_datasets
@@ -119,7 +119,7 @@ label_names
 ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
 ```
 
-我们在 [第六章](/course/chapter6/3) , 深入研究 `token-classification` 管道时已经看到了这些标签 我们在这里进行一个快速的回顾：
+我们在第六章, 深入研究 `token-classification` 管道时已经看到了这些标签 我们在这里进行一个快速的回顾：
 
 - `O` 表示这个词不对应任何实体。
 - `B-PER` / `I-PER` 意味着这个词对应于人名实体的开头/内部。
@@ -169,7 +169,7 @@ print(line2)
 
 
 
-像往常一样，我们的文本需要转换为 Token ID，然后模型才能理解它们。正如我们在 [第六章](/course/chapter6/) 所学的那样。不过在词元分类任务中，一个很大的区别是我们有 pre-tokenized 的输入。幸运的是，tokenizer API 可以很容易地处理这个问题；我们只需要通过一个特殊的标志告诉 tokenizer。
+像往常一样，我们的文本需要转换为 Token ID，然后模型才能理解它们。正如我们在第六章所学的那样。不过在词元分类任务中，一个很大的区别是我们有 pre-tokenized 的输入。幸运的是，tokenizer API 可以很容易地处理这个问题；我们只需要通过一个特殊的标志告诉 tokenizer。
 
 首先，让我们创建 `tokenizer` 对象。如前所述，我们将使用 BERT 预训练模型，因此我们将从下载并缓存关联的词元分析器开始：
 
@@ -180,7 +180,7 @@ model_checkpoint = "bert-base-cased"
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-你可以更换把 `model_checkpoint` 更换为 [Hub](https://huggingface.co/models) 上任何您喜欢的其他型号，或使用您本地保存的预训练模型和词元分析器。唯一的限制是词元分析器需要由 🤗 Tokenizers 库支持，有一个“快速”版本可用。你可以在 [这张大表](https://huggingface.co/transformers/#supported-frameworks) 上看到所有带有快速版本的架构，或者检查您可以通过查看它 `is_fast` 属性来检测正在使用的 `tokenizer` 对象是否由 🤗 Tokenizers 支持：
+你可以更换把 `model_checkpoint` 更换为 [Hub](https://huggingface.co/models)(https://huggingface.co/models) 上任何你喜欢的其他型号，或使用你本地保存的预训练模型和词元分析器。唯一的限制是词元分析器需要由 Tokenizers 库支持，有一个“快速”版本可用。你可以在 [这张大表](https://huggingface.co/transformers/#supported-frameworks)(https://huggingface.co/transformers/#supported-frameworks) 上看到所有带有快速版本的架构，或者检查你可以通过查看它 `is_fast` 属性来检测正在使用的 `tokenizer` 对象是否由 Tokenizers 支持：
 
 ```py
 tokenizer.is_fast
@@ -204,7 +204,7 @@ inputs.tokens()
 如我们所见，tokenizer 添加了模型使用的特殊 tokens（在开始的 `[CLS]` ，在结束的 `[SEP]` ），并且大部分单词保持不变。然而，单词 `lamb` 被分词为两个子词， `la` 和 `##mb` 。这导致了输入和标签之间的不匹配：标签列表只有 9 个元素，而我们的输入现在有 12 个 tokens。解决特殊 tokens 的问题很容易（我们知道它们在开始和结束的位置），但我们还需要确保我们将所有的标签与正确的词对齐。
 
 
-幸运的是，由于我们使用的是快速分词器，因此我们可以访问🤗 Tokenizers 超能力，这意味着我们可以轻松地将每个令牌映射到其相应的单词（如 [第六章](/course/chapter6/3) 所学):
+幸运的是，由于我们使用的是快速分词器，因此我们可以访问Tokenizers 超能力，这意味着我们可以轻松地将每个令牌映射到其相应的单词（如第六章所学):
 
 ```py
 inputs.word_ids()
@@ -292,7 +292,7 @@ tokenized_datasets = raw_datasets.map(
 )
 ```
 
-我们已经完成了最困难的部分！现在数据已经经过了预处理，实际的训练过程将会与我们在 [第三章](/course/chapter3) 所做的很相似。
+我们已经完成了最困难的部分！现在数据已经经过了预处理，实际的训练过程将会与我们在第三章所做的很相似。
 
 {#if fw === 'pt'}
 
@@ -310,9 +310,9 @@ tokenized_datasets = raw_datasets.map(
 
 ### 整理数据 
 
-我们不能像 [第三章](/course/chapter3) 那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（输入 ID、注意掩码和词元类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
+我们不能像第三章那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（输入 ID、注意掩码和词元类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
 
-这些可以由 [`DataCollatorForTokenClassification`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification) 实现。它是一个带有填充功能的数据整理器，使用时只需要传入用于预处理输入的 `tokenizer` ：
+这些可以由 [`DataCollatorForTokenClassification`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification)(https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification) 实现。它是一个带有填充功能的数据整理器，使用时只需要传入用于预处理输入的 `tokenizer` ：
 
 {#if fw === 'pt'}
 
@@ -364,7 +364,7 @@ for i in range(2):
 
 {:else}
 
-我们的数据整理器已准备就绪！现在让我们使用 `to_tf_dataset()` 方法创建一个 `tf.data.Dataset` 。您还可以使用 `model.prepare_tf_dataset()` 来使用更少的模板代码来完成此操作——您将在本章的其他部分中看到这一点。
+我们的数据整理器已准备就绪！现在让我们使用 `to_tf_dataset()` 方法创建一个 `tf.data.Dataset` 。你还可以使用 `model.prepare_tf_dataset()` 来使用更少的模板代码来完成此操作——你将在本章的其他部分中看到这一点。
 ```py
 tf_train_dataset = tokenized_datasets["train"].to_tf_dataset(
     columns=["attention_mask", "input_ids", "labels", "token_type_ids"],
@@ -410,7 +410,7 @@ model = TFAutoModelForTokenClassification.from_pretrained(
 )
 ```
 
-就像我们在 [第三章](/course/chapter3) 中定义 `TFAutoModelForTokenClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
+就像我们在第三章中定义 `TFAutoModelForTokenClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
 
 ```python
 model.config.num_labels
@@ -437,15 +437,15 @@ from huggingface_hub import notebook_login
 notebook_login()
 ```
 
-这将显示一个小部件，您可以在其中输入您的 Hugging Face 账号和密码。
+这将显示一个小部件，你可以在其中输入你的 Hugging Face 账号和密码。
 
-如果您不是在 notebook 上工作，只需在终端中输入以下行：
+如果你不是在 notebook 上工作，只需在终端中输入以下行：
 
 ```bash
 huggingface-cli login
 ```
 
-登录后，我们可以准备编译我们模型所需要的所有配置。🤗 Transformers 提供了一个便捷的 `create_optimizer()` 函数，它将给你一个带有适当的权重衰减和学习率衰减设置的 `AdamW` 优化器，与内置的 `Adam` 优化器相似，这两个优化技巧都将提高模型的性能：
+登录后，我们可以准备编译我们模型所需要的所有配置。Transformers 提供了一个便捷的 `create_optimizer()` 函数，它将给你一个带有适当的权重衰减和学习率衰减设置的 `AdamW` 优化器，与内置的 `Adam` 优化器相似，这两个优化技巧都将提高模型的性能：
 
 ```python
 from transformers import create_optimizer
@@ -468,7 +468,7 @@ optimizer, schedule = create_optimizer(
 model.compile(optimizer=optimizer)
 ```
 
-请注意，我们没有给 `compile()` 提供 `loss` 参数。这是因为模型实际上可以内部计算损失 —— 如果您编译时没有提供损失的计算方法并在输入字典中提供标签（就像我们在数据集中所做的那样），那么模型将使用内部默认的 `loss` 计算方法进行训练，这取决于你选择的任务和模型类型。
+请注意，我们没有给 `compile()` 提供 `loss` 参数。这是因为模型实际上可以内部计算损失 —— 如果你编译时没有提供损失的计算方法并在输入字典中提供标签（就像我们在数据集中所做的那样），那么模型将使用内部默认的 `loss` 计算方法进行训练，这取决于你选择的任务和模型类型。
 
 接下来，我们定义一个 `PushToHubCallback` 回调函数，以便在训练期间将模型上传到 Hub，并使用该回调来拟合模型：
 
@@ -485,7 +485,7 @@ model.fit(
 )
 ```
 
-你可以使用 `hub_model_id` 参数指定你想要推送的仓库的全名（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将在你的账户之内，并以你设置的输出目录命名，例如 `"cool_huggingface_user/bert-finetuned-ner"` 。
+你可以使用 `hub_model_id` 参数指定你想要推送的仓库的全名（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将在你的账户之内，并以你设置的输出目录命名，例如 `"cool_huggingface_user/bert-finetuned-ner"` 。
 
 <div custom-style="Tip-green">
 
@@ -494,7 +494,7 @@ model.fit(
 
 </div>
 
-请注意，在训练过程中每次保存模型时（这里是每个 epooch），它都会在后台上传到 Hub。这样，如有必要，您将能够在另一台机器上继续您的训练。
+请注意，在训练过程中每次保存模型时（这里是每个 epooch），它都会在后台上传到 Hub。这样，如有必要，你将能够在另一台机器上继续你的训练。
 
 到此阶段，你可以在模型 Hub 上使用推理小部件来测试你的模型并与你的朋友分享。你已经成功地在一个词元分类任务上微调了一个模型——恭喜你！但我们的模型真的好吗？我们应该找出一些指标来对模型进评估。
 
@@ -506,23 +506,23 @@ model.fit(
 
 要让 `Trainer` 在每个周期计算一个指标，我们需要定义一个 `compute_metrics()` 函数，该函数的输入是预测值和标签的数组，并返回带有指标名称和值的字典。
 
-用于评估 Token 分类预测的传统框架是 [*seqeval*](https://github.com/chakki-works/seqeval) . 要使用此指标，我们首先需要安装 seqeval 库：
+用于评估 Token 分类预测的传统框架是 [*seqeval*](https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval) . 要使用此指标，我们首先需要安装 seqeval 库：
 
 ```py
 !pip install seqeval
 ```
 
-然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在 [第三章](/course/chapter3) 中所做的那样：
+然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在第三章中所做的那样：
 
 {:else}
 
-用于评估 Token 分类预测的传统框架是 [*seqeval*](https://github.com/chakki-works/seqeval) . 要使用此指标，我们首先需要安装 seqeval 库：
+用于评估 Token 分类预测的传统框架是 [*seqeval*](https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval) . 要使用此指标，我们首先需要安装 seqeval 库：
 
 ```py
 !pip install seqeval
 ```
 
-然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在 [第三章](/course/chapter3) 中所做的那样：
+然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在第三章中所做的那样：
 
 {/if}
 
@@ -565,7 +565,7 @@ metric.compute(predictions=[predictions], references=[labels])
 
 {#if fw === 'pt'}
 
-它返回很多信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。对于我们的度量计算，我们将只保留总分，但是你可以自由地调整 `compute_metrics()` 函数返回您想要查看的所有指标。
+它返回很多信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。对于我们的度量计算，我们将只保留总分，但是你可以自由地调整 `compute_metrics()` 函数返回你想要查看的所有指标。
 
  `compute_metrics()` 函数首先取 logits 的 argmax，将它们转换为预测值（通常情况下，logits 和概率的顺序是相同，所以我们不需要使用 softmax）。然后我们需要将标签和预测值都从整数转换为字符串。我们删除所有标签为 `-100` 的值，然后将结果传递给 `metric.compute()` 方法：
 
@@ -630,7 +630,7 @@ metric.compute(predictions=[all_predictions], references=[all_labels])
  'overall_accuracy': 0.97}
 ```
 
-与我们的模型相比，你的模型的表现如何？如果您获得类似的数字，那么您的训练就成功了！
+与我们的模型相比，你的模型的表现如何？如果你获得类似的数字，那么你的训练就成功了！
 
 {/if}
 
@@ -659,7 +659,7 @@ model = AutoModelForTokenClassification.from_pretrained(
 )
 ```
 
-就像我们在 [第三章](/course/chapter3) 中定义 `AutoModelForSequenceClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
+就像我们在第三章中定义 `AutoModelForSequenceClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
 
 ```python
 model.config.num_labels
@@ -678,7 +678,7 @@ model.config.num_labels
 
 ### 微调模型
 
-我们现在准备好训练我们的模型了！在定义我们的 `Trainer` 之前，我们只需要做最后两件事：登录 Hugging Face 并定义我们的训练参数。如果您在 notebook 上工作，有一个方便的功能可以帮助您：
+我们现在准备好训练我们的模型了！在定义我们的 `Trainer` 之前，我们只需要做最后两件事：登录 Hugging Face 并定义我们的训练参数。如果你在 notebook 上工作，有一个方便的功能可以帮助你：
 
 ```python
 from huggingface_hub import notebook_login
@@ -707,12 +707,12 @@ args = TrainingArguments(
 )
 ```
 
-你已经对大多数内容有所了解了：我们设置了一些超参数（如学习率、训练的轮数和权重衰减），并指定 `push_to_hub=True` ，以表示我们希望在每个训练轮次结束时保存并评估模型，并希望将结果上传到模型中心。注意，你可以通过 `hub_model_id` 参数指定你想推送的仓库的名称（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们在 `TrainingArguments` 中添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将位于你的账户中，并以你设置的输出目录命名，所以在我们的例子中，它将是 `"sgugger/bert-finetuned-ner"` 。
+你已经对大多数内容有所了解了：我们设置了一些超参数（如学习率、训练的轮数和权重衰减），并指定 `push_to_hub=True` ，以表示我们希望在每个训练轮次结束时保存并评估模型，并希望将结果上传到模型中心。注意，你可以通过 `hub_model_id` 参数指定你想推送的仓库的名称（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) 时，我们在 `TrainingArguments` 中添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将位于你的账户中，并以你设置的输出目录命名，所以在我们的例子中，它将是 `"sgugger/bert-finetuned-ner"` 。
 
 <div custom-style="Tip-green">
 
 
-💡 如果你使用的输出目录已经存在，那么它需要是你想推送到 hub 的仓库的本地克隆。如果不是，您将在声明 `Trainer` 时遇到错误，并需要设置一个新的名字。
+💡 如果你使用的输出目录已经存在，那么它需要是你想推送到 hub 的仓库的本地克隆。如果不是，你将在声明 `Trainer` 时遇到错误，并需要设置一个新的名字。
 
 </div>
 
@@ -733,7 +733,7 @@ trainer = Trainer(
 trainer.train()
 ```
 
-请注意，在训练过程中每次保存模型时（这里是每个 epooch），它都会在后台上传到 Hub。这样，如有必要，您将能够在另一台机器上继续您的训练。
+请注意，在训练过程中每次保存模型时（这里是每个 epooch），它都会在后台上传到 Hub。这样，如有必要，你将能够在另一台机器上继续你的训练。
 
 训练完成后，我们使用 `push_to_hub()` 上传模型的最新版本
 
@@ -741,7 +741,7 @@ trainer.train()
 trainer.push_to_hub(commit_message="Training complete")
 ```
 
-如果您想检查一下是否上传成功，这个命令会返回刚刚执行的提交的 URL：
+如果你想检查一下是否上传成功，这个命令会返回刚刚执行的提交的 URL：
 
 ```python out
 'https://huggingface.co/sgugger/bert-finetuned-ner/commit/26ab21e5b1568f9afeccdaed2d8715f571d786ed'
@@ -749,11 +749,11 @@ trainer.push_to_hub(commit_message="Training complete")
 
 同时 `Trainer` 还创建并上传了一张包含所有评估结果的模型卡。到此阶段，你可以在模型 Hub 上使用推理小部件来测试你的模型并与你的朋友分享。你已经成功地在一个词元分类任务上微调了一个模型——恭喜你！
 
-如果您想更深入地了解训练循环，我们现在将向您展示如何使用 🤗 Accelerate 做同样的事情。
+如果你想更深入地了解训练循环，我们现在将向你展示如何使用 Accelerate 做同样的事情。
 
 ## 自定义训练循环 
 
-现在我们来看看完整的训练循环，这样你就可以轻松地定制你需要的部分。它与我们在 [第三章](/course/chapter3/4) 中所做的内容很相似，但对评估部分有一些改动。
+现在我们来看看完整的训练循环，这样你就可以轻松地定制你需要的部分。它与我们在第三章中所做的内容很相似，但对评估部分有一些改动。
 
 ### 做好训练前的准备 
 首先我们需要为我们的数据集构建 `DataLoader` 。我们将我们的 `data_collator` 输入 `collate_fn` 参数并打乱训练集，但不打乱验证集：
@@ -804,7 +804,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 <div custom-style="Tip-red">
 
 
-🚨 如果你正在 TPU 上训练，你需要将上面单元格开始的所有代码移动到一个专门的训练函数中。更多详情请见 [第三章](/course/chapter3) 。
+🚨 如果你正在 TPU 上训练，你需要将上面单元格开始的所有代码移动到一个专门的训练函数中。更多详情请见第三章。
 
 </div>
 
@@ -870,7 +870,7 @@ def postprocess(predictions, labels):
 
 - 训练本身，这是经典的迭代过程，即在 `train_dataloader` 上进行迭代，向前传递模型，然后反向传递和优化参数
 - 评估，在获取模型在一个 batch 上的输出之后，这里有一个需要注意的地方：由于两个进程可能已将输入和标签填充到不同的形状，我们需要使用 `accelerator.pad_across_processes()` 使预测和标签在调用 `gather()` 方法之前具有相同的形状。如果我们不这样做，评估将会出错或无限期挂起。然后我们将结果发送到 `metric.add_batch()` ，并在评估循环结束时调用 `metric.compute()` 。
-- 保存和上传，首先保存模型和词元分析器，然后调用 `repo.push_to_hub()` 。注意，我们使用参数 `blocking=False` 来告诉 🤗 Hub 库在一个异步进程中推送。这样，在训练时，这个指令在后台将模型和词元分析器推送到 hub。
+- 保存和上传，首先保存模型和词元分析器，然后调用 `repo.push_to_hub()` 。注意，我们使用参数 `blocking=False` 来告诉 Hub 库在一个异步进程中推送。这样，在训练时，这个指令在后台将模型和词元分析器推送到 hub。
 
 以下是完整的训练循环代码：
 
@@ -933,7 +933,7 @@ for epoch in range(num_train_epochs):
         )
 ```
 
-果这是您第一次看到用 🤗 Accelerate 保存的模型，让我们花点时间来了解一下这个过程中的三行代码：
+果这是你第一次看到用 Accelerate 保存的模型，让我们花点时间来了解一下这个过程中的三行代码：
 
 ```py
 accelerator.wait_for_everyone()
@@ -943,14 +943,14 @@ unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
 
 第一行是不言自明的：它告诉所有的进程等待，直到所有的进程都处于那个阶段再继续(阻塞)。这是为了确保在保存之前，我们在每个进程中都有相同的模型。然后获取 `unwrapped_model` ，它就是我们定义的基本模型。 `accelerator.prepare()` 方法会为了在分布式训练中工作而改变模型，所以它不再有 `save_pretraining()` 方法； `accelerator.unwrap_model()` 方法将撤销对模型的更改。最后，我们调用 `save_pretraining()` ，并制定 `accelerator.save()` 作为 `save_function` 而不是 `torch.save()` 。
 
-完成这些操作后，你应该拥有一个与 `Trainer` 训练出的模型结果相当类似的模型。你可以在 [huggingface-course/bert-finetuned-ner-accelerate](https://huggingface.co/huggingface-course/bert-finetuned-ner-accelerate) 查看我们使用这些代码训练的模型。如果你想在训练循环中测试任何调整，你可以直接通过编辑上面显示的代码来实现它们！
+完成这些操作后，你应该拥有一个与 `Trainer` 训练出的模型结果相当类似的模型。你可以在 [huggingface-course/bert-finetuned-ner-accelerate](https://huggingface.co/huggingface-course/bert-finetuned-ner-accelerate)(https://huggingface.co/huggingface-course/bert-finetuned-ner-accelerate) 查看我们使用这些代码训练的模型。如果你想在训练循环中测试任何调整，你可以直接通过编辑上面显示的代码来实现它们！
 
 
 {/if}
 
 ## 使用微调模型 
 
-我们已经向您展示了如何使用我们在模型中心微调的模型和推理小部件。在本地使用 `pipeline` 来使用它，您只需要指定正确的模型标签：
+我们已经向你展示了如何使用我们在模型中心微调的模型和推理小部件。在本地使用 `pipeline` 来使用它，你只需要指定正确的模型标签：
 
 ```py
 from transformers import pipeline

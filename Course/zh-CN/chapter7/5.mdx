@@ -322,7 +322,7 @@ tokenized_datasets = books_dataset.map(preprocess_function, batched=True)
 generated_summary = "I absolutely loved reading the Hunger Games"
 reference_summary = "I loved reading the Hunger Games"
 ```
-比较它们的一种方法是计算重叠单词的数量，在这种情况下为 6。但是，种方法有些粗糙，因此 ROUGE 是基于计算计算重叠部分的 _精确度(Precision)_ 和 _召回率(Recall)_ 分数。
+比较它们的一种方法是计算重叠单词的数量，在这种情况下为 6。但是，种方法有些粗糙，因此 ROUGE 是基于计算计算重叠部分的 `精确度(Precision)` 和 `召回率(Recall)` 分数。
 
 <Tip>
 
@@ -389,7 +389,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 ### 创建强大的 baseline [[创建强大的 baseline]]
 
-对于文本摘要，一个常见的基线是简单地取文章的前三句话，通常称为 _lead-3_ 基线。我们可以使用句号(英文使用．)来跟踪句子边界，但这在"U.S." or "U.N."之类的首字母缩略词上会失败。所以我们将使用` nltk `库，它包含一个更好的算法来处理这些情况。你可以使用以下方式安装该包：
+对于文本摘要，一个常见的基线是简单地取文章的前三句话，通常称为 `lead-3` 基线。我们可以使用句号(英文使用．)来跟踪句子边界，但这在"U.S." or "U.N."之类的首字母缩略词上会失败。所以我们将使用` nltk `库，它包含一个更好的算法来处理这些情况。你可以使用以下方式安装该包：
 
 +-|--?27?--|-+
 

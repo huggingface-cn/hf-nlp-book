@@ -43,6 +43,46 @@ def strQ2B(ustring):
         rstring += chr(inside_code)
     return rstring
 
+def strB2Q_some(text):
+    # 将半角符号和英文符号替换为中文全角符号
+    symbols_map = {
+        '!': '！',
+        '?': '？',
+        ',': '，',
+        '.': '。',
+        ':': '：',
+        ';': '；',
+        '@': '＠',
+        '$': '＄',
+        '%': '％',
+        '&': '＆',
+        # '*': '＊',
+        '(': '（',
+        ')': '）',
+        '[': '【',
+        ']': '】',
+        '{': '｛',
+        '}': '｝',
+        '<': '《',
+        '>': '》',
+        '|': '｜',
+        '\\': '＼',
+        '/': '／',
+        '=': '＝',
+        '+': '＋',
+        '-': '－',
+        '_': '＿',
+        '`': '‘',
+        '~': '～',
+        '\'': '’',
+        '\"': '“',
+    }
+    for (index,character) in enumerate(text):
+        if character in symbols_map:
+            symbol=input(text[index-20:index+1].replace('\n','')+f">>{symbols_map[character]}"+text[index+1:index+20].replace('\n','')+"(y/n)")
+            if symbol=='y':
+                text=text[:index]+symbols_map[character]+text[index+1:]
+    return text
 
 def is_latin(c):
     '''decide c is latin or not

@@ -198,6 +198,8 @@ TODO：尝试搭建Github的Bot自动化处理
 
 代码：划分TensorFlow和 Pytorch
 
+斜体：取消正文斜体改为双引号
+
 图片：更改链接（更改space），下载，翻译，题注
 
 章节层级：根据readme更改
@@ -208,6 +210,17 @@ QA：尝试自动化处理
 
 章节的描述：更改章节链接
 
+代词：更换为具体的名词
+
+指代性描述：标注具体位置
+
+标点：半角全角符号规范统一
+
+chapter7，QA：logist统一
+
+token :统一
+
+图片：转png插入文稿
 
 流程：
 
@@ -251,8 +264,9 @@ QA：尝试自动化处理
 2. Transformer模型（c1s1）
 
    - 自然语言处理概述(c1s2)
-   - Transformer模型的功能及工作原理(c1s3,c1s4)
-   - 编码器模型、解码器模型与序列到序列模型(c1s5,c1s6,c1s7)
+   - Transformer模型可以做什么（c1s3）
+   - Transformer模型的工作原理(c1s4)
+   - 常见的三种Transform模型的结构(c1s5,c1s6,c1s7)
    - 模型的偏差与局限性(c1s8)
    - 章末总结及测试（c1s9,c1s10）
 3. 使用🤗Transformers（c2s1）
@@ -265,7 +279,8 @@ QA：尝试自动化处理
 
    - 数据处理(c3s2)
    - 使用Trainer
-     API或Keras进行模型训练(c3s3,c3s3_tf)
+     API进行模型训练（c3s3）
+   - 使用Keras进行模型训练(c3s3_tf)
    - 一个完整的训练(c3s4)
    - 章末总结及测试（c3s5,c3s6）
 5. 使用 Hugging Face Hub(c4s1)

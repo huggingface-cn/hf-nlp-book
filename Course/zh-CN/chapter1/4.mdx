@@ -44,7 +44,7 @@
 
 这种类型的模型可以对其训练过的语言有统计学的理解，但对于特定的实际任务的效果并不是很好。因此，一般的预训练模型会经历一个称为*迁移学习*的过程。在此过程中，模型在给定任务上以监督方式（即使用人工注释标签）进行微调。
 
-任务的一个例子是阅读 *n* 个单词的句子，预测下一个单词。这被称为因果语言建模，因为输出取决于过去和现在的输入，而不依赖于未来的输入。
+任务的一个例子是阅读 `n` 个单词的句子，预测下一个单词。这被称为因果语言建模，因为输出取决于过去和现在的输入，而不依赖于未来的输入。
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter1/causal_modeling.svg" alt="Example of causal language modeling in which the next word from a sentence is predicted."/>

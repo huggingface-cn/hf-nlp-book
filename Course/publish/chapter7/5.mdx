@@ -17,7 +17,7 @@
 
 
 
-尽管在 [Hugging Face Hub](https://huggingface.co/models?pipeline_tag=summarization=downloads) 上已经存在各种微调模型用于文本摘要，几乎所有这些都只适用于英文文档。因此，为了在本节中添加一些变化，我们将为英语和西班牙语训练一个双语模型。在本节结束时，您将有一个可以总结客户评论的 [模型](https://huggingface.co/huggingface-course/mt5-small-finetuned-amazon-en-es) 。
+尽管在 [Hugging Face Hub](https://huggingface.co/models?pipeline_tag=summarization=downloads)(https://huggingface.co/models?pipeline_tag=summarization=downloads) 上已经存在各种微调模型用于文本摘要，几乎所有这些都只适用于英文文档。因此，为了在本节中添加一些变化，我们将为英语和西班牙语训练一个双语模型。在本节结束时，你将有一个可以总结客户评论的 [模型](https://huggingface.co/huggingface-course/mt5-small-finetuned-amazon-en-es)(https://huggingface.co/huggingface-course/mt5-small-finetuned-amazon-en-es) 。
 
 
 
@@ -25,7 +25,7 @@
 
 ## 准备多语言语料库 
 
-我们将使用 [多语言亚马逊评论语料库](https://huggingface.co/datasets/amazon_reviews_multi) 创建我们的双语摘要器。该语料库由六种语言的亚马逊产品评论组成，通常用于对多语言分类器进行基准测试。然而，由于每条评论都附有一个简短的标题，我们可以使用标题作为我们模型学习的目标摘要！首先，让我们从 Hugging Face Hub 下载英语和西班牙语子集：
+我们将使用 [多语言亚马逊评论语料库](https://huggingface.co/datasets/amazon_reviews_multi)(https://huggingface.co/datasets/amazon_reviews_multi) 创建我们的双语摘要器。该语料库由六种语言的亚马逊产品评论组成，通常用于对多语言分类器进行基准测试。然而，由于每条评论都附有一个简短的标题，我们可以使用标题作为我们模型学习的目标摘要！首先，让我们从 Hugging Face Hub 下载英语和西班牙语子集：
 
 ```python
 from datasets import load_dataset
@@ -52,7 +52,7 @@ DatasetDict({
 })
 ```
 
-如您所见，对于每种语言，都有 200,000 条评论 `train` 数据集，以及 5,000 条评论用于 `validation` 和 `test` 数据集。我们感兴趣的评论信息包含在 `review_body` 和 `review_title` 列中。让我们通过创建一个简单的函数来从训练集中随机抽取一些样本，看一下一些例子，该函数使用我们在 [第五章](/course/chapter5) 学到过：
+如你所见，对于每种语言，都有 200,000 条评论 `train` 数据集，以及 5,000 条评论用于 `validation` 和 `test` 数据集。我们感兴趣的评论信息包含在 `review_body` 和 `review_title` 列中。让我们通过创建一个简单的函数来从训练集中随机抽取一些样本，看一下一些例子，该函数使用我们在第五章学到过：
 
 ```python
 def show_samples(dataset, num_samples=3, seed=42):
@@ -78,7 +78,7 @@ show_samples(english_dataset)
 <div custom-style="Tip-green">
 
 
-✏️ **试试看！** 更改 `Dataset.shuffle()` 命令中的随机种子以探索语料库中的其他评论。如果您是说西班牙语的人，请查看 `spanish_dataset` 中的一些评论，看看标题是否也像合理的摘要。
+✏️ **试试看！** 更改 `Dataset.shuffle()` 命令中的随机种子以探索语料库中的其他评论。如果你是说西班牙语的人，请查看 `spanish_dataset` 中的一些评论，看看标题是否也像合理的摘要。
 
 </div>
 
@@ -115,7 +115,7 @@ book                       3756
 Name: product_category, dtype: int64
 ```
 
-在英语数据集中，最受欢迎的产品是家居用品、服装和无线电子产品。不过，为了坚持亚马逊的主题，让我们专注于总结书籍的评论——毕竟，这是亚马逊这家公司成立的基础！我们可以看到两个符合要求的产品类别（ `book` 和 `digital_ebook_purchase` )，所以让我们为这些产品过滤两种语言的数据集。正如我们在 [第五章](/course/chapter5) 学到的， `Dataset.filter()` 函数允许我们非常有效地对数据集进行切片，因此我们可以定义一个简单的函数来进行此操作：
+在英语数据集中，最受欢迎的产品是家居用品、服装和无线电子产品。不过，为了坚持亚马逊的主题，让我们专注于总结书籍的评论——毕竟，这是亚马逊这家公司成立的基础！我们可以看到两个符合要求的产品类别（ `book` 和 `digital_ebook_purchase` )，所以让我们为这些产品过滤两种语言的数据集。正如我们在第五章学到的， `Dataset.filter()` 函数允许我们非常有效地对数据集进行切片，因此我们可以定义一个简单的函数来进行此操作：
 
 ```python
 def filter_books(example):
@@ -150,7 +150,7 @@ show_samples(english_books)
 '>> Review: Nearly all the tips useful and. I consider myself an intermediate to advanced user of OneNote. I would highly recommend.'
 ```
 
-好的，我们可以看到评论并不是严格意义上的书籍，可能是指日历和 OneNote 等电子应用程序等内容。尽管如此，该领域似乎适合训练摘要模型。在我们查看适合此任务的各种模型之前，我们还有最后一点数据准备要做：将英文和西班牙文评论作为单个 `DatasetDict` 对象组合起来。🤗 Datasets 提供了一个方便的 `concatenate_datasets()` 函数，它（名如其实）将把两个 `Dataset` 对象堆叠在一起。因此，为了创建我们的双语数据集，我们将遍历数据集的每个部分，并打乱结果以确保我们的模型不会过度拟合单一语言：
+好的，我们可以看到评论并不是严格意义上的书籍，也可能是指日历和 OneNote 等电子应用程序等内容。尽管如此，该领域似乎适合训练摘要模型。在我们查看适合此任务的各种模型之前，我们还有最后一点数据准备要做：将英文和西班牙文评论作为单个 `DatasetDict` 对象组合起来。Datasets 提供了一个方便的 `concatenate_datasets()` 函数，它（名如其实）将把两个 `Dataset` 对象堆叠在一起。因此，为了创建我们的双语数据集，我们将遍历数据集的每个部分，并打乱结果以确保我们的模型不会过度拟合单一语言：
 
 ```python
 from datasets import concatenate_datasets, DatasetDict
@@ -192,18 +192,18 @@ books_dataset = books_dataset.filter(lambda x: len(x["review_title"].split()) > 
 
 ## 文本摘要模型 
 
-如果你仔细想想，文本摘要是一种类似于机器翻译的任务：我们有一个像评论这样的文本正文，我们希望将其“翻译”成一个较短的版本，同时捕捉到输入的主要特征。因此，大多数用于文本摘要的 Transformer 模型采用了我们在 [第一章](/course/chapter1) 遇到的编码器-解码器架构。尽管有一些例外，例如 GPT 系列模型，它们在 few-shot（少量微调）之后也可以提取摘要。下表列出了一些可以进行摘要微调的流行预训练模型。
+如果你仔细想想，文本摘要是一种类似于机器翻译的任务：我们有一个像评论这样的文本正文，我们希望将其“翻译”成一个较短的版本，同时捕捉到输入的主要特征。因此，大多数用于文本摘要的 Transformer 模型采用了我们在第一章遇到的编码器-解码器架构。尽管有一些例外，例如 GPT 系列模型，它们在 few-shot（少量微调）之后也可以提取摘要。下表列出了一些可以进行摘要微调的流行预训练模型。
 
 | Transformer 模型 | 描述                                                                                                                                                                                                    | 多种语言？|
 | :---------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-----------: |
-| [GPT-2](https://huggingface.co/gpt2-xl) | 虽然训练为自回归语言模型，但您可以通过在输入文本末尾附加“TL;DR”来使 GPT-2 生成摘要。|      ❌       |
-| [PEGASUS](https://huggingface.co/google/pegasus-large) | 在预训练是的目标是来预测多句子文本中的屏蔽句子。这个预训练目标比普通语言建模更接近文本摘要，并且在流行的基准测试中得分很高。|      ❌       |
-| [T5](https://huggingface.co/t5-base) | 通用的 Transformer 架构，将所有任务都以文本到文本的框架进行描述；例如，模型文本摘要的输入格式是 `summarize: ARTICLE` 。|      ❌       |
-| [mT5](https://huggingface.co/google/mt5-base) | T5 的多语言版本，在多语言 Common Crawl 语料库 (mC4) 上进行预训练，涵盖了 101 种语言。|      ✅       |
-| [BART](https://huggingface.co/facebook/bart-base) | 一种新颖的 Transformer 架构，其中包含经过训练的编码器和解码器堆栈，以重建被破坏的输入，结合了 BERT 和 GPT-2 的预训练方案。|      ❌       |
-| [mBART-50](https://huggingface.co/facebook/mbart-large-50) | BART 的多语言版本，预训练了 50 种语言。|      ✅       |
+| [GPT-2](https://huggingface.co/gpt2-xl)(https://huggingface.co/gpt2-xl) | 虽然训练为自回归语言模型，但你可以通过在输入文本末尾附加“TL;DR”来使 GPT-2 生成摘要。|      ❌       |
+| [PEGASUS](https://huggingface.co/google/pegasus-large)(https://huggingface.co/google/pegasus-large) | 在预训练是的目标是来预测多句子文本中的屏蔽句子。这个预训练目标比普通语言建模更接近文本摘要，并且在流行的基准测试中得分很高。|      ❌       |
+| [T5](https://huggingface.co/t5-base)(https://huggingface.co/t5-base) | 通用的 Transformer 架构，将所有任务都以文本到文本的框架进行描述；例如，模型文本摘要的输入格式是 `summarize: ARTICLE` 。|      ❌       |
+| [mT5](https://huggingface.co/google/mt5-base)(https://huggingface.co/google/mt5-base) | T5 的多语言版本，在多语言 Common Crawl 语料库 (mC4) 上进行预训练，涵盖了 101 种语言。|      ✅       |
+| [BART](https://huggingface.co/facebook/bart-base)(https://huggingface.co/facebook/bart-base) | 一种新颖的 Transformer 架构，其中包含经过训练的编码器和解码器堆栈，以重建被破坏的输入，结合了 BERT 和 GPT-2 的预训练方案。|      ❌       |
+| [mBART-50](https://huggingface.co/facebook/mbart-large-50)(https://huggingface.co/facebook/mbart-large-50) | BART 的多语言版本，预训练了 50 种语言。|      ✅       |
 
-从此表中可以看出，大多数用于摘要的 Transformer 模型（以及大多数 NLP 任务）都是单语的。如果您的任务是使用“有大量语料库”的语言（如英语或德语），这很好，但对于世界各地正在使用的数千种其他语言，则不然。幸运的是，有一类多语言 Transformer 模型，如 mT5 和 mBART，可以解决问题。这些模型是使用语言建模进行预训练的，但有一点不同：它们不是在一种语言的语料库上训练，而是同时在 50 多种语言的文本上进行联合训练！
+从此表中可以看出，大多数用于摘要的 Transformer 模型（以及大多数 NLP 任务）都是单语的。如果你的任务是使用“有大量语料库”的语言（如英语或德语），这很好，但对于世界各地正在使用的数千种其他语言，则不然。幸运的是，有一类多语言 Transformer 模型，如 mT5 和 mBART，可以解决问题。这些模型是使用语言建模进行预训练的，但有一点不同：它们不是在一种语言的语料库上训练，而是同时在 50 多种语言的文本上进行联合训练！
 
 我们将使用 mT5，这是一种基于 T5 的有趣架构，在文本到文本框架中进行了预训练。在 T5 中，每个 NLP 任务都是以提示前缀（如 `summarize:` ）的形式定义的，这使模型使生成的文本适应提示。如下图所示，这让 T5 变得非常通用，因为你可以用一个模型解决很多任务！
 
@@ -235,7 +235,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 <div custom-style="Tip-green">
 
 
-💡在 NLP 项目的早期阶段，一个好的做法是在小样本数据上训练一类“小”模型。这使您可以更快地调试和迭代端到端工作流。一旦您对结果充满信心，您始终可以通过简单地更改模型检查点来在大规模数据上训练模型！
+💡在 NLP 项目的早期阶段，一个好的做法是在小样本数据上训练一类“小”模型。这使你可以更快地调试和迭代端到端工作流。一旦你对结果充满信心，你始终可以通过简单地更改模型检查点来在大规模数据上训练模型！
 
 </div>
 
@@ -250,7 +250,7 @@ inputs
 {'input_ids': [336, 259, 28387, 11807, 287, 62893, 295, 12507, 1], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1]}
 ```
 
-在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在 [第3章](https://chat.openai.com/course/chapter3) 的第一次微调实验中遇到过。让我们使用词元分析器的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的词元分析器：
+在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在第3章的第一次微调实验中遇到过。让我们使用词元分析器的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的词元分析器：
 
 ```python
 tokenizer.convert_ids_to_tokens(inputs.input_ids)
@@ -260,9 +260,9 @@ tokenizer.convert_ids_to_tokens(inputs.input_ids)
 ['▁I', '▁', 'loved', '▁reading', '▁the', '▁Hung', 'er', '▁Games', '</s>']
 ```
 
-特殊的 Unicode 字符 `▁` 和序列结束词元 `</s>` 表明我们正在使用基于 [第6章](https://chat.openai.com/course/chapter6) 中讨论的 Unigram 分段算法的 SentencePiece 词元分析器。Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 忽略口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
+特殊的 Unicode 字符 `▁` 和序列结束词元 `</s>` 表明我们正在使用基于第6章中讨论的 Unigram 分段算法的 SentencePiece 词元分析器。Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 忽略口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
 
-为了对我们的语料库词元化，我们必须处理与摘要相似的微妙之处：因为我们的标签也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。🤗 Transformers 中的分词器提供了一个绝妙的 `text_target` 参数，允许您将标签与输入并行词元化。以下是如何为 mT5 处理输入和目标的示例：
+为了对我们的语料库词元化，我们必须处理与摘要相似的微妙之处：因为我们的标签也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。Transformers 中的分词器提供了一个绝妙的 `text_target` 参数，允许你将标签与输入并行词元化。以下是如何为 mT5 处理输入和目标的示例：
 
 ```python
 max_input_length = 512
@@ -294,7 +294,7 @@ tokenized_datasets = books_dataset.map(preprocess_function, batched=True)
 <div custom-style="Tip-green">
 
 
-💡 你可能已经注意到我们在上面的 `Dataset.map()` 函数中使用了 `batched=True` 。这将以 1000（默认值）的批次编码例子，并让您可以利用 🤗 Transformers 中快速词元分析器的多线程功能。在可能的情况下，尝试使用 `batched=True` 来加速您的预处理！
+💡 你可能已经注意到我们在上面的 `Dataset.map()` 函数中使用了 `batched=True` 。这将以 1000（默认值）的批次编码例子，并让你可以利用 Transformers 中快速词元分析器的多线程功能。在可能的情况下，尝试使用 `batched=True` 来加速你的预处理！
 
 </div>
 
@@ -304,18 +304,18 @@ tokenized_datasets = books_dataset.map(preprocess_function, batched=True)
 
 与我们在本课程中涵盖的大多数其他任务相比，衡量文本生成任务（如摘要或翻译）的性能并不那么简单。例如，对于“我喜欢阅读饥饿游戏”这样的评论，有多个有效摘要，例如“我喜欢饥饿游戏”或“饥饿游戏是一本好书”。显然，在生成的摘要和标签之间应用某种精确匹配并不是一个好的解决方案——即使是人类在这样的评估指标下也会表现不佳，因为我们都有自己的写作风格。
 
-总而言之，最常用的指标之一是[ROUGE 分数](https://en.wikipedia.org/wiki/ROUGE_(metric))（Recall-Oriented Understudy for Gisting Evaluation 的缩写）。该指标背后的基本思想是将生成的摘要与一组通常由人类创建的参考摘要进行比较。更具体地说，假设我们要比较以下两个摘要：
+总而言之，最常用的指标之一是[ROUGE 分数](https://en.wikipedia.org/wiki/ROUGE_(metric)(https://en.wikipedia.org/wiki/ROUGE_(metric))（Recall-Oriented Understudy for Gisting Evaluation 的缩写）。该指标背后的基本思想是将生成的摘要与一组通常由人类创建的参考摘要进行比较。更具体地说，假设我们要比较以下两个摘要：
 
 ```python
 generated_summary = "I absolutely loved reading the Hunger Games"
 reference_summary = "I loved reading the Hunger Games"
 ```
-比较它们的一种方法是计算重叠单词的数量，在这种情况下为 6。但是，种方法有些粗糙，因此 ROUGE 是基于计算计算重叠部分的 _精确度(Precision)_ 和 _召回率(Recall)_ 分数。
+比较它们的一种方法是计算重叠单词的数量，在这种情况下为 6。但是，种方法有些粗糙，因此 ROUGE 是基于计算计算重叠部分的 `精确度(Precision)` 和 `召回率(Recall)` 分数。
 
 <div custom-style="Tip-green">
 
 
-🙋 如果这是您第一次听说精确度(Precision)和召回率(Recall)，请不要担心——我们将一起通过一些明确的示例来说明一切。这些指标通常在分类任务中遇到，所以如果你想了解在那个任务中精确度(Precision)和召回率(Recall)是如何定义的，我们建议你查看 `scikit-learn` 的 [指南](https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html) 。
+🙋 如果这是你第一次听说精确度(Precision)和召回率(Recall)，请不要担心——我们将一起通过一些明确的示例来说明一切。这些指标通常在分类任务中遇到，所以如果你想了解在那个任务中精确度(Precision)和召回率(Recall)是如何定义的，我们建议你查看 `scikit-learn` 的 [指南](https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html)(https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html) 。
 
 </div>
 
@@ -327,7 +327,7 @@ $$ \mathrm{召回率} = \frac{\mathrm{重叠词的数量}}{\mathrm{参考摘要�
 
 $$ \mathrm{精确度} = \frac{\mathrm{重叠词的数量}}{\mathrm{生成摘要中的总词数}} $$
 
-将此应用到我们的详细摘要中会得到 6/10 = 0.6 的精度，这比我们较短的摘要获得的 6/7 = 0.86 的精度要差得多。在实践中，通常计算精度和召回率，然后得到 F1 得分（精确度和召回率的调和平均数）。我们可以很容易地在🤗数据集中通过首先安装 `rouge_score` 包来实现这一点：
+将此应用到我们的详细摘要中会得到 6/10 = 0.6 的精度，这比我们较短的摘要获得的 6/7 = 0.86 的精度要差得多。在实践中，通常计算精度和召回率，然后得到 F1 得分（精确度和召回率的调和平均数）。我们可以很容易地在数据集中通过首先安装 `rouge_score` 包来实现这一点：
 
 ```py
 !pip install rouge_score
@@ -357,7 +357,7 @@ scores
  'rougeLsum': AggregateScore(low=Score(precision=0.86, recall=1.0, fmeasure=0.92), mid=Score(precision=0.86, recall=1.0, fmeasure=0.92), high=Score(precision=0.86, recall=1.0, fmeasure=0.92))}
 ```
 
-哇，这个输出信息真多——它们都代表什么意思呢？首先，🤗 Datasets 实际上计算了精度、召回率和 F1 分数的置信区间；这些就是你在这里看到的 `low` 、 `mid` 和 `high` 属性。此外，🤗 Datasets 还计算了基于在比较生成摘要和参考摘要时的不同文本粒度的各种 ROUGE 得分。 `rouge1` 测量的是生成摘要和参考摘要中单个单词的重叠程度为了验证这一点，让我们提取出我们得分的 `mid` 值：
+哇，这个输出信息真多——它们都代表什么意思呢？首先，Datasets 实际上计算了精度、召回率和 F1 分数的置信区间；这些就是你在这里看到的 `low` 、 `mid` 和 `high` 属性。此外，Datasets 还计算了基于在比较生成摘要和参考摘要时的不同文本粒度的各种 ROUGE 得分。 `rouge1` 测量的是生成摘要和参考摘要中单个单词的重叠程度为了验证这一点，让我们提取出我们得分的 `mid` 值：
 
 ```python
 scores["rouge1"].mid
@@ -379,7 +379,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 ### 创建强大的 baseline 
 
-对于文本摘要，一个常见的基线是简单地取文章的前三句话，通常称为 _lead-3_ 基线。我们可以使用句号(英文使用．)来跟踪句子边界，但这在"U.S." or "U.N."之类的首字母缩略词上会失败。所以我们将使用` nltk `库，它包含一个更好的算法来处理这些情况。你可以使用以下方式安装该包：
+对于文本摘要，一个常见的基线是简单地取文章的前三句话，通常称为 `lead-3` 基线。我们可以使用句号(英文使用．)来跟踪句子边界，但这在"U.S." or "U.N."之类的首字母缩略词上会失败。所以我们将使用` nltk `库，它包含一个更好的算法来处理这些情况。你可以使用以下方式安装该包：
 
 +-|--?27?--|-+
 
@@ -425,25 +425,25 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 <div custom-style="Tip-green">
 
 
-💡 如果您想知道为什么在下游任务中没有看到任何关于微调模型的警告，那是因为对于序列到序列的任务，我们保留了网络的所有权重。与此相比，在+-|--?90?--|-+中的文本分类模型中，我们用一个随机初始化的网络替换了预训练模型的头部。
+💡 如果你想知道为什么在下游任务中没有看到任何关于微调模型的警告，那是因为对于序列到序列的任务，我们保留了网络的所有权重。与此相比，在+-|--?90?--|-+中的文本分类模型中，我们用一个随机初始化的网络替换了预训练模型的头部。
 
 </div>
 
-我们需要做的下一件事是登录 Hugging Face Hub。如果您在 notebook 中运行此代码，则可以使用以下实用程序函数进行此操作：
+我们需要做的下一件事是登录 Hugging Face Hub。如果你在 notebook 中运行此代码，则可以使用以下实用程序函数进行此操作：
 
 +-|--?36?--|-+
 
-这将显示一个小工具，您可以在其中输入您的凭据。或者，你可以在你的终端运行这条命令来登陆：
+这将显示一个小工具，你可以在其中输入你的凭据。或者，你可以在你的终端运行这条命令来登陆：
 
 +-|--?37?--|-+
 
 {#if fw === 'pt'}
 
-我们需要生成摘要以便在训练期间计算 ROUGE 分数。幸运的是，🤗 Transformers 提供了专用的` Seq2SeqTrainingArguments `和` Seq2SeqTrainer `类，可以自动为我们完成这项工作！为了了解它是如何工作的，让我们首先为我们的实验定义超参数和其他参数：
+我们需要生成摘要以便在训练期间计算 ROUGE 分数。幸运的是，Transformers 提供了专用的` Seq2SeqTrainingArguments `和` Seq2SeqTrainer `类，可以自动为我们完成这项工作！为了了解它是如何工作的，让我们首先为我们的实验定义超参数和其他参数：
 
 +-|--?38?--|-+
 
-在这里，` predict_with_generate `参数已经被设置为 True ，表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在+-|--?91?--|-+所讨论的，解码器通过逐个预测单词来执行推理，这是由模型的` generate() `方法实现的。设置` predict_with_generate=True `告诉` Seq2SeqTrainer `在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了` save_total_limit `选项，训练期间最多只保存 3 个检查点的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。` push_to_hub=True `参数将允许我们在训练后将模型推送到 Hub；你可以在由` output_dir `定义的位置下的你的用户资料中找到存储库。请注意，您可以使用` hub_model_id `参数指定要推送到的存储库的名称（特别是当您想要推送到组织时，您必须使用此参数）。例如，当我们将模型推送到+-|--?92?--|-+时，我们在` Seq2SeqTrainingArguments `中添加了` hub_model_id="huggingface-course/mt5-finetuned-amazon-en-es" `。
+在这里，` predict_with_generate `参数已经被设置为 True ，表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在+-|--?91?--|-+所讨论的，解码器通过逐个预测单词来执行推理，这是由模型的` generate() `方法实现的。设置` predict_with_generate=True `告诉` Seq2SeqTrainer `在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了` save_total_limit `选项，训练期间最多只保存 3 个检查点的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。` push_to_hub=True `参数将允许我们在训练后将模型推送到 Hub；你可以在由` output_dir `定义的位置下的你的用户资料中找到存储库。请注意，你可以使用` hub_model_id `参数指定要推送到的存储库的名称（特别是当你想要推送到组织时，你必须使用此参数）。例如，当我们将模型推送到+-|--?92?--|-+时，我们在` Seq2SeqTrainingArguments `中添加了` hub_model_id="huggingface-course/mt5-finetuned-amazon-en-es" `。
 
 我们需要做的下一件事是为训练器提供一个` compute_metrics() `函数，以便我们可以在训练期间评估我们的模型。对于摘要模型来说，这比简单地在模型的预测上调用` rouge_score.compute() `更复杂一些，因为我们需要在计算 ROUGE 分数之前将输出和标签解码为文本。下面的函数正是这样做的，并且还利用` nltk `中的` sent_tokenize() `函数来用换行符分隔摘要语句：
 
@@ -453,7 +453,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 接下来，我们需要为我们的序列到序列任务定义一个数据整理器（data collator）。由于 mT5 是一个编码器-解码器 Transformer 模型，准备我们的批次数据时有一点需要注意，那就是在解码期间，我们需要将标签向右移动一个单位。这是为了确保解码器只看到之前的真实的标签，而不是当前或未来的标签，这样模型就能避免容易记住标签。这与在像+-|--?93?--|-+这样的任务中如何应用掩蔽自注意力机制类似。
 
-幸运的是，🤗 Transformers提供了一个` DataCollatorForSeq2Seq `整理器，它会动态地填充我们的输入和标签。要实例化这个整理器，我们只需要提供` tokenizer `和` model `：
+幸运的是，Transformers提供了一个` DataCollatorForSeq2Seq `整理器，它会动态地填充我们的输入和标签。要实例化这个整理器，我们只需要提供` tokenizer `和` model `：
 
 {#if fw === 'pt'}
 
@@ -501,7 +501,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 这将把检查点和配置文件保存到` output_dir `，然后将所有文件上传到Hub。通过指定` tags `参数，我们还确保在Hub上的小工具会是一个摘要生成的小工具，而不是与mT5架构相关联的默认文本生成小工具（关于模型标签的更多信息，请参见+-|--?94?--|-+）。` trainer.push_to_hub() `的输出是Git提交哈希的URL，所以你可以轻松查看对模型库进行的修改！
 
-在结束本节之前，让我们看一下如何使用 🤗 Accelerate 提供的底层 API 对 mT5 进行微调。
+在结束本节之前，让我们看一下如何使用 Accelerate 提供的底层 API 对 mT5 进行微调。
 
 {:else}
 
@@ -531,9 +531,9 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 {#if fw === 'pt'}
 
-## 使用 🤗 Accelerate 微调 mT5 
+## 使用 Accelerate 微调 mT5 
 
-使用 🤗 Accelerate 微调我们的模型与我们在+-|--?97?--|-+中遇到的文本分类示例非常相似。主要区别在于需要在训练期间显式生成摘要并定义我们如何计算 ROUGE 分数（请记住，` Seq2SeqTrainer `已经为我们处理了生成摘要的部分）。让我们看看我们如何在 🤗 Accelerate 中实现这两个要求！
+使用 Accelerate 微调我们的模型与我们在+-|--?97?--|-+中遇到的文本分类示例非常相似。主要区别在于需要在训练期间显式生成摘要并定义我们如何计算 ROUGE 分数（请记住，` Seq2SeqTrainer `已经为我们处理了生成摘要的部分）。让我们看看我们如何在 Accelerate 中实现这两个要求！
 
 ### 为训练做好一切准备 
 
@@ -560,7 +560,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 <div custom-style="Tip-red">
 
 
-🚨如果您在 TPU 上进行训练，则需要将上述所有代码移动到专门的训练函数中。有关详细信息，请参阅+-|--?98?--|-+。
+🚨如果你在 TPU 上进行训练，则需要将上述所有代码移动到专门的训练函数中。有关详细信息，请参阅+-|--?98?--|-+。
 
 </div>
 
@@ -580,7 +580,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 如果你还记得我们是如何定义` Seq2SeqTrainer `的` compute_metrics() `函数，这对你来说应该很熟悉。
 
-最后，我们需要在 Hugging Face Hub 上创建一个模型仓库。为此，我们可以使用名为🤗 Hub的库。我们只需要为我们的仓库定义一个名称，库中有一个实用的函数可以将仓库ID与用户ID组合起来：
+最后，我们需要在 Hugging Face Hub 上创建一个模型仓库。为此，我们可以使用名为Hub的库。我们只需要为我们的仓库定义一个名称，库中有一个实用的函数可以将仓库ID与用户ID组合起来：
 +-|--?64?--|-+
 
 +-|--?65?--|-+
@@ -592,7 +592,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 ### 训练循环 
 
-文本摘要的训练循环与我们遇到的其他 🤗 Accelerate 示例非常相似，大致分为四个主要步骤：
+文本摘要的训练循环与我们遇到的其他 Accelerate 示例非常相似，大致分为四个主要步骤：
 
 1. 通过在每个 epoch 迭代` train_dataloader `中的所有示例来训练模型。
 2. 在每个 epoch 结束时生成摘要，首先生成词元，然后将它们（和参考摘要）解码为文本。
@@ -605,13 +605,13 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 +-|--?68?--|-+
 
-就是这样！运行此程序后，您将获得与我们使用“Trainer”获得的模型和结果非常相似的模型和结果。
+就是这样！运行此程序后，你将获得与我们使用“Trainer”获得的模型和结果非常相似的模型和结果。
 
 {/if}
 
-## 使用您微调的模型 
+## 使用你微调的模型 
 
-将模型推送到 Hub 后，您可以通过推理小部件或` pipeline` 对象来使用它，如下所示：
+将模型推送到 Hub 后，你可以通过推理小部件或` pipeline` 对象来使用它，如下所示：
 
 ```python
 from transformers import pipeline
@@ -660,6 +660,6 @@ print_summary(0)
 '>>> Summary: Muy facil de leer'
 ```
 
-我们可以看到在这个例子中，摘要翻译成了英文的“非常容易阅读”，我们可以看到它是直接从评论中提取的。尽管如此，这显示了 mT5 模型的多功能性，并让您体验了处理多语言语料库的感觉！
+我们可以看到在这个例子中，摘要翻译成了英文的“非常容易阅读”，我们可以看到它是直接从评论中提取的。尽管如此，这显示了 mT5 模型的多功能性，并让你体验了处理多语言语料库的感觉！
 
 接下来，我们将转向一个稍微复杂一点的任务：从头开始训练一个语言模型。
