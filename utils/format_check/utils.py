@@ -65,7 +65,7 @@ def strB2Q_some(text):
         '}': '｝',
         '<': '《',
         '>': '》',
-        '|': '｜',
+        # '|': '｜',
         '\\': '＼',
         '/': '／',
         '=': '＝',
@@ -79,9 +79,22 @@ def strB2Q_some(text):
     }
     for (index,character) in enumerate(text):
         if character in symbols_map:
-            symbol=input(text[index-20:index+1].replace('\n','')+f">>{symbols_map[character]}"+text[index+1:index+20].replace('\n','')+"(y/n)")
-            if symbol=='y':
-                text=text[:index]+symbols_map[character]+text[index+1:]
+            if character=='\'':
+                symbol=input(text[index-20:index+1].replace('\n','')+f">>{bcolors.WARNING}{symbols_map[character]}{bcolors.ENDC}"+text[index+1:index+20].replace('\n','')+"(1:‘2:’)")
+                if symbol=='1':
+                    text=text[:index]+'‘'+text[index+1:]
+                if symbol=='2':
+                    text=text[:index]+'’'+text[index+1:]
+            elif character=='"':
+                symbol=input(text[index-20:index+1].replace('\n','')+f">>{bcolors.WARNING}{symbols_map[character]}{bcolors.ENDC}"+text[index+1:index+20].replace('\n','')+"(1:“2:”)")
+                if symbol=='1':
+                    text=text[:index]+'“'+text[index+1:]
+                if symbol=='2':
+                    text=text[:index]+'”'+text[index+1:]
+            else:
+                symbol=input(text[index-20:index+1].replace('\n','')+f">>{bcolors.WARNING}{symbols_map[character]}{bcolors.ENDC}"+text[index+1:index+20].replace('\n','')+"(y/n)")
+                if symbol=='y':
+                    text=text[:index]+symbols_map[character]+text[index+1:]
     return text
 
 def is_latin(c):

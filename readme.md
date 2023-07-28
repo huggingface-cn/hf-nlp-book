@@ -222,6 +222,8 @@ token :统一
 
 图片：转png插入文稿
 
+属于规范：笔记本：Notebook token 
+
 流程：
 
 1. 使用public_export_format将文本导出到publish

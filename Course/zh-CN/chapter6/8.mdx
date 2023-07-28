@@ -53,7 +53,7 @@ def get_training_corpus():
 
 **get_training_corpus()** 函数是一个生成器，每次调用的时候将产生 1,000 个文本，我们将用它来训练词元分析器。
 
-🤗 Tokenizers 也可以直接在文本文件上进行训练。以下是我们如何生成一个包含 WikiText-2 所有文本/输入的文本文件，这样我们就可以在本地离线使用：
+🤗 Tokenizers 也可以直接在文本文件上进行训练。以下是我们生成一个包含 WikiText-2 所有文本的代码，这样我们就可以在本地离线使用：
 
 ```python
 with open("wikitext-2.txt", "w", encoding="utf-8") as f:
@@ -367,7 +367,7 @@ print(encoding.tokens)
 ```python
 tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
 ```
- `trim_offsets = False` 这个选项告诉 post-processor，我们应该让那些以'Ġ'开始的词元的偏移量保持不变：这样，偏移量的开始将指向单词前的空格，而不是单词的第一个字符（因为空格在技术上是词元的一部分）。让我们看一下我们刚刚编码的文本的结果，其中 `'Ġtest'` 是索引 4 的词元：
+ `trim_offsets = False` 这个选项告诉 post-processor，我们应该让那些以‘Ġ’开始的词元的偏移量保持不变：这样，偏移量的开始将指向单词前的空格，而不是单词的第一个字符（因为空格在技术上是词元的一部分）。让我们看一下我们刚刚编码的文本的结果，其中 `'Ġtest'` 是索引 4 的词元：
 
 ```python
 sentence = "Let's test this tokenizer."

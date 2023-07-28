@@ -1049,7 +1049,7 @@ from torch.optim import AdamW
 optimizer = AdamW(model.parameters(), lr=2e-5)
 ```
 
-当我们拥有了所有这些对象，我们可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果你想在 Colab 笔记本上使用 TPU 进行训练，你需要将所有这些代码移到一个训练函数中，并且不应该对 `Accelerator` 的单元格执行任何实例化。我们可以通过向 `Accelerator` 传递 `fp16=True` 来强制使用混合精度训练（或者，如果你将代码作为脚本执行，只需确保填写适当的🤗 Accelerate `config` ）。
+当我们拥有了所有这些对象，我们可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果你想在 Colab Notebook 上使用 TPU 进行训练，你需要将所有这些代码移到一个训练函数中，并且不应该对 `Accelerator` 的单元格执行任何实例化。我们可以通过向 `Accelerator` 传递 `fp16=True` 来强制使用混合精度训练（或者，如果你将代码作为脚本执行，只需确保填写适当的🤗 Accelerate `config` ）。
 
 ```py
 from accelerate import Accelerator

@@ -17,18 +17,28 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     auto_fix: 是否自动修复全部错误
     '''
     ignore_dict = {}
+    md_text =re.findall(r'\$\$.*?\$\$',  text, flags=re.S)
+    text=re.compile(r"\$\$.*?\$\$",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
+    for code in md_text:
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{strQ2B(code)}'
+    md_text = re.findall(r'\[\[.*?\]\]',  text)
+    text=re.compile(r"\[\[.*?\]\]").sub('＋－｜－－ｎ－－｜－＋',text)
+    for code in md_text:
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'
     # 1. 删除代码块
     md_text =re.findall(r'```.*?(.*?)```',  text, flags=re.S)
-    text=re.compile(r"```.*?(.*?)```",flags=re.I|re.S).sub('＋－｜－－？ｎ？－－｜－＋',text)
+    text=re.compile(r"```.*?(.*?)```",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
     for code in md_text:
-        text=text.replace('＋－｜－－？ｎ？－－｜－＋',f'＋－｜－－？{len(ignore_dict)}？－－｜－＋',1)
-        ignore_dict[f'＋－｜－－？{len(ignore_dict)}？－－｜－＋']=f'```{strQ2B(code)}```'
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'```{strQ2B(code)}```'
     # 2. 删除图片
     md_text = re.findall(r'(\!\[.*?\]\(.*?\))',  text, flags=re.I|re.S)
-    text=re.compile(r"(\!\[.*?\]\(.*?\))",flags=re.I|re.S).sub('＋－｜－－？ｎ？－－｜－＋',text)
+    text=re.compile(r"(\!\[.*?\]\(.*?\))",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
     for img_link in md_text:
-        text=text.replace('＋－｜－－？ｎ？－－｜－＋',f'＋－｜－－？{len(ignore_dict)}？－－｜－＋',1)
-        ignore_dict[f'＋－｜－－？{len(ignore_dict)}？－－｜－＋']=f'{img_link}'
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{img_link}'
     # 3. 提取链接内容
     md_text = re.findall(r' *(\[((?:[^\\[\]]|\\.)*)\]\(\s*((?:[^\\()\\]|\\.)+)\s*\)) *',  text, flags=re.MULTILINE)
     if auto_fix==False:
@@ -39,10 +49,10 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
         print("format Markdown链接([]())")
         md_text=[code[0].strip() for code in md_text]
         md_text=[f' {code} ' for code in md_text]
-    text=re.compile(r" *(\[((?:[^\\[\]]|\\.)*)\]\(\s*((?:[^\\()\\]|\\.)+)\s*\)) *").sub('＋－｜－－？ｎ？－－｜－＋',text)
+    text=re.compile(r" *(\[((?:[^\\[\]]|\\.)*)\]\(\s*((?:[^\\()\\]|\\.)+)\s*\)) *").sub('＋－｜－－ｎ－－｜－＋',text)
     for link in md_text:
-        text=text.replace('＋－｜－－？ｎ？－－｜－＋',f'＋－｜－－？{len(ignore_dict)}？－－｜－＋',1)
-        ignore_dict[f'＋－｜－－？{len(ignore_dict)}？－－｜－＋']=f'{link}'
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{link}'
     # 4. 去除 ``
     md_text = re.findall(r' *?(?<!`)`([^`]+?)`(?!`) *?',  text)
     if auto_fix==False:
@@ -69,8 +79,13 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     for code in md_text:
         text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
         ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'
-    md_text = re.findall(r'\[\[.*?\]\]',  text)
-    text=re.compile(r"\[\[.*?\]\]").sub('＋－｜－－ｎ－－｜－＋',text)
+    md_text = re.findall(r'\{.*?\}',  text)
+    text=re.compile(r"\{.*?\}").sub('＋－｜－－ｎ－－｜－＋',text)
+    for code in md_text:
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'
+    md_text = re.findall(r'\|?:-+:\|?:-+:\|?:-+:\|?\r?\n?',  text)
+    text=re.compile(r"\|?:-+:\|?:-+:\|?:-+:\|?\r?\n?").sub('＋－｜－－ｎ－－｜－＋',text)
     for code in md_text:
         text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
         ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'

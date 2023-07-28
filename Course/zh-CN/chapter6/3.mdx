@@ -105,13 +105,13 @@ encoding.word_ids()
 [None, 0, 1, 2, 3, 3, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10, 11, 12, None]
 ```
 
-我们可以看到词元分析器的特殊词元 `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个词元都映射到它来源的单词。这对于确定一个词元是否在单词的开头或两个词元是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的词元分析器，我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速词元分析器，它所提供的 word_ids() 方法适用于任何类型的词元分析器。在下一章，我们将看到如何利用这种能力，将我们为每个词正确地应用到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有词元（一种称为_全词掩码（whole word masking）_的技术）。
+我们可以看到词元分析器的特殊词元 `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个词元都映射到它来源的单词。这对于确定一个词元是否在单词的开头或两个词元是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的词元分析器，我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速词元分析器，它所提供的 word_ids() 方法适用于任何类型的词元分析器。在下一章，我们将看到如何利用这种能力，将我们为每个词正确地应用到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有词元（一种称为 `全词掩码（whole word masking）` 的技术）。
 
 <Tip>
 
 词的概念是复杂的。例如，“I'll”（“I will”的缩写）算作一个词还是两个词？这实际上取决于词元分析器和它应用的预分词操作。有些词元分析器只在空格处分割，所以它们会把这个看作是一个词。其他词元分析器在空格的基础之上还使用标点，所以会认为它是两个词。
 
-✏️ **试试看！**从 bert base cased 和 roberta base 检查点创建一个词元分析器，并用它们对"81s"进行分词。你观察到了什么？这些词的 ID 是什么？
+✏️ **试试看！**从 bert base cased 和 roberta base 检查点创建一个词元分析器，并用它们对“81s”进行分词。你观察到了什么？这些词的 ID 是什么？
 
 </Tip>
 
@@ -137,7 +137,7 @@ Sylvain
 
 </Tip>
 
-## `token-classification` 管道内部流程 [[ `token-classification` 管道内部流程]]
+## `token-classification` 管道内部流程 [[`token-classification`管道内部流程]]
 
 在 [第一章](/course/chapter1) 我们初次尝试实现命名实体识别（NER）——该任务是确定文本的哪些部分对应于人名、地名或组织名等实体——当时是使用🤗 Transformers 的 `pipeline()` 函数实现的。然后，在 [第二章](/course/chapter2) ，我们看到一个管道如何将获取原始文本到预测结果的三个阶段整合在一起：词元化、通过模型处理输入和后处理。 `token-classification` 管道中的前两步与其他任何管道中的步骤相同，但后处理稍有复杂——让我们看看具体情况！
 
@@ -173,7 +173,7 @@ token_classifier("My name is Sylvain and I work at Hugging Face in Brooklyn.")
  {'entity': 'I-LOC', 'score': 0.99321055, 'index': 16, 'word': 'Brooklyn', 'start': 49, 'end': 57}]
 ```
 
-模型正确地识别出："Sylvain"是一个人，"，"Hugging Face"是一个组织，以及"Brooklyn"是一个地点。我们也可以让管道将同一实体的词元组合在一起：
+模型正确地识别出：“Sylvain”是一个人，“Hugging Face”是一个组织，以及“Brooklyn”是一个地点。我们也可以让管道将同一实体的词元组合在一起：
 
 ```py
 from transformers import pipeline
@@ -188,11 +188,11 @@ token_classifier("My name is Sylvain and I work at Hugging Face in Brooklyn.")
  {'entity_group': 'LOC', 'score': 0.99321055, 'word': 'Brooklyn', 'start': 49, 'end': 57}]
 ```
 
-选择不同的 `aggregation_strategy` 可以更改每个分组实体计算的策略。对于 `simple` 策略，最终的分数就是给定实体中每个词元的分数的平均值：例如，"Sylvain"的分数是我们在前一个例子中看到的词元 `S` , `##yl` , `##va` ，和 `##in` 的分数的平均值。其他可用的策略包括：
+选择不同的 `aggregation_strategy` 可以更改每个分组实体计算的策略。对于 `simple` 策略，最终的分数就是给定实体中每个词元的分数的平均值：例如，“Sylvain”的分数是我们在前一个例子中看到的词元 `S` ， `##yl` ， `##va` ，和 `##in` 的分数的平均值。其他可用的策略包括：
 
-- "first", 其中每个实体的分数是该实体的第一个词元的分数（因此对于"Sylvain"，它将是 0.993828，这是“S”的分数）
-- "max"，其中每个实体的分数是该实体中词元的最大分数（因此对于“Hugging Face”，它将是 0.98879766，即“Face”的分数）
-- "average", 其中每个实体的分数是组成该实体的单词分数的平均值（因此对于“Sylvain”，与“simple”策略相同，但“Hugging Face”的得分将是 0.9819，这是"Hugging"的分数 0.975 和"Face"的分数 0.98879 的平均值）
+- “first”，其中每个实体的分数是该实体的第一个词元的分数（因此对于“Sylvain”，它将是 0.993828，这是“S”的分数）
+- “max”，其中每个实体的分数是该实体中词元的最大分数（因此对于“Hugging Face”，它将是 0.98879766，即“Face”的分数）
+- “average”，其中每个实体的分数是组成该实体的单词分数的平均值（因此对于“Sylvain”，与“simple”策略相同，但“Hugging Face”的得分将是 0.9819，这是“Hugging”的分数 0.975 和“Face”的分数 0.98879 的平均值）
 
 现在让我们看看如何在不使用 `pipeline()` 函数的情况下获得这些结果！
 
@@ -304,7 +304,7 @@ model.config.id2label
  8: 'I-LOC'}
 ```
 
-如前所述，这里有 9 个标签： `O` 是不在任何实体中的词元的标签（它代表“outside”），然后我们为每种类型的实体（杂项、人员、组织和位置）提供两个标签：标签 `B-XXX` 表示词元在实体 `XXX` 的开头，标签 `I-XXX` 表示词元在实体 `XXX` 内部。例如，在当前的例子，我们期望我们的模型将词元 `S` 分类为 `B-PER` （人物实体的开始），和将词元 `##yl` , `##va` 和 `##in` 分类为 `I-PER` （人物实体的内部）
+如前所述，这里有 9 个标签： `O` 是不在任何实体中的词元的标签（它代表“outside”），然后我们为每种类型的实体（杂项、人员、组织和位置）提供两个标签：标签 `B-XXX` 表示词元在实体 `XXX` 的开头，标签 `I-XXX` 表示词元在实体 `XXX` 内部。例如，在当前的例子，我们期望我们的模型将词元 `S` 分类为 `B-PER` （人物实体的开始），和将词元 `##yl` ， `##va` 和 `##in` 分类为 `I-PER` （人物实体的内部）
 
 你可能会觉得上面模型的输出是错误的，因为它给所有这四个词元都标上了 `I-PER` 标签，但这样理解并不完全正确。对于 `B-` 和 `I-` 标签，实际上有两种格式：IOB1 和 IOB2。我们介绍的是 IOB2 格式（如下图所示的粉色），而在 IOB1 格式（蓝色）中，以 `B-` 开头的标签只用于分隔同一类型的两个相邻实体。我们正在使用的模型在使用该格式的数据集上进行了微调，这就是为什么它将 `S` 词元标上了 `I-PER` 标签的原因。
 
@@ -313,7 +313,7 @@ model.config.id2label
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/IOB_versions-dark.svg" alt="IOB1 vs IOB2 format"/>
 </div>
 
-有了这个映射字典，我们就可以几乎完全复现管道的结果 -- 我们只需要获取每个没有被分类为 O 的词元的得分和标签：
+有了这个映射字典，我们就可以几乎完全复现管道的结果 —— 我们只需要获取每个没有被分类为 O 的词元的得分和标签：
 
 ```py
 results = []
@@ -472,4 +472,5 @@ print(results)
  {'entity_group': 'LOC', 'score': 0.99321055, 'word': 'Brooklyn', 'start': 49, 'end': 57}]
 ```
 
-另一个非常需要偏移量的任务领域是问答。我们将在下一部分深入探索这个 pipeline 同时也会让我们看到🤗 Transformers 库中词元分析器的最后一个特性：在我们将输入超过给定长度时，处理溢出的词元。
+另一个非常需要偏移量的任务领域是问答。我们将在下一部分深入探索这个 pipeline 同时也会让我们看到🤗 Transformers 库中词元分析器的最后一个特性：在我们将输入超过给定长度时，处理溢出的词元。`````````
+`````````
