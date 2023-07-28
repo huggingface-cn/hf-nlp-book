@@ -1,6 +1,6 @@
 import os
 import subprocess
-chapter='chapter7'
+chapter='第二章 Transformer模型'
 # Specify the source and destination folders
 source_folder = f'Course\publish/{chapter}'
 destination_folder = 'Course\docx_output'

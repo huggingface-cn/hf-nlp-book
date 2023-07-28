@@ -1,28 +1,11 @@
-## 2.6 章末总结及测试
+### 1. 探索 Hub 并寻找 `roberta-large-mnli` checkpoint。 它可以完成什么类型的任务？
 
-在本章中，你了解了如何使用来自Transformers 的高级函数 `pipeline()` 处理不同的 NLP 任务。你还了解了如何在模型中心（hub）中搜索和使用模型，以及如何使用推理 API 直接在浏览器中测试模型。
-
-我们从最终的效果的角度讨论了 Transformer 模型的工作方式，并讨论了迁移学习和微调的重要性。一个关键的收获是：你可以使用完整的体系结构，也可以仅使用编码器或解码器，具体取决于你要解决的任务类型。下表总结了这一点：
-
-|  模型   | 示例  | 任务|
-|  ----  | ----  |----|
-| 编码器  | ALBERT，BERT，DistilBERT，ELECTRA，RoBERTa	|句子分类、命名实体识别、抽取式问答（从文本中提取答案）|
-| 解码器  | CTRL，GPT，GPT－2，Transformer XL	 |文本生成|
-| 编码器-解码器  | BART，T5，Marian，mBART	 |文本摘要、翻译、生成式问答（生成问题的回答类似 chatgpt）|
-
-### 测试
-
-这一章涵盖了很多内容！ 如果有一些不太明白的地方，请不要担心； 下一章将帮助你了解这些模块在底层是如何工作的。
-
-让我们来测试一下你在这一章学到了什么！
-
-#### 1. 探索 Hub 并寻找 `roberta-large-mnli` checkpoint。 它可以完成什么类型的任务？
 
 1. 文本摘要提取
 2. 文本分类
 3. 文本生成
 
-#### 2. 下面的代码将会输出什么结果？
+### 2. 下面的代码将会输出什么结果？
 
 ```py
 from transformers import pipeline
@@ -34,7 +17,7 @@ ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 2. 它将生成这句话的下一句话。
 3. 它找出代表人员、组织或位置的单词。
 
-#### 3. 在此代码示例中...的地方应该填写什么？
+### 3. 在此代码示例中...的地方应该填写什么？
 
 ```py
 from transformers import pipeline
@@ -46,7 +29,7 @@ result = filler("...")
 2. This [MASK] has been waiting for you.
 3. This man has been waiting for you.
 
-#### 4. 为什么这段代码会无法运行？
+### 4. 为什么这段代码会无法运行？
 
 ```py
 from transformers import pipeline
@@ -59,62 +42,69 @@ result = classifier("This is a course about the Transformers library")
 3. Transformers库又出故障了
 4. 该pipeline需要更长的输入； 这个句子太短了。
 
-#### 5. “迁移学习”是什么意思？
+### 5. “迁移学习”是什么意思？
+
 
 1. 通过在同一数据集上再次训练模型，将预训练模型的知识迁移到新模型。
 2. 通过使用第一个模型的权重初始化第二个模型，将预训练模型的知识迁移到新模型。
 3. 构建与第一个模型具有相同架构的第二个模型，将预训练模型的知识迁移到新模型。
 
-#### 6. 语言模型在预训练时通常不需要标签，这样的说法是否正确。
+### 6. 语言模型在预训练时通常不需要标签，这样的说法是否正确。
+
 
 1. 正确
 2. 错误
 
-#### 7. 选择最能描述“模型(model)”、“架构(architecture)”和“权重(weights)”的句子。
+### 7. 选择最能描述“模型(model)”、“架构(architecture)”和“权重(weights)”的句子。
 
 
 1. 如果模型是一座建筑物，那么它的架构就是蓝图，而权重就是住在里面的人。
 2. 架构是建立模型的地图，权重是地图上表示的城市。
 3. 架构是用于构建模型的一系列数学函数，其权重是这些函数参数。
 
-#### 8. 你将使用以下哪种类型的模型来根据输入的提示生成文本？
+### 8. 你将使用以下哪种类型的模型来根据输入的提示生成文本？
+
 
 1. “编码器”模型
 2. “解码器”模型
 3. “序列到序列”模型
 
-#### 9. 你会使用哪些类型的模型来生成文本的摘要？
+### 9. 你会使用哪些类型的模型来生成文本的摘要？
+
 
 1. “编码器”模型
 2. “解码器”模型
 3. “序列到序列”模型
 
-#### 10. 你会使用哪一种类型的模型来根据特定的标签对文本输入进行分类？
+### 10. 你会使用哪一种类型的模型来根据特定的标签对文本输入进行分类？
+
 
 1. “编码器”模型
 2. “解码器”模型
 3. “序列到序列”模型
 
-#### 11. 模型中观察到的偏见有哪些可能的来源？
+### 11. 模型中观察到的偏见有哪些可能的来源？
+
 
 1. 这个模型是一个预训练模型的微调版本，它从中继承了预训练模型的偏见。
 2. 用于训练模型的数据是有偏见的。
 3. 模型优化的指标是有偏见的。
 
-### 答案
+---
 
-#### 1. 探索 Hub 并寻找 `roberta-large-mnli` checkpoint。 它可以完成什么类型的任务？
+### 1. 探索 Hub 并寻找 `roberta-large-mnli` checkpoint。 它可以完成什么类型的任务？
+
 
 正确选项: 2. 文本分类
 
 1. 文本摘要提取    
-解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli\)(https://huggingface.co/roberta-large-mnli\) 页面 </a>再仔细看一下。
+解析: 点击前往<a href=\"https://huggingface.co/roberta-large-mnli\">`roberta-large-mnli` 页面 </a>再仔细看一下。
 2. 文本分类    
 解析: 更准确地说，它能通过三个标签（矛盾，无关，蕴含）分类，判断两句话是否在逻辑上有关联——这项任务也称为自然语言推理（natural language inference）。
 3. 文本生成    
-解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli\)(https://huggingface.co/roberta-large-mnli\) 再仔细看一下。
+解析: 点击前往<a href=\"https://huggingface.co/roberta-large-mnli\">`roberta-large-mnli` 页面 `</a>`再仔细看一下。
 
-#### 2. 下面的代码将会输出什么结果？
+### 2. 下面的代码将会输出什么结果？
 
 ```py
 from transformers import pipeline
@@ -131,7 +121,7 @@ ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 3. 它找出代表人员、组织或位置的单词。    
 解析: 正解! 此外，使用 <code>grouped_entities=True</code>，可以将属于同一实体的单词组合在一起，例如“Hugging Face”。
 
-#### 3. 在此代码示例中...的地方应该填写什么？
+### 3. 在此代码示例中...的地方应该填写什么？
 
 ```py
 from transformers import pipeline
@@ -148,7 +138,7 @@ result = filler("...")
 3. This man has been waiting for you.    
 解析: 不对。 这个pipeline的作用是填充经过mask的文字，因此它需要在输入中有一个mask token。
 
-#### 4. 为什么这段代码会无法运行？
+### 4. 为什么这段代码会无法运行？
 
 ```py
 from transformers import pipeline
@@ -163,11 +153,12 @@ result = classifier("This is a course about the Transformers library")
 2. 这个pipeline需要多个句子，而不仅仅是一个。    
 解析: 不对。尽管正确使用时，此pipeline可以同时处理多个句子（像所有其他pipeline一样）。
 3. Transformers库又出故障了    
-解析: 一般来说，这个库很少出故障。
+解析: 对此，我们不予置评！
 4. 该pipeline需要更长的输入； 这个句子太短了。    
 解析: 不对。 不过请注意，在这个pipeline处理太长的文本时会将其截断。
 
-#### 5. “迁移学习”是什么意思？
+### 5. “迁移学习”是什么意思？
+
 
 正确选项: 2. 通过使用第一个模型的权重初始化第二个模型，将预训练模型的知识迁移到新模型。
 
@@ -178,15 +169,18 @@ result = classifier("This is a course about the Transformers library")
 3. 构建与第一个模型具有相同架构的第二个模型，将预训练模型的知识迁移到新模型。    
 解析: 架构只是模型的构建方式； 在这种情况下，没有知识共享或迁移。
 
-#### 6. 语言模型在预训练时通常不需要标签，这样的说法是否正确。
+### 6. 语言模型在预训练时通常不需要标签，这样的说法是否正确。
+
 
 正确选项: 1. 正确
 
 1. 正确    
 解析: 预训练通常是`自监督（self-supervised）`，这意味着标签是根据输入自动创建的（例如：预测下一个单词或填充一些[MARSK]单词）。
 2. 错误    
+解析: 这不是一个正确的答案。
 
-#### 7. 选择最能描述“模型(model)”、“架构(architecture)”和“权重(weights)”的句子。
+### 7. 选择最能描述“模型(model)”、“架构(architecture)”和“权重(weights)”的句子。
+
 
 正确选项: 3. 架构是用于构建模型的一系列数学函数，其权重是这些函数参数。
 
@@ -197,7 +191,8 @@ result = classifier("This is a course about the Transformers library")
 3. 架构是用于构建模型的一系列数学函数，其权重是这些函数参数。    
 解析: 同一组数学函数（架构）可以通过使用不同的参数（权重）来构建不同的模型。
 
-#### 8. 你将使用以下哪种类型的模型来根据输入的提示生成文本？
+### 8. 你将使用以下哪种类型的模型来根据输入的提示生成文本？
+
 
 正确选项: 2. “解码器”模型
 
@@ -208,7 +203,8 @@ result = classifier("This is a course about the Transformers library")
 3. “序列到序列”模型    
 解析: “序列到序列”模型更适合于根据输入句子生成句子的任务而不是给定提示。
 
-#### 9. 你会使用哪些类型的模型来生成文本的摘要？
+### 9. 你会使用哪些类型的模型来生成文本的摘要？
+
 
 正确选项: 3. “序列到序列”模型
 
@@ -219,7 +215,8 @@ result = classifier("This is a course about the Transformers library")
 3. “序列到序列”模型    
 解析: “序列到序列”模型非常适合摘要任务。
 
-#### 10. 你会使用哪一种类型的模型来根据特定的标签对文本输入进行分类？
+### 10. 你会使用哪一种类型的模型来根据特定的标签对文本输入进行分类？
+
 
 正确选项: 1. “编码器”模型
 
@@ -230,7 +227,8 @@ result = classifier("This is a course about the Transformers library")
 3. “序列到序列”模型    
 解析: “序列到序列”模型更适合于输入句子而不是标签生成文本的任务。
 
-#### 11. 模型中观察到的偏见有哪些可能的来源？
+### 11. 模型中观察到的偏见有哪些可能的来源？
+
 
 正确选项: 1. 这个模型是一个预训练模型的微调版本，它从中继承了预训练模型的偏见。
 

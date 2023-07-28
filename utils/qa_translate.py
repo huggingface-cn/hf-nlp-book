@@ -48,8 +48,8 @@ def write_to_markdown_file(filepath, data):
                 file.write(f'{j}. {choice["text"]}    \n')
                 file.write(f'解析: {choice["explain"]}\n')
             file.write('\n')
-input_file='Course\publish\chapter2\8.mdx'
-output_file='Course\publish\chapter2\8_fix.mdx'
+input_file='Course\publish\chapter1/10.mdx'
+output_file='Course\publish\chapter1/10_fix.mdx'
 # markdown = open(input_file, 'r', encoding='utf-8').read()
 data = parse_mdx_file(input_file)
 write_to_markdown_file(output_file, data)

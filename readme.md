@@ -196,7 +196,7 @@ TODO：尝试搭建Github的Bot自动化处理
 
 二审的目标是提供一个可以出版的版本
 
-代码：划分TensorFlow和 Pytorch
+代码：划分TensorFlow和 Pytorch，处理python out
 
 斜体：取消正文斜体改为双引号
 
@@ -222,7 +222,7 @@ token :统一
 
 图片：转png插入文稿
 
-属于规范：笔记本：Notebook token 
+属于规范：笔记本：Notebook token
 
 流程：
 
@@ -266,10 +266,10 @@ token :统一
 2. Transformer模型（c1s1）
 
    - 自然语言处理概述(c1s2)
-   - Transformer模型可以做什么（c1s3）
-   - Transformer模型的工作原理(c1s4)
+   - Transformer可以做什么（c1s3）
+   - Transformer的工作原理(c1s4)
    - 常见的三种Transform模型的结构(c1s5,c1s6,c1s7)
-   - 模型的偏差与局限性(c1s8)
+   - 模型的偏见和局限性(c1s8)
    - 章末总结及测试（c1s9,c1s10）
 3. 使用🤗Transformers（c2s1）
 
