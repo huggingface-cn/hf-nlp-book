@@ -1,0 +1,848 @@
+# 第二章 Transformer模型
+
+## 欢迎来到Hugging Face 课程
+
+本书将教你如何使用 Hugging Face 生态系统的库进行自然语言处理（NLP）。这些库包括 Transformers、Datasets、Tokenizers 和 Accelerate，以及 Hugging Face Hub。
+
+### 有什么是值得期待的？
+
+以下是对本书教程内容的简要概述：
+
+![主要章节的简要介绍](./assets/summary.png)
+
+- 第 1 章到第 4 章介绍了 Transformers 库的主要概念。在本课程的这一部分结束时，你将了解 Transformer 模型的工作原理，并将了解如何使用 [Hugging Face Hub](https://huggingface.co/models)(https://huggingface.co/models) 中的模型，在数据集上对其进行微调，并在 Hub 上分享你的结果。
+- 第 5 章到第 8 章在深入研究经典 NLP 任务之前，教授 Datasets 和 Tokenizers 的基础知识。在本部分结束时，你将能够自己解决最常见的 NLP 问题。
+- 第 9 章介绍了如何为您的机器学习构建**交互式演示**模型，并将其优化为您自己的可分享的模型演示生产环境。
+
+本教程：
+
+* 需要良好的 Python 知识 
+* 在完成入门深度学习课程后效果更佳，例如 [DeepLearning.AI](https://www.deeplearning.ai/)(https://www.deeplearning.ai/) 提供的 [fast.ai实用深度学习教程](https://course.fast.ai/)(https://course.fast.ai/) 
+* 不需要事先具备 [PyTorch](https://pytorch.org/)(https://pytorch.org/) 或 [TensorFlow](https://www.tensorflow.org/)(https://www.tensorflow.org/) 知识，虽然熟悉其中任何一个都会对学习有所帮助
+
+完成本书的学习后，我们建议你查看 [DeepLearning.AI的自然语言处理系列课程](https://www.coursera.org/specializations/natural-language-processing?utm_source=deeplearning-ai&utm_medium=institutions&utm_campaign=20211011-nlp-2-hugging_face-page-nlp-refresh)(https://www.coursera.org/specializations/natural-language-processing?utm_source=deeplearning-ai&utm_medium=institutions&utm_campaign=20211011-nlp-2-hugging_face-page-nlp-refresh) ，该课程涵盖了诸如朴素贝叶斯和 LSTM 等传统 NLP 模型的广泛内容，非常值得了解！
+
+### FAQ
+
+这里有一些经常被提到的问题：
+
+- **我应该在这门课程上花多少时间？**
+本课程的每一章都设计为在 1 周内完成，每周大约需要 6-8 小时的学习时间。但您可以根据自己的需要随意安排学习时间。
+
+- **我在哪里可以获得课程的代码？**
+本书所有代码的 Jupyter 笔记本托管在 [`huggingface/notebooks`](https://github.com/huggingface/notebooks)(https://github.com/huggingface/notebooks) 仓库中。如果您希望在本地生成它们，请查看 GitHub 上 [`course`](https://github.com/huggingface/course#-jupyter-notebooks)(https://github.com/huggingface/course#-jupyter-notebooks) 仓库中的说明。
+
+- **如果我有问题，我可以在哪里提问？**
+如果你对本书的任何部分有疑问，可以前往 [Hugging Face 论坛](https:// discuss.huggingface.co/)(https:// discuss.huggingface.co/) ：
+
+### 让我们开始吧！
+
+你准备好了吗？在本章中，你将学习：
+* 如何使用 `pipeline()` 函数解决文本生成、分类等 NLP 任务
+* 关于 Transformer 架构
+* 如何区分编码器、解码器和编码器-解码器架构和用例 
+
+## 2.1 自然语言处理概述
+
+在深入了解 Transformer 模型之前，让我们快速回顾一下自然语言处理是什么以及它为什么如此重要。
+
+## 什么是自然语言处理？ 
+
+NLP 是语言学和机器学习交叉领域，专注于理解与人类语言相关的一切。NLP 任务的目标不仅是单独理解单个单词，而且是能够理解这些单词的上下文。
+
+以下是常见 NLP 任务的列表，每个任务都有一些示例：
+
+- **对整个句子进行分类**：获取评论的情感，检测电子邮件是否为垃圾邮件，确定句子在语法上是否正确或两个句子在逻辑上是否相关。
+- **对句子中的每个词进行分类**：识别句子的语法成分（名词、动词、形容词）或命名实体（人、地点、组织）。
+- **生成文本内容**：用自动生成的文本完成提示，用掩码词填充文本中的空白。
+- **从文本中提取答案**：给定问题和上下文，根据上下文中提供的信息提取问题的答案。
+- **从输入文本生成新句子**：将文本翻译成另一种语言，对文本进行总结。
+
+NLP 不仅限于书面文本。它还解决了语音识别和计算机视觉中的复杂挑战，例如生成音频样本的转录或图像的描述。
+
+## 为什么具有挑战性？
+
+计算机处理信息的方式与人类不同。例如，当我们读到“我饿了”这句话时，我们很容易理解它的意思。同样，给定两个句子，例如“我很饿”和“我很伤心”，我们可以轻松确定它们的相似程度。对于机器学习 （ML） 模型，此类任务更加困难。文本需要以一种使模型能够从中学习的方式进行处理。而且由于语言的复杂性，我们很难直接设计算法来处理此类问题。已经有很多关于如何表示文本的研究，我们将在下一章中介绍一些方法。
+
+## 2.2 Transformers 可以做什么？
+
+在本节中，我们将看看 Transformer 模型可以做什么，并使用 Transformers 库中的第一个工具： `pipeline()` 函数。
+
+### Transformers 无处不在！
+
+Transformer 模型用于解决各种 NLP 任务，就像上一节中提到的那样。以下是一些使用 Hugging Face 和 Transformer 模型的公司和组织，他们也通过分享他们的模型回馈社区：
+
+![使用 Hugging Face 的公司](./assets/companies.PNG "使用 Hugging Face 的公司")
+
+ [Transformers 库](https://github.com/huggingface/transformers)(https://github.com/huggingface/transformers) 提供了创建和使用这些共享模型的功能。 [模型中心（hub）](https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models) 包含数千个任何人都可以下载和使用的预训练模型。你还可以将自己的模型上传到 Hub！
+
+<div custom-style="Tip-yellow">
+
+⚠️ Hugging Face Hub 不限于 Transformer 模型。任何人都可以分享他们想要的任何类型的模型或数据集！创建一个 [Huggingface.co 帐户](https://huggingface.co/join)(https://huggingface.co/join) 即可使用所有可用功能！
+
+</div>
+
+在深入研究 Transformer 模型的底层工作原理之前，让我们先看几个示例，看看它们如何用于解决一些有趣的 NLP 问题。
+
+### 使用 pipelines 
+
+Transformers 库中最基本的对象是 `pipeline()` 函数。它将模型与所需的预处理和后处理步骤连接起来，使我们能够通过直接输入任何文本并获得最终的结果：
+
+```python
+from transformers import pipeline
+
+classifier = pipeline("sentiment-analysis")
+classifier("I've been waiting for a HuggingFace course my whole life.")
+```
+
+```python
+[{'label': 'POSITIVE', 'score': 0.9598047137260437}]
+```
+
+我们也可以多传几句！
+```python
+classifier(
+    ["I've been waiting for a HuggingFace course my whole life.", "I hate this so much!"]
+)
+```
+
+```python
+[{'label': 'POSITIVE', 'score': 0.9598047137260437},
+ {'label': 'NEGATIVE', 'score': 0.9994558095932007}]
+```
+
+默认情况下，此 pipeline 选择一个特定的预训练模型，该模型已针对英语情感分析进行了微调。创建 `classifier` 对象时，模型将被下载和缓存。如果你重新运行该命令，则将使用缓存的模型，而无需再次下载模型。
+
+将一些文本传递到 pipeline 时涉及三个主要步骤：
+
+1. 文本被预处理为模型可以理解的格式。
+2.  将预处理后的输入传递给模型。
+3. 对模型的预测进行后续处理并输出最终人类可以理解的结果。
+
+目前 [可用的一些pipeline](https://huggingface.co/transformers/main_classes/pipelines.html)(https://huggingface.co/transformers/main_classes/pipelines.html) 有：
+
+* `eature-extraction` （获取文本的向量表示）
+* `fill-mask` （完形填空）
+* `ner` （命名实体识别）
+* `question-answering` （问答）
+* `sentiment-analysis` （情感分析）
+* `summarization` （提取摘要）
+* `text-generation` （文本生成）
+* `translation` （翻译）
+* `zero-shot-classification` （零样本分类）
+
+让我们来看看其中的一些例子吧！
+
+### 零样本分类 
+
+我们将从一个具挑战性的任务开始，我们需要对没有标签的文本进行分类。这是实际项目中的常见场景，因为给文本打标签通常很耗时并且需要领域专业知识。对于这项任务 `zero-shot-classification` pipeline 非常强大：它允许你直接指定用于分类的标签，因此你不必依赖预训练模型的标签。下面的模型展示了如何使用这三个标签将句子分类为 `education（教育）` 、 `politics（政治）` 、或者 `business（商业）` ——也可以使用你喜欢的任何其他标签集对文本进行分类。
+
+```python
+from transformers import pipeline
+
+classifier = pipeline("zero-shot-classification")
+classifier(
+    "This is a course about the Transformers library",
+    candidate_labels=["education", "politics", "business"],
+)
+```
+
+```python
+{'sequence': 'This is a course about the Transformers library',
+ 'labels': ['education', 'business', 'politics'],
+ 'scores': [0.8445963859558105, 0.111976258456707, 0.043427448719739914]}
+```
+
+这个 pipeline 称为 `zero-shot` （零样本学习），因为你不需要对数据上的模型进行微调即可使用它。它可以直接返回你想要的任何标签列表的概率分数！
+
+<div custom-style="Tip-green">
+
+
+✏️**快来试试吧！**使用你自己的序列和标签，看看模型的表现如何。
+
+</div>
+
+### 文本生成 
+
+让我们尝试一下另一个 pipeline，这次是用于生成文本的 `text-generation` 。这里的主要使用方法是你提供一个提示，模型将通过生成剩余的文本来自动完成整段话。这类似于许多手机上的预测文本功能。文本生成涉及随机性，因此如果你没有得到相同的如下所示的结果是正常的。
+
+```python
+from transformers import pipeline
+
+generator = pipeline("text-generation")
+generator("In this course, we will teach you how to")
+```
+
+```python
+[{'generated_text': 'In this course, we will teach you how to understand and use '
+                    'data flow and data interchange when handling user data. We '
+                    'will be working with one or more of the most commonly used '
+                    'data flows — data flows of various types, as seen by the '
+                    'HTTP'}]
+```
+
+你可以使用参数 `num_return_sequences` 控制生成多少个不同的候选的句子，并使用参数 `max_length` 控制输出文本的总长度。
+
+<div custom-style="Tip-green">
+
+
+✏️**快来试试吧！**使用 `num_return_sequences` 和 `max_length` 参数生成两个句子，每个句子 15 个单词。
+
+</div>
+
+### 在 pipeline 中使用 Hub 中的其他模型 
+
+前面的示例使用了默认模型，但你也可以从 Hub 中选择一个特定模型，将其用于特定任务，例如文本生成。转到 [模型中心（hub）](https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models) 并单击左侧的相应标签将会只显示该任务支持的模型。你应该看到一个 [模型筛选](https://huggingface.co/models?pipeline_tag=text-generation)(https://huggingface.co/models?pipeline_tag=text-generation) 的页面。
+
+让我们试试 [`distilgpt2`](https://huggingface.co/distilgpt2)(https://huggingface.co/distilgpt2) 模型吧！以下面是在之前的 pipeline 中加载它的方法：
+
+```python
+from transformers import pipeline
+
+generator = pipeline("text-generation", model="distilgpt2")
+generator(
+    "In this course, we will teach you how to",
+    max_length=30,
+    num_return_sequences=2,
+)
+```
+
+```python
+[{'generated_text': 'In this course, we will teach you how to manipulate the world and '
+                    'move your mental and physical capabilities to your advantage.'},
+ {'generated_text': 'In this course, we will teach you how to become an expert and '
+                    'practice realtime, and with a hands on experience on both real '
+                    'time and real'}]
+```
+
+你可以通过单击语言标签来筛选搜索结果，然后选择另一种文本生成模型的模型。模型中心（hub）也包含了支持多种语言的多语言模型。
+
+通过单击选择模型后，你会看到有一个小组件，可让你直接在线试用。通过这种方式，你可以在下载之前快速测试模型的功能。
+
+<div custom-style="Tip-green">
+
+✏️**快来试试吧！**使用标签筛选查找另一种语言的文本生成模型。使用小组件测试并在 pipeline 中使用它！
+
+</div>
+
+### 推理 API 
+
+所有模型都可以使用 Inference API 直接通过浏览器进行测试，该 API 可在 [Hugging Face 网站](https://huggingface.co/)(https://huggingface.co/) 上找到。通过输入自定义文本并观察模型的输出，你可以直接在此页面上使用模型。
+
+小组件形式的推理 API 也可作为付费产品使用，如果你的工作流程需要它，它会派上用场。有关更多详细信息，请参阅 [定价页面](https://huggingface.co/pricing)(https://huggingface.co/pricing) 。
+
+### 完形填空 
+
+你将尝试的下一个 pipeline 是 `fill-mask` 。此任务的想法是填补给定文本中的空白：
+
+```python
+from transformers import pipeline
+
+unmasker = pipeline("fill-mask")
+unmasker("This course will teach you all about <mask> models.", top_k=2)
+```
+
+```python
+[{'sequence': 'This course will teach you all about mathematical models.',
+  'score': 0.19619831442832947,
+  'token': 30412,
+  'token_str': ' mathematical'},
+ {'sequence': 'This course will teach you all about computational models.',
+  'score': 0.04052725434303284,
+  'token': 38163,
+  'token_str': ' computational'}]
+```
+
+ `top_k` 参数控制要显示的结果有多少种。请注意，这里模型填补了特殊的 `<mask>` 词，它通常被称为 `mask token` 。不同的 `mask-filling` 模型可能有不同的 `mask token` ，因此在探索其他模型时要验证正确的 `mask token` 是什么。检查它的一种方法是查看小组件中使用的 `mask token` 。
+
+<div custom-style="Tip-green">
+
+
+✏️**快来试试吧！**在 Hub 上搜索 `bert-base-cased` 模型并在推理 API 小组件中找到它的 mask token。对于上面 pipeline 示例中的句子，这个模型预测了什么？
+
+</div>
+
+### 命名实体识别 
+
+命名实体识别 （NER） 是一项任务，其中模型必须找到输入文本的哪些部分对应于诸如人员、位置或组织之类的实体。让我们看一个例子：
+
+```python
+from transformers import pipeline
+
+ner = pipeline("ner", grouped_entities=True)
+ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
+```
+
+```python
+[{'entity_group': 'PER', 'score': 0.99816, 'word': 'Sylvain', 'start': 11, 'end': 18}, 
+ {'entity_group': 'ORG', 'score': 0.97960, 'word': 'Hugging Face', 'start': 33, 'end': 45}, 
+ {'entity_group': 'LOC', 'score': 0.99321, 'word': 'Brooklyn', 'start': 49, 'end': 57}
+]
+```
+
+在这里，模型正确地识别出 Sylvain 是一个人 （PER），Hugging Face 是一个组织 （ORG），而布鲁克林是一个位置 （LOC）。
+
+我们在创建 pipeline 的函数中传递的 `grouped_entities=True` 参数告诉 pipeline 将与同一实体对应的句子部分重新分组：这里模型正确地将“Hugging”和“Face”分组为一个组织，即使名称由多个词组成。事实上，正如我们即将在下一章看到的，预处理甚至会将一些单词分成更小的部分。例如， `Sylvain` 分割为了四部分： `S、##yl、##va` 和 `##in` 。在后处理步骤中，pipeline 成功地重新组合了这些部分。
+
+<div custom-style="Tip-green">
+
+✏️**快来试试吧！**在模型中心（hub）搜索能够用英语进行词性标注（通常缩写为 POS）的模型。对于上面示例中的句子，这个词性标注的模型预测了什么？
+
+</div>
+
+### 问答 
+
+ `question-answering` pipeline 使用给定上下文中的信息回答问题：
+
+```python
+from transformers import pipeline
+
+question_answerer = pipeline("question-answering")
+question_answerer(
+    question="Where do I work?",
+    context="My name is Sylvain and I work at Hugging Face in Brooklyn",
+)
+```
+
+```python
+{'score': 0.6385916471481323, 'start': 33, 'end': 45, 'answer': 'Hugging Face'}
+klyn",
+)
+```
+
+请注意，这个 pipeline 通过从提供的上下文中提取信息来工作；它不会凭空生成答案。
+
+### 提取摘要 
+
+提取摘要是将文本缩减为较短文本的任务，同时保留文本中所有（或大部分）主要（重要）的信息。下面是一个例子：
+
+```python
+from transformers import pipeline
+
+summarizer = pipeline("summarization")
+summarizer(
+    """
+    America has changed dramatically during recent years. Not only has the number of 
+    graduates in traditional engineering disciplines such as mechanical, civil, 
+    electrical, chemical, and aeronautical engineering declined, but in most of 
+    the premier American universities engineering curricula now concentrate on 
+    and encourage largely the study of engineering science. As a result, there 
+    are declining offerings in engineering subjects dealing with infrastructure, 
+    the environment, and related issues, and greater concentration on high 
+    technology subjects, largely supporting increasingly complex scientific 
+    developments. While the latter is important, it should not be at the expense 
+    of more traditional engineering.
+
+    Rapidly developing economies such as China and India, as well as other 
+    industrial countries in Europe and Asia, continue to encourage and advance 
+    the teaching of engineering. Both China and India, respectively, graduate 
+    six and eight times as many traditional engineers as does the United States. 
+    Other industrial countries at minimum maintain their output, while America 
+    suffers an increasingly serious decline in the number of engineering graduates 
+    and a lack of well-educated engineers.
+"""
+)
+```
+
+```python
+[{'summary_text': ' America has changed dramatically during recent years . The '
+                  'number of engineering graduates in the U.S. has declined in '
+                  'traditional engineering disciplines such as mechanical, civil '
+                  ', electrical, chemical, and aeronautical engineering . Rapidly '
+                  'developing economies such as China and India, as well as other '
+                  'industrial countries in Europe and Asia, continue to encourage '
+                  'and advance engineering .'}]
+```
+
+与文本生成一样，你指定结果的 `max_length` 或 `min_length` 。
+
+### 翻译 
+
+对于翻译，如果你在任务名称中包含语言对（例如“ `translation_en_to_fr` ”），则可以使用默认模型，但最简单的方法是在 [模型中心（hub）](https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models)(https://huggingface.co/models) 选择要使用的模型。在这里，我们将尝试从法语翻译成英语：
+
+```python
+from transformers import pipeline
+
+translator = pipeline("translation", model="Helsinki-NLP/opus-mt-fr-en")
+translator("Ce cours est produit par Hugging Face.")
+```
+
+```python
+[{'translation_text': 'This course is produced by Hugging Face.'}]
+```
+
+
+与文本生成和摘要一样，你可以指定结果的 `max_length` 或 `min_length` 。
+
+<div custom-style="Tip-green">
+
+✏️**快来试试吧！**搜索其他语言的翻译模型，尝试将前面的句子翻译成几种不同的语言。
+
+</div>
+
+到目前为止显示的 pipeline 主要用于演示目的。它们是为特定任务而编程的，不能对他们进行自定义的修改。在下一章中，你将了解 `pipeline()` 函数内部的过程以及如何进行自定义的修改。
+
+## 2.3 Transformer模型的工作原理
+
+在本节中，我们简要了解 Transformer 模型的架构。
+
+### 一点 Transformers 的发展历史 
+
+以下是 Transformer 模型（简要）历史中的一些关键节点：
+
+![Transformers 模型的简要年表](./assets/transformers_chrono.png "A brief chronology of Transformers models.")
+
+ [Transformer 架构](https://arxiv.org/abs/1706.03762)(https://arxiv.org/abs/1706.03762) 于 2017 年 6 月提出。原本研究的重点是翻译任务。随后推出了几个有影响力的模型，包括
+
+- **2018 年 6 月**： [GPT](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)(https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf) ，第一个预训练的 Transformer 模型，用于各种 NLP 任务并获得极好的结果
+
+- **2018 年 10 月**： [BERT](https://arxiv.org/abs/1810.04805)(https://arxiv.org/abs/1810.04805) ，另一个大型预训练模型，该模型旨在生成更好的句子摘要（下一章将详细介绍！）
+
+- **2019 年 2 月**： [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)(https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) ，GPT 的改进（并且更大）版本，由于道德问题没有立即公开发布
+
+- **2019 年 10 月**： [DistilBERT](https://arxiv.org/abs/1910.01108)(https://arxiv.org/abs/1910.01108) ，BERT 的提炼版本，速度提高 60％，内存减轻 40％，但仍保留 BERT 97％ 的性能
+
+- **2019 年 10 月**： [BART](https://arxiv.org/abs/1910.13461)(https://arxiv.org/abs/1910.13461) 和 [T5](https://arxiv.org/abs/1910.10683)(https://arxiv.org/abs/1910.10683) ，两个使用与原始 Transformer 模型原始架构的大型预训练模型（第一个这样做）
+
+- **2020 年 5 月**， [GPT-3](https://arxiv.org/abs/2005.14165)(https://arxiv.org/abs/2005.14165) ，GPT-2 的更大版本，无需微调即可在各种任务上表现良好（称为零样本学习）
+
+此列表远非详尽无遗，只是为了突出一些不同类型的 Transformer 模型。大体上，它们可以分为三类：
+
+- GPT-like （也被称作自回归 Transformer 模型）
+- BERT-like （也被称作自动编码 Transformer 模型） 
+- BART/T5-like （也被称作序列到序列的 Transformer 模型）
+
+稍后我们将更深入地探讨这些分类。
+
+### Transformers 是语言模型 
+
+上面提到的所有 Transformer 模型（GPT、BERT、BART、T5 等）都被训练为语言模型。这意味着他们已经以无监督学习的方式接受了大量原始文本的训练。无监督学习是一种训练类型，其中目标是根据模型的输入自动计算的。这意味着不需要人工来标记数据！
+
+这种类型的模型可以对其训练过的语言有统计学的理解，但对于特定的实际任务的效果并不是很好。因此，一般的预训练模型会经历一个称为迁移学习（transfer learning）的过程。在此过程中，模型在给定任务上以监督方式（即使用人工注释标签）进行微调。
+
+任务的一个例子是阅读 `n` 个单词的句子，预测下一个单词。这被称为因果语言建模（causal language modeling），因为输出取决于过去和现在的输入，而不依赖于未来的输入。
+
+![因果语言建模的示例，其中预测句子中的下一个单词](./assets/causal_modeling.png "Example of causal language modeling in which the next word from a sentence is predicted.")
+
+另一个例子是掩码语言建模（masked language modeling），俗称完形填空，该模型预测句子中的遮住的词。
+
+![掩码语言建模示例，其中预测句子中的掩码词](./assets/masked_modeling.png "Example of masked language modeling in which a masked word from a sentence is predicted.")
+
+### Transformer 是大模型 
+
+除了一些特例（如 DistilBERT）外，实现更好性能的一般策略是增加模型的大小以及预训练的数据量。
+
+![Transformers 模型的参数数量](./assets/model_parameters.png "Number of parameters of recent Transformers models")
+
+不幸的是，训练模型，尤其是大型模型，需要大量的数据，时间和计算资源。它甚至会对环境产生影响，如下图所示。
+
+![大型语言模型的碳足迹](./assets/carbon_footprint.png "The carbon footprint of a large language model.")
+
+这只是显示了一支团队领导的（非常大的）模型项目，该团队试图减少预训练对环境的影响。如果为了获得最佳超参数而进行大量试验，所造成的碳排放当量会更高。
+
+想象一下，如果每次一个研究团队、一个学生组织或一家公司想要训练一个模型，都从头开始训练的。这将导致巨大的、不必要的浪费！
+
+这就是为什么共享语言模型至关重要：共享经过训练的权重，当遇见新的需求时在预训练的权重之上进行微调，可以降低训练模型训练的算力和时间消耗，降低全球的总体计算成本和碳排放。
+
+顺便说一句，你可以通过多种工具评估模型训练的碳排放。例如 [ML CO2 Impact](https://mlco2.github.io/impact/)(https://mlco2.github.io/impact/) 或集成在 Transformers 中的 [Code Carbon]( https://codecarbon.io/)( https://codecarbon.io/) 。要了解更多相关信息，你可以阅读这篇博客文章，其中将向你展示如何生成 `emissions.csv` 文件估计训练的碳排放，这里还有 Transformers 关于碳排放的 [文档](https://huggingface.co/docs/hub/model-cards-co2)(https://huggingface.co/docs/hub/model-cards-co2) 。
+
+### 迁移学习 
+
+预训练（Pretraining）是是指从头开始训练模型：随机初始化权重，在没有任何先验知识的情况下开始训练。
+
+![语言模型的预训练既耗费时间又耗费金钱](./assets/pretraining.png "The pretraining of a language model is costly in both time and money.")
+
+这种预训练通常是在非常大量的数据上进行的。因此，它需要大量的数据，而且训练可能需要几周的时间。
+
+另一方面，微调（Fine-tuning）是在模型经过预训练后完成的训练。要执行微调，首先需要获取一个经过预训练的语言模型，然后使用特定于任务的数据集进行额外的训练。等等，为什么不直接为最后的任务而训练呢？有几个原因：
+
+*  预训练模型已经在与微调数据集有一些相似之处的数据集上进行了训练。因此，微调过程能够利用模型在预训练期间获得的知识（例如，对于 NLP 问题，预训练模型将对你在任务中使用的语言有某种统计规律上的理解）。
+*  由于预训练模型已经在大量数据上进行了训练，因此微调需要更少的数据来获得不错的结果。
+*  出于同样的原因，获得好结果所需的时间和资源要少得多
+
+例如，可以利用英语的预训练过的模型，然后在 arXiv 语料库上对其进行微调，从而形成一个基于科学研究的模型。微调只需要有限的数据量：预训练模型获得的知识可以“迁移”到目标任务上，因此被称为迁移学习（transfer learning）。
+
+![微调语言模型在时间和金钱上都比预训练便宜](./assets/finetuning.png "The fine-tuning of a language model is cheaper than pretraining in both time and money.")
+
+因此，微调模型具有较低的时间、数据、财务和环境成本。迭代不同的微调方案也更快、更容易，因为与完整的预训练相比，训练的约束更少。
+
+这个过程也会比从头开始的训练（除非你有很多数据）取得更好的效果，这就是为什么你应该总是尝试利用一个预训练的模型——一个尽可能接近你手头的任务的模型——并对其进行微调。
+
+### Transformer 模型的通用架构 
+
+在本节中，我们将概述 Transformer 模型的通用架构。如果你不理解其中的一些概念，不用担心；后面的章节将详细介绍每个组件。
+
+### 简介 
+
+该模型主要由两个块组成：
+
+* **Encoder （左侧）**：编码器接收输入并构建其表示（特征）。这意味着模型的使命是从输入中获取理解。
+* **Decoder （右侧）**：解码器使用编码器的表示（特征）以及其他输入来生成目标序列。这意味着模型的使命是生成输出。
+
+![Transformers 模型的架构](./assets/transformers_blocks.png "Architecture of a Transformers models")
+
+这些部件中的每一个都可以独立使用，具体取决于任务：
+
+* **Encoder-only 模型**：适用于需要理解输入的任务，如句子分类和命名实体识别。
+* **Decoder-only 模型**：适用于生成任务，如文本生成。
+* **Encoder-decoder 模型** 或者 **sequence-to-sequence 模型**：适用于需要根据输入进行生成的任务，如翻译或摘要。
+
+在后面的部分中，我们将单独地深入研究这些体系结构。
+
+### 注意力层 
+
+Transformer 模型的一个关键特性是*注意力层*。事实上，提出 Transformer 架构的文章的标题是 [“Attention Is All You Need”](https://arxiv.org/abs/1706.03762)(https://arxiv.org/abs/1706.03762) ！我们将在课程的后面更加深入地探讨注意力层的细节；现在，你需要知道的是，这一层将告诉模型在处理每个单词的表示时，对不同单词的重视（忽略）程度。
+
+可以考虑一个例子，假如我们要将英语翻译成法语。给定输入“You like this course”时，翻译模型需要注意相邻的词“You”，才能获得“like”的正确翻译，因为在法语中，动词“like”的变形依赖于主语。然而，对于那个词的翻译，句子的其余部分并没有用。同样，当翻译“this”时，模型也需要注意词“course”，因为“this”的翻译依赖于关联名词是单数还是复数。再次，句子中的其他词对于“this”的翻译并不重要。对于更复杂的句子（和更复杂的语法规则），模型可能需要特别注意可能在句子中更远处出现的词，以正确翻译每个词。
+
+同样的概念也适用于与自然语言相关的任何任务：一个词本身有一个含义，但这个含义受语境的影响很大，语境可以是研究该词之前或之后的任何其他词（或多个词）。
+
+现在你对注意力层是什么有了一些了解，让我们更详细地看一下 Transformer 架构。
+
+### Transformer 的原始结构 
+
+Transformer 架构最初是为翻译而设计的。在训练期间，编码器接收特定语言的输入（句子），而解码器需要输出对应语言的翻译。在编码器中，注意力层可以使用一个句子中的所有单词（正如我们刚才看到的，给定单词的翻译可以取决于它在句子中的其他单词）。然而，解码器是按顺序工作的，并且只能注意它已经翻译过的句子中的单词。例如，当我们预测了翻译目标的前三个单词时，我们将它们提供给解码器，然后解码器使用编码器的所有输出来尝试预测第四个单词。
+
+为了在训练过程中加快速度（当模型可以访问目标句子时），解码器会被输入整个目标，但不允许获取到要翻译的单词（如果它在尝试预测位置 2 的单词时可以访问位置 2 的单词，解码器就会偷懒，直接输出那个单词，从而无法学习到正确的语言关系！）。例如，当试图预测第 4 个单词时，注意力层只能获取位置 1 到 3 的单词。
+
+最初的 Transformer 架构如下所示，编码器位于左侧，解码器位于右侧：
+
+![Transformers 模型的架构](./assets/transformers.png "Architecture of a Transformers models")
+
+注意，解码器块中的第一个注意力层关联到解码器的所有（过去的）输入，但是第二个注意力层只使用编码器的输出。因此，它在预测当前单词时，可以使用整个句子的信息。这是非常有用的，因因为不同的语言可以有把词放在不同顺序的语法规则，或者句子后面提供的一些上下文可能有助于确定给定单词的最佳翻译。
+
+也可以在编码器/解码器中使用*attention mask（注意力掩码层）*，以防止模型关注到某些特殊单词。例如，用于在批量处理句子时使所有输入长度一致的特殊填充词。
+
+###  architecture（架构）与 checkpoints（权重参数又称检查点） 
+
+在本课程中，当我们深入探讨 Transformers 模型时，你将看到架构、参数和模型。这些术语的含义略有不同：
+
+* **architecture（架构）**：这是模型的骨架 —— 每个层的定义以及模型中发生的每个操作。
+* **Checkpoints（权重参数又称检查点）**：这些是将在给架构中结构中加载的权重参数，是一些具体的数值。
+* **Model（模型）**：这是一个笼统的术语，没有“架构”或“参数”那么精确：它可以指两者。为了避免歧义，本课程使用将使用架构和参数。
+
+例如，BERT 是一个架构，而 `bert-base-cased` ，这是谷歌团队为 BERT 的第一个版本训练的一组权重参数，是一个参数。我们可以说“BERT 模型”和“ `bert-base-cased` 模型。”
+
+## 2.4 常见的三种Transform模型的结构
+
+常见的三种Transform模型的结构包括编码器模型（Encoder Model）、解码器模型（Decoder Model）和编码器-解码器模型（Encoder-Decoder Model）。
+
+### “编码器”模型（Encoder Model）
+
+编码器模型仅使用 Transformer 模型的编码器部分。在每次计算过程中，注意力层都能访问整个句子的所有单词，这些模型通常具有“双向”（向前/向后）注意力，被称为自编码模型。
+
+这些模型的预训练通常会使用某种方式破坏给定的句子（例如：通过随机遮盖其中的单词），并让模型寻找或重建给定的句子。
+
+“编码器”模型适用于需要理解完整句子的任务，例如：句子分类、命名实体识别（以及更普遍的单词分类）和阅读理解后回答问题。
+
+该系列模型的典型代表有：
+
+- [ALBERT](https://huggingface.co/transformers/model_doc/albert.html)(https://huggingface.co/transformers/model_doc/albert.html) 
+- [BERT](https://huggingface.co/transformers/model_doc/bert.html)(https://huggingface.co/transformers/model_doc/bert.html) 
+- [DistilBERT](https://huggingface.co/transformers/model_doc/distilbert.html)(https://huggingface.co/transformers/model_doc/distilbert.html) 
+- [ELECTRA](https://huggingface.co/transformers/model_doc/electra.html)(https://huggingface.co/transformers/model_doc/electra.html) 
+- [RoBERTa](https://huggingface.co/transformers/model_doc/roberta.html)(https://huggingface.co/transformers/model_doc/roberta.html) 
+
+### “解码器”模型（Decoder Model）
+
+“解码器”模型仅使用 Transformer 模型的解码器部分。在每个阶段，对于给定的单词，注意力层只能获取到句子中位于将要预测单词前面的单词。这些模型通常被称为自回归模型。
+
+“解码器”模型的预训练通常围绕预测句子中的下一个单词进行。
+
+这些模型最适合处理文本生成的任务。
+
+该系列模型的典型代表有：
+
+- [CTRL](https://huggingface.co/transformers/model_doc/ctrl.html)(https://huggingface.co/transformers/model_doc/ctrl.html) 
+- [GPT](https://huggingface.co/docs/transformers/model_doc/openai-gpt)(https://huggingface.co/docs/transformers/model_doc/openai-gpt) 
+- [GPT-2](https://huggingface.co/transformers/model_doc/gpt2.html)(https://huggingface.co/transformers/model_doc/gpt2.html) 
+- [Transformer XL](https://huggingface.co/transformers/model_doc/transfor-xl.html)(https://huggingface.co/transformers/model_doc/transfor-xl.html) 
+
+### 编码器-解码器模型（Encoder-Decoder Model）
+
+编码器-解码器模型（也称为序列到序列模型）同时使用 Transformer 架构的编码器和解码器两个部分。在每个阶段，编码器的注意力层可以访问输入句子中的所有单词，而解码器的注意力层只能访问位于输入中将要预测单词前面的单词。
+
+这些模型的预训练可以使用训练编码器或解码器模型的方式来完成，但通常会更加复杂。例如， [T5](https://huggingface.co/t5-base)(https://huggingface.co/t5-base) 通过用单个掩码特殊词替换随机文本范围（可能包含多个词）进行预训练，然后目标是预测被遮盖单词原始的文本。
+
+序列到序列模型最适合于围绕根据给定输入生成新句子的任务，如摘要、翻译或生成性问答。
+
+该系列模型的典型代表有：
+
+- [BART](https://huggingface.co/transformers/model_doc/bart.html)(https://huggingface.co/transformers/model_doc/bart.html) 
+- [mBART](https://huggingface.co/transformers/model_doc/mbart.html)(https://huggingface.co/transformers/model_doc/mbart.html) 
+- [Marian](https://huggingface.co/transformers/model_doc/marian.html)(https://huggingface.co/transformers/model_doc/marian.html) 
+- [T5](https://huggingface.co/transformers/model_doc/t5.html)(https://huggingface.co/transformers/model_doc/t5.html) 
+
+## 2.5 模型的偏见和局限性
+
+如果你打算在正式的项目中使用经过预训练或经过微调的模型。请注意：虽然这些模型是很强大，但它们也有局限性。其中最大的一个问题是，为了对大量数据进行预训练，研究人员通常会搜集所有他们能找到的所有文字内容，中间可能夹带一些意识形态或者价值观的刻板印象。
+
+为了快速解释清楚这个问题，让我们回到一个使用 BERT 模型的 pipeline 的例子：
+
+```python
+from transformers import pipeline
+
+unmasker = pipeline("fill-mask", model="bert-base-uncased")
+result = unmasker("This man works as a [MASK].")
+print([r["token_str"] for r in result])
+
+result = unmasker("This woman works as a [MASK].")
+print([r["token_str"] for r in result])
+```
+
+```python
+['lawyer', 'carpenter', 'doctor', 'waiter', 'mechanic']
+['nurse', 'waitress', 'teacher', 'maid', 'prostitute']
+```
+
+当要求模型填写这两句话中缺少的单词时，模型给出的答案中，只有一个与性别无关（服务员/女服务员）。其他职业通常与某一特定性别相关，妓女最终进入了模型中与“女人”和“工作”相关的前五位。尽管 BERT 是少数使用经过筛选和清洗后，并且看似中立的数据集上建立的的 Transformer 模型，而不是通过从互联网上搜集数据（它使用的是 [Wikipedia 英文](https://huggingface.co/datasets/wikipedia)(https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus)(https://huggingface.co/datasets/bookcorpus) 数据集），但是这种情况还是发生了。
+
+因此，当你使用这些工具时，你需要记住，使用的原始模型的时候，很容易生成性别歧视、种族主义或恐同内容。这种固有偏见不会随着微调模型而使消失。
+
+## 2.6 章末总结及测试
+
+在本章中，你了解了如何使用来自Transformers 的高级函数 `pipeline()` 处理不同的 NLP 任务。你还了解了如何在模型中心（hub）中搜索和使用模型，以及如何使用推理 API 直接在浏览器中测试模型。
+
+我们从最终的效果的角度讨论了 Transformer 模型的工作方式，并讨论了迁移学习和微调的重要性。一个关键的收获是：你可以使用完整的体系结构，也可以仅使用编码器或解码器，具体取决于你要解决的任务类型。下表总结了这一点：
+
+|  模型   | 示例  | 任务|
+|  ----  | ----  |----|
+| 编码器  | ALBERT，BERT，DistilBERT，ELECTRA，RoBERTa	|句子分类、命名实体识别、抽取式问答（从文本中提取答案）|
+| 解码器  | CTRL，GPT，GPT－2，Transformer XL	 |文本生成|
+| 编码器-解码器  | BART，T5，Marian，mBART	 |文本摘要、翻译、生成式问答（生成问题的回答类似 chatgpt）|
+
+### 测试
+
+这一章涵盖了很多内容！ 如果有一些不太明白的地方，请不要担心； 下一章将帮助你了解这些模块在底层是如何工作的。
+
+让我们来测试一下你在这一章学到了什么！
+
+#### 1. 探索 Hub 并寻找 `roberta-large-mnli` checkpoint。 它可以完成什么类型的任务？
+
+1. 文本摘要提取
+2. 文本分类
+3. 文本生成
+
+#### 2. 下面的代码将会输出什么结果？
+
+```py
+from transformers import pipeline
+
+ner = pipeline("ner", grouped_entities=True)
+ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
+```
+1. 它将输出带有 \"positive\" 或者 \"negative\"标签分类的分数。
+2. 它将生成这句话的下一句话。
+3. 它找出代表人员、组织或位置的单词。
+
+#### 3. 在此代码示例中...的地方应该填写什么？
+
+```py
+from transformers import pipeline
+
+filler = pipeline("fill-mask", model="bert-base-cased")
+result = filler("...")
+```
+1. This &#60;mask> has been waiting for you.
+2. This [MASK] has been waiting for you.
+3. This man has been waiting for you.
+
+#### 4. 为什么这段代码会无法运行？
+
+```py
+from transformers import pipeline
+
+classifier = pipeline("zero-shot-classification")
+result = classifier("This is a course about the Transformers library")
+```
+1. 这个pipeline要求提供用来分类此文本的标签。
+2. 这个pipeline需要多个句子，而不仅仅是一个。
+3. Transformers库又出故障了
+4. 该pipeline需要更长的输入； 这个句子太短了。
+
+#### 5. “迁移学习”是什么意思？
+
+1. 通过在同一数据集上再次训练模型，将预训练模型的知识迁移到新模型。
+2. 通过使用第一个模型的权重初始化第二个模型，将预训练模型的知识迁移到新模型。
+3. 构建与第一个模型具有相同架构的第二个模型，将预训练模型的知识迁移到新模型。
+
+#### 6. 语言模型在预训练时通常不需要标签，这样的说法是否正确。
+
+1. 正确
+2. 错误
+
+#### 7. 选择最能描述“模型(model)”、“架构(architecture)”和“权重(weights)”的句子。
+
+
+1. 如果模型是一座建筑物，那么它的架构就是蓝图，而权重就是住在里面的人。
+2. 架构是建立模型的地图，权重是地图上表示的城市。
+3. 架构是用于构建模型的一系列数学函数，其权重是这些函数参数。
+
+#### 8. 你将使用以下哪种类型的模型来根据输入的提示生成文本？
+
+1. “编码器”模型
+2. “解码器”模型
+3. “序列到序列”模型
+
+#### 9. 你会使用哪些类型的模型来生成文本的摘要？
+
+1. “编码器”模型
+2. “解码器”模型
+3. “序列到序列”模型
+
+#### 10. 你会使用哪一种类型的模型来根据特定的标签对文本输入进行分类？
+
+1. “编码器”模型
+2. “解码器”模型
+3. “序列到序列”模型
+
+#### 11. 模型中观察到的偏见有哪些可能的来源？
+
+1. 这个模型是一个预训练模型的微调版本，它从中继承了预训练模型的偏见。
+2. 用于训练模型的数据是有偏见的。
+3. 模型优化的指标是有偏见的。
+
+### 答案
+
+#### 1. 探索 Hub 并寻找 `roberta-large-mnli` checkpoint。 它可以完成什么类型的任务？
+
+正确选项: 2. 文本分类
+
+1. 文本摘要提取    
+解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli) 再仔细看一下。
+2. 文本分类    
+解析: 更准确地说，它能通过三个标签（矛盾，无关，蕴含）分类，判断两句话是否在逻辑上有关联——这项任务也称为自然语言推理（natural language inference）。
+3. 文本生成    
+解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli) 再仔细看一下。
+
+#### 2. 下面的代码将会输出什么结果？
+
+```py
+from transformers import pipeline
+
+ner = pipeline("ner", grouped_entities=True)
+ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
+```
+正确选项: 3. 它找出代表人员、组织或位置的单词。
+
+1. 它将输出带有 \"positive\" 或者 \"negative\"标签分类的分数。    
+解析: 不对 —— <code>sentiment-analysis（情感分析）</code> pipeline才会输出这些。
+2. 它将生成这句话的下一句话。    
+解析: 不对 —— <code>text-generation（文本生成）</code> pipeline才会输出这些。
+3. 它找出代表人员、组织或位置的单词。    
+解析: 正解! 此外，使用 <code>grouped_entities=True</code>，可以将属于同一实体的单词组合在一起，例如“Hugging Face”。
+
+#### 3. 在此代码示例中...的地方应该填写什么？
+
+```py
+from transformers import pipeline
+
+filler = pipeline("fill-mask", model="bert-base-cased")
+result = filler("...")
+```
+正确选项: 2. This [MASK] has been waiting for you.
+
+1. This &#60;mask> has been waiting for you.    
+解析: 不对。 请查看 <code>bert-base-cased</code> 模型卡片
+2. This [MASK] has been waiting for you.    
+解析: 正解! 这个模型的mask token是[MASK].
+3. This man has been waiting for you.    
+解析: 不对。 这个pipeline的作用是填充经过mask的文字，因此它需要在输入中有一个mask token。
+
+#### 4. 为什么这段代码会无法运行？
+
+```py
+from transformers import pipeline
+
+classifier = pipeline("zero-shot-classification")
+result = classifier("This is a course about the Transformers library")
+```
+正确选项: 1. 这个pipeline要求提供用来分类此文本的标签。
+
+1. 这个pipeline要求提供用来分类此文本的标签。    
+解析: 正解 —— 正确的代码需要包含：<code>candidate_labels=[...]</code>。
+2. 这个pipeline需要多个句子，而不仅仅是一个。    
+解析: 不对。尽管正确使用时，此pipeline可以同时处理多个句子（像所有其他pipeline一样）。
+3. Transformers库又出故障了    
+解析: 一般来说，这个库很少出故障。
+4. 该pipeline需要更长的输入； 这个句子太短了。    
+解析: 不对。 不过请注意，在这个pipeline处理太长的文本时会将其截断。
+
+#### 5. “迁移学习”是什么意思？
+
+正确选项: 2. 通过使用第一个模型的权重初始化第二个模型，将预训练模型的知识迁移到新模型。
+
+1. 通过在同一数据集上再次训练模型，将预训练模型的知识迁移到新模型。    
+解析: 不，那将是同一模型的两个版本。
+2. 通过使用第一个模型的权重初始化第二个模型，将预训练模型的知识迁移到新模型。    
+解析: 正确：当第二个模型接受新任务训练时，它迁移（transfers）第一个模型的知识。
+3. 构建与第一个模型具有相同架构的第二个模型，将预训练模型的知识迁移到新模型。    
+解析: 架构只是模型的构建方式； 在这种情况下，没有知识共享或迁移。
+
+#### 6. 语言模型在预训练时通常不需要标签，这样的说法是否正确。
+
+正确选项: 1. 正确
+
+1. 正确    
+解析: 预训练通常是`自监督（self-supervised）`，这意味着标签是根据输入自动创建的（例如：预测下一个单词或填充一些[MARSK]单词）。
+2. 错误    
+
+#### 7. 选择最能描述“模型(model)”、“架构(architecture)”和“权重(weights)”的句子。
+
+正确选项: 3. 架构是用于构建模型的一系列数学函数，其权重是这些函数参数。
+
+1. 如果模型是一座建筑物，那么它的架构就是蓝图，而权重就是住在里面的人。    
+解析: 按照这个比喻，更准确地来说权重应该是用于建造建筑物的砖块和其他材料。
+2. 架构是建立模型的地图，权重是地图上表示的城市。    
+解析: 这个比喻的问题在于，一张地图通常代表只有一个确定的事实（法国只有一个城市叫巴黎）。 对于给定的体系结构，可能有多个权重。
+3. 架构是用于构建模型的一系列数学函数，其权重是这些函数参数。    
+解析: 同一组数学函数（架构）可以通过使用不同的参数（权重）来构建不同的模型。
+
+#### 8. 你将使用以下哪种类型的模型来根据输入的提示生成文本？
+
+正确选项: 2. “解码器”模型
+
+1. “编码器”模型    
+解析: “编码器”模型生成整个句子的表示，这种表示更适合于分类之类的任务。
+2. “解码器”模型    
+解析: “解码器”模型非常适合根据提示生成文本。
+3. “序列到序列”模型    
+解析: “序列到序列”模型更适合于根据输入句子生成句子的任务而不是给定提示。
+
+#### 9. 你会使用哪些类型的模型来生成文本的摘要？
+
+正确选项: 3. “序列到序列”模型
+
+1. “编码器”模型    
+解析: “编码器”模型生成整个句子的表示，这种表示更适合于分类之类的任务。
+2. “解码器”模型    
+解析: “解码器”模型对于生成输出文本(如摘要)很好，但它们不具备利用上下文(整个文本)进行总结的能力。
+3. “序列到序列”模型    
+解析: “序列到序列”模型非常适合摘要任务。
+
+#### 10. 你会使用哪一种类型的模型来根据特定的标签对文本输入进行分类？
+
+正确选项: 1. “编码器”模型
+
+1. “编码器”模型    
+解析: “编码器”模型可以生成整个句子的表示，非常适合分类这样的任务。
+2. “解码器”模型    
+解析: “解码器”模型适合于生成输出文本，而不是从句子中提取标签。
+3. “序列到序列”模型    
+解析: “序列到序列”模型更适合于输入句子而不是标签生成文本的任务。
+
+#### 11. 模型中观察到的偏见有哪些可能的来源？
+
+正确选项: 1. 这个模型是一个预训练模型的微调版本，它从中继承了预训练模型的偏见。
+
+正确选项: 2. 用于训练模型的数据是有偏见的。
+
+正确选项: 3. 模型优化的指标是有偏见的。
+
+1. 这个模型是一个预训练模型的微调版本，它从中继承了预训练模型的偏见。    
+解析: 当应用迁移学习时，在预训练模型中产生的偏见在微调模型中不能完全去除。
+2. 用于训练模型的数据是有偏见的。    
+解析: 这是最明显的偏见来源，但不是唯一的来源。
+3. 模型优化的指标是有偏见的。    
+解析: 一个不太明显的偏见来源是模型的训练方式。 你的模型将盲目地只针对你选择的指标进行优化，而不会思考这样是否会带有偏见。
+

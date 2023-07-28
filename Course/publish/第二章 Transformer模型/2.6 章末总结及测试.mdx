@@ -56,7 +56,7 @@ result = classifier("This is a course about the Transformers library")
 ```
 1. 这个pipeline要求提供用来分类此文本的标签。
 2. 这个pipeline需要多个句子，而不仅仅是一个。
-3. Transformers库又出故障了
+3. Transformers库又出故障了。
 4. 该pipeline需要更长的输入； 这个句子太短了。
 
 #### 5. “迁移学习”是什么意思？
@@ -108,11 +108,11 @@ result = classifier("This is a course about the Transformers library")
 正确选项: 2. 文本分类
 
 1. 文本摘要提取    
-解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli\)(https://huggingface.co/roberta-large-mnli\) 页面 </a>再仔细看一下。
+解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli) 再仔细看一下。
 2. 文本分类    
 解析: 更准确地说，它能通过三个标签（矛盾，无关，蕴含）分类，判断两句话是否在逻辑上有关联——这项任务也称为自然语言推理（natural language inference）。
 3. 文本生成    
-解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli\)(https://huggingface.co/roberta-large-mnli\) 再仔细看一下。
+解析: 前往 [`roberta-large-mnli`](https://huggingface.co/roberta-large-mnli)(https://huggingface.co/roberta-large-mnli) 再仔细看一下。
 
 #### 2. 下面的代码将会输出什么结果？
 
@@ -144,7 +144,7 @@ result = filler("...")
 1. This &#60;mask> has been waiting for you.    
 解析: 不对。 请查看 <code>bert-base-cased</code> 模型卡片
 2. This [MASK] has been waiting for you.    
-解析: 正解! 这个模型的mask token是[MASK].
+解析: 正解! 这个模型的mask token是[MASK]。
 3. This man has been waiting for you.    
 解析: 不对。 这个pipeline的作用是填充经过mask的文字，因此它需要在输入中有一个mask token。
 
