@@ -62,11 +62,11 @@ print(tokenized_text)
 
 每个单词都分配了一个 ID，从 0 开始一直到词汇表的大小。模型使用这些 ID 来识别每个词。
 
-如果我们想用基于单词的 tokenizer 完全覆盖一种语言，我们需要为语言中的每个单词设置一个标识符，这将生成大量的 tokens 。例如，英语中有超过 500,000 个单词，因此要构建从每个单词到 ID 的映射，我们需要跟踪这么多 ID。此外，像“dog”这样的词与“dogs”这样的词的表示方式不同，模型最初无法知道“dog”和“dogs”是相似的：它会将这两个词识别为不相关。这同样适用于其他相似的词，例如“run”和“running”，模型最初也不会看到它们的相似性。
+如果我们想用基于单词的 tokenizer 完全覆盖一种语言，我们需要为语言中的每个单词设置一个标识符，这将生成大量的 tokens 例如，英语中有超过 500,000 个单词，因此要构建从每个单词到 ID 的映射，我们需要跟踪这么多 ID。此外，像“dog”这样的词与“dogs”这样的词的表示方式不同，模型最初无法知道“dog”和“dogs”是相似的：它会将这两个词识别为不相关。这同样适用于其他相似的词，例如“run”和“running”，模型最初也不会看到它们的相似性。
 
-最后，我们需要一个自定义 token 来表示不在我们词汇表中的单词。这被称为“unknown” token ，通常表示为“[UNK]”或“&lt;unk&gt;”。如果你看到 tokenizer 产生了很多这样的 token ，这通常是一个不好的迹象，因为它无法检索到一个词的合理表示，并且你会在这个过程中丢失信息。制作词汇表时的其中一个目标是 tokenizer 将尽可能少的单词标记为未知 tokens。
+最后，我们需要一个自定义 token 来表示不在我们词汇表中的单词。这被称为“unknown” token 通常表示为“[UNK]”或“&lt;unk&gt;”。如果你看到 tokenizer 产生了很多这样的 token 这通常是一个不好的迹象，因为它无法检索到一个词的合理表示，并且你会在这个过程中丢失信息。制作词汇表时的其中一个目标是 tokenizer 将尽可能少的单词标记为未知 tokens。
 
-减少未知 tokens 数量的一种方法是使用更深一层的 tokenizer ，即基于字符（character-based）的tokenizer 。
+减少未知 tokens 数量的一种方法是使用更深一层的 tokenizer 即基于字符（character-based）的 tokenizer 
 
 ## 基于字符（Character-based）的 tokenization  [[基于字符(Character-based)的 tokenization ]]
 
@@ -86,7 +86,7 @@ print(tokenized_text)
 
 这种方法也不是完美的。由于现在表示是基于字符而不是单词，因此人们可能会争辩说，从直觉上讲，它的意义不大：每个字符本身并没有多大意义，但是单词则不然。然而，这又因语言而异；例如，在中文中，每个字符比拉丁语言中的字符包含更多的信息。
 
-另一件要考虑的因素是，这样做会导致我们的模型需要处理大量的 tokens：虽然一个单词在基于单词的 tokenizer 中只是一个 token，但当它被转换为字符时，很可能就变成了 10 个或更多的 tokens 。
+另一件要考虑的因素是，这样做会导致我们的模型需要处理大量的 tokens：虽然一个单词在基于单词的 tokenizer 中只是一个 token，但当它被转换为字符时，很可能就变成了 10 个或更多的 tokens 
 
 为了两全其美，我们可以使用结合这两种方法的第三种技术：基于子词（subword）的 tokenization。
 
@@ -123,7 +123,7 @@ print(tokenized_text)
 
 加载和保存 tokenizer 就像使用模型一样简单。实际上，它基于相同的两种方法： `from_pretrained()` 和 `save_pretrained()` 。这些方法会加载或保存分词器使用的算法（有点像模型的架构（architecture））以及其词汇表（有点像模型的权重（weights））。
 
-加载使用与 BERT 相同的 Checkpoint 训练的 BERT tokenizer 与加载模型的方式相同，只是换成了 `Bert tokenizer ` 类：
+加载使用与 BERT 相同的 Checkpoint 训练的 BERT tokenizer 与加载模型的方式相同，只是换成了 `Bert tokenizer` 类：
 
 ```py
 from transformers import BertTokenizer
@@ -173,7 +173,7 @@ tokenizer.save_pretrained("directory_on_my_computer")
 
 将文本翻译成数字被称为编码（encoding）。编码分两步完成：分词，然后转换为 inputs ID。
 
-正如我们所见，第一步是将文本拆分为单词（或部分单词、标点符号等），通常称为 tokens 。不同的不同的分词器使用的算法也不一样，这就是为什么我们需要使用模型名称来实例化 tokenizer，以确保我们使用模型预训练时使用的相同的算法。
+正如我们所见，第一步是将文本拆分为单词（或部分单词、标点符号等），通常称为 tokens 不同的不同的分词器使用的算法也不一样，这就是为什么我们需要使用模型名称来实例化 tokenizer，以确保我们使用模型预训练时使用的相同的算法。
 
 第二步是将这些 tokens 转换为数字，这样我们就可以用它们构建一个张量并将它们提供给模型。为此，tokenizer 有一个词汇表（vocabulary），这是我们在使用 `from_pretrained()` 方法实例化它时下载的部分。同样，我们需要使用与预训练模型时相同的词汇表。
 
@@ -194,13 +194,13 @@ tokens = tokenizer.tokenize(sequence)
 print(tokens)
 ```
 
-这个方法的输出是一个字符串列表，或者说 tokens ：
+这个方法的输出是一个字符串列表，或者说 tokens 
 
 ```python out
 ['Using', 'a', 'transform', '##er', 'network', 'is', 'simple']
 ```
 
-这个 tokenizer 是一个基于子词的 tokenizer：它对词进行拆分，直到获得可以用其词汇表表示的 tokens 。以 `transformer` 为例，它分为两个 tokens ： `transform` 和 `##er` 。
+这个 tokenizer 是一个基于子词的 tokenizer：它对词进行拆分，直到获得可以用其词汇表表示的 tokens 以 `transformer` 为例，它分为两个 tokens  `transform` 和 `##er` 。
 
 ### 从 tokens 到 inputs ID [[从 tokens 到 inputs ID]]
 
@@ -220,13 +220,13 @@ print(ids)
 
 <Tip>
 
-✏️ **试试看！** 请将我们在第 2 节中使用的输入句子（“I've been waiting for a HuggingFace course my whole life.”和“I hate this so much!”）执行最后两个步骤（分词和转换为inputs ID）。检查你获得的inputs ID 是否与我们在第二节中获得的一致！
+✏️ **试试看！** 请将我们在第 2 节中使用的输入句子（“I've been waiting for a HuggingFace course my whole life.”和“I hate this so much!”）执行最后两个步骤（分词和转换为 inputs ID）。检查你获得的 inputs ID 是否与我们在第二节中获得的一致！
 
 </Tip>
 
 ## 解码 [[解码]]
 
-解码（Decoding） 正好相反：从inputs ID 到一个字符串。这以通过 `decode()` 方法实现：
+解码（Decoding） 正好相反：从 inputs ID 到一个字符串。这以通过 `decode()` 方法实现：
 
 ```py
 decoded_string = tokenizer.decode([7993, 170, 11303, 1200, 2443, 1110, 3014])
@@ -237,6 +237,6 @@ print(decoded_string)
 'Using a Transformer network is simple'
 ```
 
-请注意， `decode` 方法不仅将索引转换回 tokens ，还将属于相同单词的 tokens 组合在一起以生成可读的句子。当我们使用预测新文本的模型（根据提示生成的文本，或序列到序列问题（如翻译或摘要））时，这样的功能将非常有用。
+请注意， `decode` 方法不仅将索引转换回 tokens 还将属于相同单词的 tokens 组合在一起以生成可读的句子。当我们使用预测新文本的模型（根据提示生成的文本，或序列到序列问题（如翻译或摘要））时，这样的功能将非常有用。
 
 到现在为止，你应该了解 tokenizer 可以处理的原子操作：分词、转换为 ID 以及将 ID 转换回字符串。然而，我们只是刮到了冰山一角。在下一节中，我们将继续探讨它能力的极限，并看看如何克服它们。

@@ -31,12 +31,12 @@
 {#if fw === 'pt'}
 在本节中，我们将更详细地了解如何创建和使用模型。我们将使用 `AutoModel` 类，当你希望从 Checkpoint 实例化任何模型时，使用它非常方便。
 
- `AutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 Checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
+`AutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 Checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
 
 {:else}
 在本节中，我们将更详细地了解如何创建和使用模型。我们将使用 `TFAutoModel` 类，当你希望从 Checkpoint 实例化任何模型时，这非常方便。
 
- `TFAutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 Checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
+`TFAutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 Checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
 
 {/if}
 
@@ -70,7 +70,7 @@ model = TFBertModel(config)
 ```
 {/if}
 
- `config` 中包含许多用于构建模型的属性：
+`config` 中包含许多用于构建模型的属性：
 
 ```py
 print(config)
@@ -125,7 +125,7 @@ from transformers import BertModel
 model = BertModel.from_pretrained("bert-base-cased")
 ```
 
-正如你在上一小节看到的，从现在开始，我们会将 `BertModel` 替换为等效的 `AutoModel` 类，这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint ，那么它就可以在另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
+正如你在上一小节看到的，从现在开始，我们会将 `BertModel` 替换为等效的 `AutoModel` 类，这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint 那么它就可以在另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
 
 {:else}
 ```py
@@ -134,7 +134,7 @@ from transformers import TFBertModel
 model = TFBertModel.from_pretrained("bert-base-cased")
 ```
 
-正如你在上一小节看到的，从现在开始，我们将用等效的 `TFAutoModel` 类替换 `TFBert` 模型。这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint ，那么它应该与另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
+正如你在上一小节看到的，从现在开始，我们将用等效的 `TFAutoModel` 类替换 `TFBert` 模型。这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint 那么它应该与另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
 
 {/if}
 
@@ -142,7 +142,7 @@ model = TFBertModel.from_pretrained("bert-base-cased")
 
 现在，此模型已经用 Checkpoint 的所有权重进行了初始化。它可以直接用于推理它训练过的任务，也可以在新任务上进行微调。通过使用预训练的权重进行训练，相比于从头开始训练，我们可以迅速获得比较好的结果。
 
-权重已下载并缓存在缓存文件夹中（因此，未来调用 `from_pretrained()` 方法的调用将不会重新下载它们）默认为`~/.cache/huggingface/transformers`。你可以通过设置 `HF_HOME` 环境变量来自定义缓存文件夹。
+权重已下载并缓存在缓存文件夹中（因此，未来调用 `from_pretrained()` 方法的调用将不会重新下载它们）默认为 `~/.cache/huggingface/transformers` 。你可以通过设置 `HF_HOME` 环境变量来自定义缓存文件夹。
 
 加载模型的标识符可以是 Model Hub 上任何模型的标签，只要它与 BERT 架构兼容。可用的 BERT  Checkpoint 的完整列表可以在 [这里](https://huggingface.co/models?filter=bert) 找到。
 
@@ -170,21 +170,21 @@ config.json tf_model.h5
 ```
 {/if}
 
-如果你看一下`config.json`文件，你会认出构建模型架构所需的属性。这个文件还包含一些元数据，例如 Checkpoint 的来源，以及你上次保存 Checkpoint 时所使用的 🤗 Transformers 版本。
+如果你看一下 `config.json` 文件，你会认出构建模型架构所需的属性。这个文件还包含一些元数据，例如 Checkpoint 的来源，以及你上次保存 Checkpoint 时所使用的 🤗 Transformers 版本。
 
 {#if fw === 'pt'}
 
-`pytorch_model.bin` 文件被称为 `state dictionary（状态字典）`；它包含了你的模型的所有权重。这两个文件是相辅相成的；配置文件是构建你的模型架构所必需的，而模型权重就是你的模型参数。
+`pytorch_model.bin` 文件被称为 `state dictionary（状态字典）` ；它包含了你的模型的所有权重。这两个文件是相辅相成的；配置文件是构建你的模型架构所必需的，而模型权重就是你的模型参数。
 
 {:else}
 
-`tf_model.h5` 文件被称为 `state dictionary（状态字典）`；它包含了你的模型的所有权重。这两个文件是相辅相成的；配置文件是构建你的模型架构所必需的，而模型权重就是你的模型参数。
+`tf_model.h5` 文件被称为 `state dictionary（状态字典）` ；它包含了你的模型的所有权重。这两个文件是相辅相成的；配置文件是构建你的模型架构所必需的，而模型权重就是你的模型参数。
 
 {/if}
 
 ### 使用 Transformers 模型进行推理 [[使用 Transformers 模型进行推理]]
 
-既然你知道了如何加载和保存模型，那么让我们尝试使用它进行一些预测。Transformer 模型只能处理数字——由tokenizer 转化后的数字。但在我们讨论tokenizer之前，让我们探讨一下模型接受的输入是什么。
+既然你知道了如何加载和保存模型，那么让我们尝试使用它进行一些预测。Transformer 模型只能处理数字——由 tokenizer 转化后的数字。但在我们讨论 tokenizer 之前，让我们探讨一下模型接受的输入是什么。
 
 可以将输入转换为适当的框架张量，但为了帮助你了解发生了什么，我们将快速了解在将输入发送到模型之前必须做什么。
 
@@ -194,7 +194,7 @@ config.json tf_model.h5
 sequences = ["Hello!", "Cool.", "Nice!"]
 ```
 
-tokenizer 将这些转换为词汇表索引，通常称为`input IDs`。每个句子现在都是一个数字列表！结果输出是：
+tokenizer 将这些转换为词汇表索引，通常称为 `input IDs` 。每个句子现在都是一个数字列表！结果输出是：
 
 ```py no-format
 encoded_sequences = [
@@ -231,4 +231,4 @@ model_inputs = tf.constant(encoded_sequences)
 output = model(model_inputs)
 ```
 
-虽然模型接受很多不同的参数，但只有input IDs 是必需的。我们稍后会解释其他参数的作用以及何时需要它们，但首先我们需要仔细研究一下如何构建 Transformer 模型能理解的输入。
+虽然模型接受很多不同的参数，但只有 input IDs 是必需的。我们稍后会解释其他参数的作用以及何时需要它们，但首先我们需要仔细研究一下如何构建 Transformer 模型能理解的输入。

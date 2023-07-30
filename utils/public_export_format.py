@@ -85,13 +85,19 @@ def translate_label(input_path,output_path):
             mdx = mdx.replace(f"[{description}]({url})", f"[{description}]({url})({url})")
     mdx=mdx.replace('🤗 ','')
     mdx=mdx.replace('🤗','')
-    mdx = re.sub(r'^#', "##", mdx)
+    mdx = re.sub(r'\n#', "\n##", mdx)
+    mdx = re.sub(r'''{\#if fw === 'pt'}
+    <Youtube id="1pedAIvTWXk"/>
+    {:else}
+    <Youtube id="wVN12smEvqg"/>
+    {/if}`''', "", mdx)
     #对于异常空行的处理
-    # mdx=mdx.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
+    text = re.sub(r'\n `', "`", text)
+    mdx=mdx.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
     with open(output_path,'w',encoding='utf-8') as f:
         f.write(mdx)
-basic_input_dir='Course/zh-CN/chapter1/'
-basic_output_dir='Course/publish/chapter1/'
+basic_input_dir='Course/zh-CN/chapter2/'
+basic_output_dir='Course/publish/chapter2/'
 for file_name in os.listdir(basic_input_dir):
     if file_name.endswith('.mdx') :
         translate_label(basic_input_dir+file_name,basic_output_dir+file_name)

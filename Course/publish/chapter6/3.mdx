@@ -20,8 +20,8 @@
 
 |               | 快速词元分析器     | 慢速词元分析器
 :--------------:|:--------------:|:-------------:
- `batched=True` | 10.8s          | 4min41s
- `batched=False` | 59.2s          | 5min3s
+`batched=True` | 10.8s          | 4min41s
+`batched=False` | 59.2s          | 5min3s
 
 <div custom-style="Tip-yellow">
 
@@ -279,7 +279,7 @@ print(predictions)
 [0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 6, 6, 6, 0, 8, 0, 0]
 ```
 
- `model.config.id2label` 属性包含索引到标签的映射，我们可以用它来将预测转化为标签：
+`model.config.id2label` 属性包含索引到标签的映射，我们可以用它来将预测转化为标签：
 
 ```py
 model.config.id2label

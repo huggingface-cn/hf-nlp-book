@@ -150,7 +150,7 @@ lambda x : x * x
 drug_dataset = drug_dataset.filter(lambda x: x["condition"] is not None)
 ```
 
- `None` 条目删除之后，我们可以规范我们的 `condition` 列：
+`None` 条目删除之后，我们可以规范我们的 `condition` 列：
 
 ```py
 drug_dataset = drug_dataset.map(lowercase_condition)
@@ -263,7 +263,7 @@ drug_dataset = drug_dataset.map(lambda x: {"review": html.unescape(x["review"])}
 
 ## map() 方法的超级加速 
 
- `Dataset.map()` 方法有一个 `batched` 参数，如果设置为 `True` , map 函数将会分批执行所需要进行的操作（批量大小是可配置的，但默认为 1,000）。例如，之前对所有 HTML 进行解码的 map 函数运行需要一些时间（你可以从进度条中看到所需的时间）。我们可以通过使用列表推导同时处理多个元素来加速。
+`Dataset.map()` 方法有一个 `batched` 参数，如果设置为 `True` , map 函数将会分批执行所需要进行的操作（批量大小是可配置的，但默认为 1,000）。例如，之前对所有 HTML 进行解码的 map 函数运行需要一些时间（你可以从进度条中看到所需的时间）。我们可以通过使用列表推导同时处理多个元素来加速。
 
 当你在使用 `Dataset.map()` 函数时设定 `batched=True` 。该函数会接收一个包含数据集字段的字典，字典的值是一个列表。例如，这是使用 `batched=True` 对所有 HTML 字符进行解码的方法 
 
@@ -304,14 +304,14 @@ def tokenize_function(examples):
 
 Options         | Fast tokenizer | Slow tokenizer
 :--------------:|:--------------:|:-------------:
- `batched=True` | 10.8s          | 4min41s
- `batched=False` | 59.2s          | 5min3s
+`batched=True` | 10.8s          | 4min41s
+`batched=False` | 59.2s          | 5min3s
 
 这意味着使用快速词元分析器配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的词元化代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
 
 并行化也是快速词元分析器通过批处理实现近 6 倍加速的原因：单个词元化操作是不能并行的，但是当你想同时对大量文本进行词元化时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。
 
- `Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速词元分析器加速（尤其是当你使用的词元分析器没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
+`Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速词元分析器加速（尤其是当你使用的词元分析器没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
 
 ```py
 slow_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased", use_fast=False)
@@ -326,10 +326,10 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 
 选项         | 快速词元分析器 | 慢速词元分析器
 :--------------:|:--------------:|:-------------:
- `batched=True` | 10.8s          | 4min41s
- `batched=False` | 59.2s          | 5min3s
- `batched=True` , `num_proc=8` | 6.52s          | 41.3s
- `batched=False` , `num_proc=8` | 9.49s          | 45.2s
+`batched=True` | 10.8s          | 4min41s
+`batched=False` | 59.2s          | 5min3s
+`batched=True` , `num_proc=8` | 6.52s          | 41.3s
+`batched=False` , `num_proc=8` | 9.49s          | 45.2s
 
 这个结果对于慢速分词器来说是更加友好了，但快速分词器的性能也得到了显著提升。但是请注意，情况并非总是如此—对于 `num_proc` 的其他值，在我们的测试中，使用 `batched=True` 而不带有 `num_proc` 参数的选项处理起来更快。总的来说，我们并不推荐在快速词元分析器和 `batched=True` 的情况下使用 Python 的多进程处理。
 

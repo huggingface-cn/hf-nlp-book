@@ -1,4 +1,4 @@
-## Tokenizers 
+## 3.3 Tokenizers 
 
  tokenizer 是 NLP 管道的核心组件之一。它们有一个非常明确的目的：将文本转换为模型可以处理的数据。模型只能处理数字，因此 tokenizer 需要将我们的文本输入转换为数字。在本节中，我们将确切地探讨 tokenization 管道中发生的事情。
 
@@ -16,7 +16,7 @@ Jim Henson was a puppeteer
 
 想到的第一种 tokenizer 是基于词（word-based）的 tokenization。它通常很容易配置和使用，只需几条规则，并且通常会产生不错的结果。例如，在下图中，目标是将原始文本拆分为单词并为每个单词找到一个数字表示：
 
-![基于单词（Word-based）的 tokenization 的示例。](./assets/word_based_tokenization.svg "An example of word-based tokenization.")
+![基于单词（Word-based）的 tokenization 的示例。](./assets/word_based_tokenization.png "An example of word-based tokenization.")
 
 有多种方法可以拆分文本。例如，我们可以通过使用 Python 的 `split()` 函数，使用空格将文本分割为单词：
 
@@ -48,7 +48,7 @@ print(tokenized_text)
 
 但在此过程中也有一些问题，关于空格和标点符号：
 
-![基于字符（Character-based）的 tokenization 的一个示例](./assets/character_based_tokenization.svg "An example of character-based tokenization.")
+![基于字符（Character-based）的 tokenization 的一个示例](./assets/character_based_tokenization.png "An example of character-based tokenization.")
 
 这种方法也不是完美的。由于现在表示是基于字符而不是单词，因此人们可能会争辩说，从直觉上讲，它的意义不大：每个字符本身并没有多大意义，但是单词则不然。然而，这又因语言而异；例如，在中文中，每个字符比拉丁语言中的字符包含更多的信息。
 
@@ -64,7 +64,7 @@ print(tokenized_text)
 
 这里有一个例子，展示了基于子词的 tokenization 算法如何将序列“Let's do tokenization!”分词：
 
-![基于子词（subword）的 tokenization 的一个示例](./assets/bpe_subword.svg "A subword tokenization algorithm.")
+![基于子词（subword）的 tokenization 的一个示例](./assets/bpe_subword.png "A subword tokenization algorithm.")
 
 这些子词最终提供了大量的语义信息：例如，在上面的例子中，“tokenization”被分割成“token”和“ization”，这两个 tokens 在保持空间效率的同时具有语义意义（只需要两个 tokens 就能表示一个长词）。这让我们能够在词汇量小的情况下获得相对良好的覆盖率，并且几乎没有未知的 token。
 

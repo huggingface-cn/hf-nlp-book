@@ -72,7 +72,7 @@ classifier(
 
 在使用模型时所有这些预处理都需要与模型预训练时的方式完全相同，因此我们首先需要从 [Model Hub](https://huggingface.co/models) 中下载这些信息。为此，我们使用 `AutoTokenizer` 类和它的 `from_pretrained()` 方法，并输入我们模型 Checkpoint 的名称，它将自动获取与模型的 tokenizer 相关联的数据，并对其进行缓存（因此只有在你第一次运行下面的代码时才会下载）。
 
- `sentiment-analysis` （情绪分析）管道默认的 Checkpoint 是 `distilbert-base-uncased-finetuned-sst-2-english` （你可以在 [这里](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) ）看到它的模型卡片，我们运行以下代码：
+`sentiment-analysis` （情绪分析）管道默认的 Checkpoint 是 `distilbert-base-uncased-finetuned-sst-2-english` （你可以在 [这里](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) ）看到它的模型卡片，我们运行以下代码：
 
 ```python
 from transformers import AutoTokenizer
@@ -81,11 +81,11 @@ checkpoint = "distilbert-base-uncased-finetuned-sst-2-english"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 ```
 
-当我们有了 tokenizer，我们就可以直接将我们的句子传递给它，我们就会得到一个 `input ID（inputs ID）` 的列表！剩下要做的唯一一件事就是将input ID 列表转换为 tensor（张量）。
+当我们有了 tokenizer，我们就可以直接将我们的句子传递给它，我们就会得到一个 `input ID（inputs ID）` 的列表！剩下要做的唯一一件事就是将 input ID 列表转换为 tensor（张量）。
 
-你在使用 Transformers 时，不必在意后端是哪个 ML 框架实现的；它可能是 PyTorch 或 TensorFlow，或 Flax。但是，Transformers 模型只接受 `tensor（张量）` 作为输入。如果这是你第一次听说tensor，你可以把它们想象成 NumPy 数组。NumPy 数组可以是标量（0D）、向量（1D）、矩阵（2D）或具有更多维度。这些都可以称为tensor；其他 ML 框架的tensor使用方法也类似，通常与 NumPy 数组一样易于实例化。
+你在使用 Transformers 时，不必在意后端是哪个 ML 框架实现的；它可能是 PyTorch 或 TensorFlow，或 Flax。但是，Transformers 模型只接受 `tensor（张量）` 作为输入。如果这是你第一次听说 tensor，你可以把它们想象成 NumPy 数组。NumPy 数组可以是标量（0D）、向量（1D）、矩阵（2D）或具有更多维度。这些都可以称为 tensor；其他 ML 框架的 tensor 使用方法也类似，通常与 NumPy 数组一样易于实例化。
 
-我们可以使用 return_tensors 参数指定我们想要得到的tensor的类型（PyTorch、TensorFlow 或纯 NumPy），
+我们可以使用 `return_tensors` 参数指定我们想要得到的 tensor 的类型（PyTorch、TensorFlow 或纯 NumPy），
 
 {#if fw === 'pt'}
 ```python
@@ -107,7 +107,7 @@ print(inputs)
 ```
 {/if}
 
-现在不要担心 padding（填充）和 truncation（截断）；我们稍后会解释这些。这里要记住的是，你可以传递一个句子或一组句子，还可以指定要返回的tensor类型（如果没有传递类型，默认返回的是 python 中的 list 格式）。
+现在不要担心 padding（填充）和 truncation（截断）；我们稍后会解释这些。这里要记住的是，你可以传递一个句子或一组句子，还可以指定要返回的 tensor 类型（如果没有传递类型，默认返回的是 python 中的 list 格式）。
 
 {#if fw === 'pt'}
 
@@ -145,13 +145,13 @@ print(inputs)
 ```
 {/if}
 
-输出是一个包含两个键， `input_ids` 和 `attention_mask` 。 `input_ids` 包含两行整数（每个句子一行），它们是每个句子中token 的 ID。我们将在本章后面解释什么是 `attention_mask` 。
+输出是一个包含两个键， `input_ids` 和 `attention_mask` 。 `input_ids` 包含两行整数（每个句子一行），它们是每个句子中 token 的 ID。我们将在本章后面解释什么是 `attention_mask` 。
 
 ## 探索模型 [[探索模型]]
 
 {#if fw === 'pt'}
 
-我们可以像使用 tokenizer 一样下载预训练模型。Transformers 提供了一个 `AutoModel` 类，它也有一个 from_pretrained()方法：
+我们可以像使用 tokenizer 一样下载预训练模型。Transformers 提供了一个 `AutoModel` 类，它也有一个     `from_pretrained()` 方法：
 
 ```python
 from transformers import AutoModel
@@ -161,7 +161,7 @@ model = AutoModel.from_pretrained(checkpoint)
 ```
 {:else}
 
-我们可以像使用 tokenizer 一样下载预训练模型。Transformers 提供了一个 `TFAutoModel` 类，它也有一个 from_pretrained()方法：
+我们可以像使用 tokenizer 一样下载预训练模型。Transformers 提供了一个 `TFAutoModel` 类，它也有一个 `from_pretrained()` 方法：
 
 ```python
 from transformers import TFAutoModel
@@ -177,7 +177,7 @@ model = TFAutoModel.from_pretrained(checkpoint)
 
 如果这有些难以理解，不要担心。我们以后再解释。
 
-这些隐状态本身就很有用，它们被称为*模型头（head）*，通常是模型另一部分的输入。在 [第一章](/course/chapter1) 中，可以使用相同的体系结构的模型执行不同的任务，这是因为每个任务都有一个对应的模型头。
+这些隐状态本身就很有用，它们被称为模型头（head），通常是模型另一部分的输入。在 [第一章](/course/chapter1) 中，可以使用相同的体系结构的模型执行不同的任务，这是因为每个任务都有一个对应的模型头。
 
 ### 高维向量？[[高维向量？]]
 
@@ -211,7 +211,7 @@ print(outputs.last_hidden_state.shape)
 ```
 {/if}
 
-注意，Transformers 模型的输出有些像 `namedtuple` 或词典。你可以通过点+属性（就像我们在上面示例中所做的那样）或键（ `outputs["last_hidden_state"]` ）访问元素，如果你确切知道要查找的内容的位置（ `outputs[0]` ），也可以通过索引访问元素。
+注意，Transformers 模型的输出有些像 `namedtuple` 或词典。你可以通过使用“.”+属性（就像我们在上面示例中所做的那样）或键（ `outputs["last_hidden_state"]` ）访问元素，如果你确切知道要查找的内容的位置（ `outputs[0]` ），也可以通过索引访问元素。
 
 ### 模型头：理解数字的意义 [[模型头：理解数字的意义]]
 
@@ -224,7 +224,7 @@ Transformers 模型的输出会直接发送到模型头进行处理。
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter2/transformer_and_head-dark.svg" alt="A Transformer network alongside its head."/>
 </div>
 
-在此图中，模型由其嵌入层和后续层表示。嵌入层将tokenization输入中的每个inputs ID 转换为表示关联token的向量。后续层使用注意机制操纵这些向量，生成句子的最终表示。
+在此图中，模型由其嵌入层和后续层表示。嵌入层将 tokenization 输入中的每个 inputs ID 转换为表示关联 token 的向量。后续层使用注意机制操纵这些向量，生成句子的最终表示。
 
 
 Transformers 中有许多不同的体系结构，每种体系结构都是围绕处理特定任务而设计的。以下是一个非详尽的列表：
@@ -240,7 +240,7 @@ Transformers 中有许多不同的体系结构，每种体系结构都是围绕�
 
 {#if fw === 'pt'}
 
-以情感分类为例，我们需要一个带有序列分类头的模型（能够将句子分类为积极或消极）。因此，我们不选用 `AutoModel` 类，而是使用 `AutoModelForSequenceClassification` 。也就是说前面写的 model = AutoModel.from_pretrained(checkpoint)并不能得到情感分类任务的结果，因为没有加载 Model head。
+以情感分类为例，我们需要一个带有序列分类头的模型（能够将句子分类为积极或消极）。因此，我们不选用 `AutoModel` 类，而是使用 `AutoModelForSequenceClassification` 。也就是说前面写的 `model = AutoModel.from_pretrained(checkpoint)` 并不能得到情感分类任务的结果，因为没有加载 Model head。
 
 ```python
 from transformers import AutoModelForSequenceClassification
@@ -305,7 +305,7 @@ tensor([[-1.5607,  1.6123],
 ```
 {/if}
 
-我们的模型预测第一句为 `[-1.5607, 1.6123]` ，第二句为 `[ 4.1692, -3.3464]` 。这些不是概率，而是`logits（对数几率）`，是模型最后一层输出的原始的、未标准化的分数。要转换为概率，它们需要经过 [SoftMax](https://en.wikipedia.org/wiki/Softmax_function) 层（所有🤗Transformers 模型的输出都是 logits，因为训练时的损失函数通常会将最后的激活函数（如 SoftMax）与实际的损失函数（如交叉熵）融合）：
+我们的模型预测第一句为 `[-1.5607, 1.6123]` ，第二句为 `[ 4.1692, -3.3464]` 。这些不是概率，而是 `logits（对数几率）` ，是模型最后一层输出的原始的、未标准化的分数。要转换为概率，它们需要经过 [SoftMax](https://en.wikipedia.org/wiki/Softmax_function) 层（所有🤗Transformers 模型的输出都是 logits，因为训练时的损失函数通常会将最后的激活函数（如 SoftMax）与实际的损失函数（如交叉熵）融合）：
 
 {#if fw === 'pt'}
 ```py

@@ -187,7 +187,7 @@ unmasker("This course will teach you all about <mask> models.", top_k=2)
   'token_str': ' computational'}]
 ```
 
- `top_k` 参数控制要显示的结果有多少种。请注意，这里模型填补了特殊的 `<mask>` 词，它通常被称为 `mask token` 。不同的 `mask-filling` 模型可能有不同的 `mask token` ，因此在探索其他模型时要验证正确的 `mask token` 是什么。检查它的一种方法是查看小组件中使用的 `mask token` 。
+`top_k` 参数控制要显示的结果有多少种。请注意，这里模型填补了特殊的 `<mask>` 词，它通常被称为 `mask token` 。不同的 `mask-filling` 模型可能有不同的 `mask token` ，因此在探索其他模型时要验证正确的 `mask token` 是什么。检查它的一种方法是查看小组件中使用的 `mask token` 。
 
 <div custom-style="Tip-green">
 
@@ -226,7 +226,7 @@ ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 
 ### 问答 
 
- `question-answering` pipeline 使用给定上下文中的信息回答问题：
+`question-answering` pipeline 使用给定上下文中的信息回答问题：
 
 ```python
 from transformers import pipeline

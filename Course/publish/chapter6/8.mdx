@@ -360,7 +360,7 @@ print(encoding.tokens)
 ```python
 tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
 ```
- `trim_offsets = False` 这个选项告诉 post-processor，我们应该让那些以'Ġ'开始的词元的偏移量保持不变：这样，偏移量的开始将指向单词前的空格，而不是单词的第一个字符（因为空格在技术上是词元的一部分）。让我们看一下我们刚刚编码的文本的结果，其中 `'Ġtest'` 是索引 4 的词元：
+`trim_offsets = False` 这个选项告诉 post-processor，我们应该让那些以'Ġ'开始的词元的偏移量保持不变：这样，偏移量的开始将指向单词前的空格，而不是单词的第一个字符（因为空格在技术上是词元的一部分）。让我们看一下我们刚刚编码的文本的结果，其中 `'Ġtest'` 是索引 4 的词元：
 
 ```python
 sentence = "Let's test this tokenizer."

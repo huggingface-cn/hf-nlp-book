@@ -48,12 +48,17 @@ def write_to_markdown_file(filepath, data):
                 file.write(f'{j}. {choice["text"]}    \n')
                 file.write(f'解析: {choice["explain"]}\n')
             file.write('\n')
-input_file='Course\publish\chapter1/10.mdx'
-output_file='Course\publish\chapter1/10_fix.mdx'
+input_file='Course\publish\chapter2/8.mdx'
+output_file='Course\publish\chapter2/8_fix.mdx'
 # markdown = open(input_file, 'r', encoding='utf-8').read()
 data = parse_mdx_file(input_file)
 write_to_markdown_file(output_file, data)
+text=open(output_file, 'r', encoding='utf-8').read()
+text.replace('🤗 ','').replace('🤗','')
+text = re.sub(r'^#', "##", text)
+#对于异常空行的处理
+text=text.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
 # transformed = transform_mdx(input_file)
 
-# with open(output_file, 'w') as f:
-#     f.write(transformed)
+with open(output_file, 'w',encoding='utf-8') as f:
+    f.write(text)

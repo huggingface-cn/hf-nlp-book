@@ -567,7 +567,7 @@ metric.compute(predictions=[predictions], references=[labels])
 
 它返回很多信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。对于我们的度量计算，我们将只保留总分，但是你可以自由地调整 `compute_metrics()` 函数返回你想要查看的所有指标。
 
- `compute_metrics()` 函数首先取 logits 的 argmax，将它们转换为预测值（通常情况下，logits 和概率的顺序是相同，所以我们不需要使用 softmax）。然后我们需要将标签和预测值都从整数转换为字符串。我们删除所有标签为 `-100` 的值，然后将结果传递给 `metric.compute()` 方法：
+`compute_metrics()` 函数首先取 logits 的 argmax，将它们转换为预测值（通常情况下，logits 和概率的顺序是相同，所以我们不需要使用 softmax）。然后我们需要将标签和预测值都从整数转换为字符串。我们删除所有标签为 `-100` 的值，然后将结果传递给 `metric.compute()` 方法：
 
 ```py
 import numpy as np

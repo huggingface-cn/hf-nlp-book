@@ -76,7 +76,7 @@ Question: 'To whom did the Virgin Mary allegedly appear in 1858 in Lourdes Franc
 Answer: {'text': ['Saint Bernadette Soubirous'], 'answer_start': [515]}
 ```
 
- `context` 和 `question` 字段的使用非常直观。 `answers` 字段相对复杂一些，因为它包含一个字典，其中有两个都是列表的字段。这是在评估时 `squad` 指标所期望的格式；如果你使用的是你自己的数据，你不必一定将答案放在同样的格式中。 `text` 字段是非常明显的答案文本，而 `answer_start` 字段包含了 Context 中每个答案的起始索引。
+`context` 和 `question` 字段的使用非常直观。 `answers` 字段相对复杂一些，因为它包含一个字典，其中有两个都是列表的字段。这是在评估时 `squad` 指标所期望的格式；如果你使用的是你自己的数据，你不必一定将答案放在同样的格式中。 `text` 字段是非常明显的答案文本，而 `answer_start` 字段包含了 Context 中每个答案的起始索引。
 
 在训练过程中，只有一个可能的答案。我们可以使用 `Dataset.filter()` 方法来进行检查：
 
@@ -706,7 +706,7 @@ metric.compute(predictions=predicted_answers, references=theoretical_answers)
 
 现在，让我们将刚才所做的放入 `compute_metrics()` 函数中，我们将在 `Trainer` 中使用它。通常， `compute_metrics()` 函数只接收一个包含逻辑回归和标签的 `eval_preds` 元组。但是在这里，我们需要更多的信息，因为我们需要在特征数据集中查找偏移量，并在示例数据集中查找原始 Context，因此我们无法在训练过程中使用此函数来获取常规的评估结果。我们只会在训练结束时使用它来检查结果。
 
- `compute_metrics()` 函数与之前的步骤相同；我们只是添加了一个小的检查，以防我们找不到任何有效的答案（在这种情况下，我们的预测会输出一个空字符串）。
+`compute_metrics()` 函数与之前的步骤相同；我们只是添加了一个小的检查，以防我们找不到任何有效的答案（在这种情况下，我们的预测会输出一个空字符串）。
 
 {:else}
 
@@ -982,7 +982,7 @@ trainer.push_to_hub(commit_message="Training complete")
 'https://huggingface.co/sgugger/bert-finetuned-squad/commit/9dcee1fbc25946a6ed4bb32efb1bd71d5fa90b68'
 ```
 
- `Trainer` 还会创建一个包含所有评估结果的模型卡片，并将其上传。
+`Trainer` 还会创建一个包含所有评估结果的模型卡片，并将其上传。
 
 {/if}
 

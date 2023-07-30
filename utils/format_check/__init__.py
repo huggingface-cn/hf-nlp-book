@@ -124,6 +124,7 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
             if ignore_replace not in text:
                 print(f'Warning:{ignore_replace} not in text content:{ignore_dict[ignore_replace]}')
             text=text.replace(ignore_replace,ignore_dict[ignore_replace])
+        text = re.sub(r'\n `', "`", text)
         with open('.'.join(file_dir.split('.')[:-1]+['_fix']+[file_dir.split('.')[-1]]),'w',encoding='utf-8') as target_f:
             target_f.write(text)
     # check results

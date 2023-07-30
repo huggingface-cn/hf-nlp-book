@@ -179,7 +179,7 @@ tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token=
 
 ## 使用 huggingface_hub python 库 
 
- `huggingface_hub` Python 库是一个包，为模型和数据集中心提供了一系列工具。它提供了简单的方法和类，可以便捷地获取 hub 中仓库的信息以及管理仓库等常见任务。它在 git 的基础上提供了简单的 API，可以在你你的项目中管理这些仓库的内容，以及 hub 的一些功能。
+`huggingface_hub` Python 库是一个包，为模型和数据集中心提供了一系列工具。它提供了简单的方法和类，可以便捷地获取 hub 中仓库的信息以及管理仓库等常见任务。它在 git 的基础上提供了简单的 API，可以在你你的项目中管理这些仓库的内容，以及 hub 的一些功能。
 
 与使用 `push_to_hub` API 类似，这需要你将 API 令牌保存在缓存中。为此，你需要在操作系统的命令行使用 CLI 中的 `login` 命令，（如果在 Notebook 中运行，请在这些命令前添加 `!` 字符）：
 
@@ -187,7 +187,7 @@ tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token=
 huggingface-cli login
 ```
 
- `huggingface_hub` 包提供了几个非常便捷方法和类可以帮助我们完成 hub 的管理。首先，有一些方法可以管理仓库的创建、删除等：
+`huggingface_hub` 包提供了几个非常便捷方法和类可以帮助我们完成 hub 的管理。首先，有一些方法可以管理仓库的创建、删除等：
 
 ```python no-format
 from huggingface_hub import (
@@ -279,7 +279,7 @@ Hugging Face Hub 的文件管理系统基于 git 用于处理常规文件，对�
 
 使用 `upload_file` 不需要在你的系统上安装 git 和 git-lfs。它使用 HTTP POST 请求将文件直接发送到 Hub。这种方法的一个限制是它不能上传大于 5GB 的文件。如果你的文件大于 5GB，请按照下面详述的另外两种方法进行操作。
 
- `upload_file` 的使用方法如下：
+`upload_file` 的使用方法如下：
 ```py
 from huggingface_hub import upload_file
 
@@ -297,7 +297,7 @@ upload_file(
 
 ### `Repository` 类 
 
- `Repository` 可以使用类似 git 的方式管理一个本地仓库。它抽象了使用 git 可能遇到的大部分痛点，提供我们所需的所有功能。
+`Repository` 可以使用类似 git 的方式管理一个本地仓库。它抽象了使用 git 可能遇到的大部分痛点，提供我们所需的所有功能。
 
 使用这个类需要安装 git 和 git-lfs，所以请确保你已经安装了 git-lfs（如果没有安装，可以参见 [此处](https://git-lfs.github.com/)(https://git-lfs.github.com/)(https://git-lfs.github.com/) 的安装指南）并已经在操作系统里配置好了相关功能。
 
@@ -337,7 +337,7 @@ model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")
 ```
 
- `<path_to_dummy_folder>` 现在已经存储了模型和词元分析器文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
+`<path_to_dummy_folder>` 现在已经存储了模型和词元分析器文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
 
 ```py
 repo.git_add()

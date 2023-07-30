@@ -22,7 +22,7 @@
 
 {/if}
 
-在过去的几个章节中，我们已经尝试尽可能手动完成大部分工作。我们探索了 tokenizer 的运行机制，并且了解了分词、转换为inputs ID、填充、截断以及注意力掩码的处理方式。
+在过去的几个章节中，我们已经尝试尽可能手动完成大部分工作。我们探索了 tokenizer 的运行机制，并且了解了分词、转换为 inputs ID、填充、截断以及注意力掩码的处理方式。
 
 然而，正如我们在第二节中看到的那样，🤗 Transformers API 能够通过一个高级函数为我们处理所有这些工作，接下来我们就要深入研究这个函数。当你直接在句子上调用你的 `tokenizer` 时，就可以得到转换后的可以直接放入模型的数据了：
 
@@ -37,7 +37,7 @@ sequence = "I've been waiting for a HuggingFace course my whole life."
 model_inputs = tokenizer(sequence)
 ```
 
-这里， `model_inputs` 变量包含模型运行所需的所有数据。在 DistilBERT 中，它包括inputs ID 和注意力掩码（attention mask）。其他接受额外输入的模型也会有对应的 tokenizer 可以将输入转化为模型所需要的输入。
+这里， `model_inputs` 变量包含模型运行所需的所有数据。在 DistilBERT 中，它包括 inputs ID 和注意力掩码（attention mask）。其他接受额外输入的模型也会有对应的 tokenizer 可以将输入转化为模型所需要的输入。
 
 正如我们将在下面的一些例子中看到的，这个函数非常强大。首先，它可以对单个句子进行处理：
 
@@ -97,9 +97,9 @@ model_inputs = tokenizer(sequences, padding=True, return_tensors="tf")
 model_inputs = tokenizer(sequences, padding=True, return_tensors="np")
 ```
 
-## 特殊的tokens [[特殊的 tokens ]]
+## 特殊的 tokens [[特殊的 tokens ]]
 
-如果我们看一下 tokenizer 返回的inputs ID，我们会发现它们与之前的略有不同：
+如果我们看一下 tokenizer 返回的 inputs ID，我们会发现它们与之前的略有不同：
 
 ```py
 sequence = "I've been waiting for a HuggingFace course my whole life."
@@ -117,7 +117,7 @@ print(ids)
 [1045, 1005, 2310, 2042, 3403, 2005, 1037, 17662, 12172, 2607, 2026, 2878, 2166, 1012]
 ```
 
-句子的开始和结束分别增加了一个inputs ID。我们来解码上述的两个 ID 序列，看看是怎么回事：
+句子的开始和结束分别增加了一个 inputs ID。我们来解码上述的两个 ID 序列，看看是怎么回事：
 
 ```py
 print(tokenizer.decode(model_inputs["input_ids"]))

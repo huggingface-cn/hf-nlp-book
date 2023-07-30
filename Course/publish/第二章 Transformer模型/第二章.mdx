@@ -12,7 +12,7 @@
 
 - 第 1 章到第 4 章介绍了 Transformers 库的主要概念。在本课程的这一部分结束时，你将了解 Transformer 模型的工作原理，并将了解如何使用 [Hugging Face Hub](https://huggingface.co/models)(https://huggingface.co/models) 中的模型，在数据集上对其进行微调，并在 Hub 上分享你的结果。
 - 第 5 章到第 8 章在深入研究经典 NLP 任务之前，教授 Datasets 和 Tokenizers 的基础知识。在本部分结束时，你将能够自己解决最常见的 NLP 问题。
-- 第 9 章介绍了如何为您的机器学习构建**交互式演示**模型，并将其优化为您自己的可分享的模型演示生产环境。
+- 第 9 章介绍了如何为你的机器学习构建**交互式演示**模型，并将其优化为你自己的可分享的模型演示生产环境。
 
 本教程：
 
@@ -27,10 +27,10 @@
 这里有一些经常被提到的问题：
 
 - **我应该在这门课程上花多少时间？**
-本课程的每一章都设计为在 1 周内完成，每周大约需要 6-8 小时的学习时间。但您可以根据自己的需要随意安排学习时间。
+本课程的每一章都设计为在 1 周内完成，每周大约需要 6-8 小时的学习时间。但你可以根据自己的需要随意安排学习时间。
 
 - **我在哪里可以获得课程的代码？**
-本书所有代码的 Jupyter 笔记本托管在 [`huggingface/notebooks`](https://github.com/huggingface/notebooks)(https://github.com/huggingface/notebooks) 仓库中。如果您希望在本地生成它们，请查看 GitHub 上 [`course`](https://github.com/huggingface/course#-jupyter-notebooks)(https://github.com/huggingface/course#-jupyter-notebooks) 仓库中的说明。
+本书所有代码的 Jupyter 笔记本托管在 [`huggingface/notebooks`](https://github.com/huggingface/notebooks)(https://github.com/huggingface/notebooks) 仓库中。如果你希望在本地生成它们，请查看 GitHub 上 [`course`](https://github.com/huggingface/course#-jupyter-notebooks)(https://github.com/huggingface/course#-jupyter-notebooks) 仓库中的说明。
 
 - **如果我有问题，我可以在哪里提问？**
 如果你对本书的任何部分有疑问，可以前往 [Hugging Face 论坛](https:// discuss.huggingface.co/)(https:// discuss.huggingface.co/) ：
@@ -253,7 +253,7 @@ unmasker("This course will teach you all about <mask> models.", top_k=2)
   'token_str': ' computational'}]
 ```
 
- `top_k` 参数控制要显示的结果有多少种。请注意，这里模型填补了特殊的 `<mask>` 词，它通常被称为 `mask token` 。不同的 `mask-filling` 模型可能有不同的 `mask token` ，因此在探索其他模型时要验证正确的 `mask token` 是什么。检查它的一种方法是查看小组件中使用的 `mask token` 。
+`top_k` 参数控制要显示的结果有多少种。请注意，这里模型填补了特殊的 `<mask>` 词，它通常被称为 `mask token` 。不同的 `mask-filling` 模型可能有不同的 `mask token` ，因此在探索其他模型时要验证正确的 `mask token` 是什么。检查它的一种方法是查看小组件中使用的 `mask token` 。
 
 <div custom-style="Tip-green">
 
@@ -292,7 +292,7 @@ ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 
 ### 问答 
 
- `question-answering` pipeline 使用给定上下文中的信息回答问题：
+`question-answering` pipeline 使用给定上下文中的信息回答问题：
 
 ```python
 from transformers import pipeline

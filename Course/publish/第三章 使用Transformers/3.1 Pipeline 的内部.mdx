@@ -1,6 +1,4 @@
-
-
-## Pipeline 的内部 
+## 3.1 Pipeline 的内部 
 
 <div custom-style="Tip-green">
 
@@ -30,7 +28,7 @@ classifier(
 
 正如我们在第二章中看到的，这个管道将三个步骤组合在一起：预处理、模型计算和后处理：
 
-![完整的 NLP 管道：tokenization、转换为 ID，以及通过 Transformer 模型和模型头进行推理](./assets/full_nlp_pipeline.svg "The full NLP pipeline: tokenization of text, conversion to IDs, and inference through the Transformer model and the model head.")
+![完整的 NLP 管道：tokenization、转换为 ID，以及通过 Transformer 模型和模型头进行推理](./assets/full_nlp_pipeline.png "The full NLP pipeline: tokenization of text, conversion to IDs, and inference through the Transformer model and the model head.")
 
 让我们先简单了解一下这三个步骤。
 
@@ -191,7 +189,7 @@ Transformers 模型的输出会直接发送到模型头进行处理。
 
 模型头通常由一个或几个线性层组成，它的输入是隐状态的高维向量，它会并将其投影到不同的维度。
 
-![Transformer 网络和它的模型头（head）](./assets/transformer_and_head.svg "A Transformer network alongside its head.")
+![Transformer 网络和它的模型头（head）](./assets/transformer_and_head.png "A Transformer network alongside its head.")
 
 在此图中，模型由其嵌入层和后续层表示。嵌入层将 tokenization 输入中的每个 inputs ID 转换为表示关联 token 的向量。后续层使用注意机制操纵这些向量，生成句子的最终表示。
 

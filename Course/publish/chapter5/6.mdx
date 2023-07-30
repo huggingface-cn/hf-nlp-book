@@ -369,7 +369,7 @@ scores, samples = embeddings_dataset.get_nearest_examples(
 )
 ```
 
- `Dataset.get_nearest_examples()` 函数返回一个元组，包括评分（评价查询和文档之间的相似程度）和对应的样本（这里是 5 个最佳匹配）。让我们把这些收集到一个 `pandas.DataFrame` ，这样我们就可以轻松地对它们进行排序：
+`Dataset.get_nearest_examples()` 函数返回一个元组，包括评分（评价查询和文档之间的相似程度）和对应的样本（这里是 5 个最佳匹配）。让我们把这些收集到一个 `pandas.DataFrame` ，这样我们就可以轻松地对它们进行排序：
 
 ```py
 import pandas as pd
