@@ -1,4 +1,4 @@
-# WordPiece 词元化算法   [[WordPiece 词元化算法]]
+# WordPiece tokenization算法   [[WordPiece tokenization算法]]
 
 <CourseFloatingBanner chapter={6}
   classNames="absolute z-10 right-0 top-0"
@@ -83,7 +83,7 @@ $$\mathrm{score} = (\mathrm{freq\_of\_pair}) / (\mathrm{freq\_of\_first\_element
 
 </Tip>
 
-## 词元化算法 [[词元化算法]]
+## tokenization算法 [[tokenization算法]]
 
 WordPiece 和 BPE 的分词方式有所不同，WordPiece 只保存最终词汇表，而不保存学习到的合并规则。WordPiece 从待分词的词开始，找到词汇表中最长的子词，然后在其处分割。例如，如果我们使用上述示例中学习到的词汇表，对于词 `"hugs"` ，从开始处的最长子词在词汇表中是 `"hug"` ，所以我们在那里分割，得到 `["hug", "##s"]` 。然后我们继续处理 `"##s"` ，它在词汇表中，所以 `"hugs"` 的分词结果是 `["hug", "##s"]` 。
 
@@ -114,7 +114,7 @@ corpus = [
 ]
 ```
 
-首先，我们需要将语料库预分词为单词。由于我们正在复刻 WordPiece 词元分析器 （如 BERT），因此我们将使用 `bert-base-cased` 词元分析器进行预分词：
+首先，我们需要将语料库预分词为单词。由于我们正在复刻 WordPiece  tokenizer  （如 BERT），因此我们将使用 `bert-base-cased`  tokenizer 进行预分词：
 
 ```python
 from transformers import AutoTokenizer

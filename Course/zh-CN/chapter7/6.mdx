@@ -29,7 +29,7 @@
 
 <Youtube id="Vpjb1lu0MDk"/>
 
-在 [第六章](/course/chapter6) 中，我们创建了一个高效的词元分析器来处理 Python 源代码，但我们还需要一个大规模的数据集来预训练模型。在这里，我们将把我们的词元分析器应用到一个来自 GitHub 仓库的 Python 代码语料库上。然后，我们将使用 Trainer API 和 🤗 Accelerate 来训练模型。让我们开始吧！
+在 [第六章](/course/chapter6) 中，我们创建了一个高效的 tokenizer 来处理 Python 源代码，但我们还需要一个大规模的数据集来预训练模型。在这里，我们将把我们的 tokenizer 应用到一个来自 GitHub 仓库的 Python 代码语料库上。然后，我们将使用 Trainer API 和 🤗 Accelerate 来训练模型。让我们开始吧！
 
 <iframe src="https://course-demos-codeparrot-ds.hf.space" frameBorder="0" height="300" title="Gradio app" class="block dark:hidden container p-0 flex-grow space-iframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"></iframe>
 
@@ -254,14 +254,14 @@ DatasetDict({
 
 <Tip>
 
-✏️ **试一试！**这里我们删除了所有小于上下文大小的块，并不会造成大问题，因为我们使用的是小的上下文窗口。随着你增大上下文大小（或者你拥有的是一个短文档的语料库），被抛弃的块的比例也会增加。准备数据的更有效方法是将所有词元化后的样本加入一个 batch 中，每个语料之间有一个 `eos_token_id` 词元，然后对连接后的序列进行切块处理。作为练习，修改 `tokenize()` 函数以利用这种方法。请注意，你需要设置 `truncation=False` ，并从词元分析器中移除其他参数以获取完整的词元 ID 序列。
+✏️ **试一试！**这里我们删除了所有小于上下文大小的块，并不会造成大问题，因为我们使用的是小的上下文窗口。随着你增大上下文大小（或者你拥有的是一个短文档的语料库），被抛弃的块的比例也会增加。准备数据的更有效方法是将所有tokenization后的样本加入一个 batch 中，每个语料之间有一个 `eos_token_id` 词元，然后对连接后的序列进行切块处理。作为练习，修改 `tokenize()` 函数以利用这种方法。请注意，你需要设置 `truncation=False` ，并从 tokenizer 中移除其他参数以获取完整的词元 ID 序列。
 
 </Tip>
 
 
 ## 初始化一个新模型 [[初始化一个新模型]]
 
-我们的第一步是全新地初始化一个 GPT-2 模型。我们将通过加载预训练配置来使用小型 GPT-2 模型相同的配置，确保词元分析器大小与模型词汇表大小匹配并设置 `bos` 和 `eos` （序列的开始和结束）词元 ID：
+我们的第一步是全新地初始化一个 GPT-2 模型。我们将通过加载预训练配置来使用小型 GPT-2 模型相同的配置，确保 tokenizer 大小与模型词汇表大小匹配并设置 `bos` 和 `eos` （序列的开始和结束）词元 ID：
 
 
 {#if fw === 'pt'}
@@ -465,7 +465,7 @@ trainer = Trainer(
 trainer.train()
 ```
 
-训练完成后，我们可以将模型和词元分析器推送到 Hub：
+训练完成后，我们可以将模型和 tokenizer 推送到 Hub：
 
 ```py
 trainer.push_to_hub()
@@ -492,7 +492,7 @@ model.compile(optimizer=optimizer)
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 ```
 
-现在我们只需调用 `model.fit()，` 并等待训练完成。根据你是否在完整的训练集或者训练集的子集上运行，这将分别需要 20 小时或者 2 小时，所以拿一些咖啡和一本好书来阅读！训练完成后，我们可以将模型和词元分析器推送到 Hub：
+现在我们只需调用 `model.fit()，` 并等待训练完成。根据你是否在完整的训练集或者训练集的子集上运行，这将分别需要 20 小时或者 2 小时，所以拿一些咖啡和一本好书来阅读！训练完成后，我们可以将模型和 tokenizer 推送到 Hub：
 
 ```py
 from transformers.keras_callbacks import PushToHubCallback

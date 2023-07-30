@@ -7,14 +7,14 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section4.ipynb"},
 ]} />
 
-在深入探讨 Transformer 模型常用的三种分词算法（字节对编码【BPE】、WordPiece 和 Unigram）之前，我们首先来看看每个词元分析器对文本进行的预处理。以下是词元化过程的高度概括：
+在深入探讨 Transformer 模型常用的三种分词算法（字节对编码【BPE】、WordPiece 和 Unigram）之前，我们首先来看看每个 tokenizer 对文本进行的预处理。以下是tokenization过程的高度概括：
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/tokenization_pipeline.svg" alt="The tokenization pipeline.">
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/tokenization_pipeline-dark.svg" alt="The tokenization pipeline.">
 </div>
 
-在分词（根据其模型）之前，词元分析器执行两个步骤： `标准化（normalization）` 和 `预分词（pre-tokenization）` 。
+在分词（根据其模型）之前， tokenizer 执行两个步骤： `标准化（normalization）` 和 `预分词（pre-tokenization）` 。
 
 ## `标准化（normalization）` [[`标准化（normalization）`]]
 
@@ -45,11 +45,11 @@ print(tokenizer.backend_tokenizer.normalizer.normalize_str("Héllò hôw are ü?
 'hello how are u?'
 ```
 
-在这个例子中，由于我们选择了 `bert-base-uncased` 检查点，所以会在标准化的过程中转换为小写并删除重音。
+在这个例子中，由于我们选择了 `bert-base-uncased`  Checkpoint ，所以会在标准化的过程中转换为小写并删除重音。
 
 <Tip>
 
-✏️ **试试看！** 从 `bert-base-cased` 检查点加载词元分析器并处理相同的示例。看一看分词器的 `cased` 和 `uncased` 版本之间的主要区别是什么？
+✏️ **试试看！** 从 `bert-base-cased`  Checkpoint 加载 tokenizer 并处理相同的示例。看一看分词器的 `cased` 和 `uncased` 版本之间的主要区别是什么？
 
 </Tip>
 
@@ -57,7 +57,7 @@ print(tokenizer.backend_tokenizer.normalizer.normalize_str("Héllò hôw are ü?
 
 <Youtube id="grlLV8AIXug"/>
 
-正如我们将在下一节中看到的，分词器一般不会在原始文本上进行训练。因此，我们首先需要将文本拆分为更小的实体，例如单词。这就是预分词步骤的作用。正如我们在 [第二章](/course/chapter2) 中看到的，基于单词的词元分析器可以简单地根据空格和标点符号将原始文本拆分为单词。这些词将是分词器在训练期间可以学习的子词的边界。
+正如我们将在下一节中看到的，分词器一般不会在原始文本上进行训练。因此，我们首先需要将文本拆分为更小的实体，例如单词。这就是预分词步骤的作用。正如我们在 [第二章](/course/chapter2) 中看到的，基于单词的 tokenizer 可以简单地根据空格和标点符号将原始文本拆分为单词。这些词将是分词器在训练期间可以学习的子词的边界。
 
 要查看快速分词器如何执行预分词，我们可以使用 `tokenizer` 对象的 `pre_tokenizer` 属性的 `pre_tokenize_str()` 方法：
 
@@ -105,13 +105,13 @@ tokenizer.backend_tokenizer.pre_tokenizer.pre_tokenize_str("Hello, how are  you?
 
 ## SentencePiece [[SentencePiece]]
 
- [SentencePiece](https://github.com/google/sentencepiece) 是一种用于文本预处理的词元化算法，你可以将其与我们将在接下来的三个部分中看到的任何模型一起使用。它将文本视为 Unicode 字符序列，并用特殊字符 `▁` 替换空格。与 Unigram 算法结合使用（参见 [第七节](/course/chapter7/7) ）时，它甚至不需要预分词步骤，这对于不使用空格字符的语言（如中文或日语）非常有用。
+ [SentencePiece](https://github.com/google/sentencepiece) 是一种用于文本预处理的tokenization算法，你可以将其与我们将在接下来的三个部分中看到的任何模型一起使用。它将文本视为 Unicode 字符序列，并用特殊字符 `▁` 替换空格。与 Unigram 算法结合使用（参见 [第七节](/course/chapter7/7) ）时，它甚至不需要预分词步骤，这对于不使用空格字符的语言（如中文或日语）非常有用。
 
-SentencePiece 的另一个主要特点是可逆词元化：由于没有对空格进行特殊处理，解码词元的时候只需将它们连接起来，然后将 `_` 替换为空格，就可以还原原始的文本。如我们之前所见，BERT 分词器会删除重复的空格，所以它的分词不是可逆的。
+SentencePiece 的另一个主要特点是可逆tokenization：由于没有对空格进行特殊处理，解码词元的时候只需将它们连接起来，然后将 `_` 替换为空格，就可以还原原始的文本。如我们之前所见，BERT 分词器会删除重复的空格，所以它的分词不是可逆的。
 
 ## 算法概述 [[算法概述]]
 
-在下面的部分中，我们将深入研究三种主要的子词词元化算法：BPE（由 GPT-2 等使用）、WordPiece（由 BERT 使用）和 Unigram（由 T5 等使用）。在我们开始之前，先来快速了解它们各自的工作方式。如果你还不能理解，不妨在阅读接下来的每一节之后返回此表格进行查看。
+在下面的部分中，我们将深入研究三种主要的子词tokenization算法：BPE（由 GPT-2 等使用）、WordPiece（由 BERT 使用）和 Unigram（由 T5 等使用）。在我们开始之前，先来快速了解它们各自的工作方式。如果你还不能理解，不妨在阅读接下来的每一节之后返回此表格进行查看。
 
 模型 | BPE | WordPiece | Unigram
 :----:|:---:|:---------:|:------:

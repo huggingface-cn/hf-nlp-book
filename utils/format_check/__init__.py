@@ -17,22 +17,24 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     auto_fix: 是否自动修复全部错误
     '''
     ignore_dict = {}
-    md_text =re.findall(r'\$\$.*?\$\$',  text, flags=re.S)
-    text=re.compile(r"\$\$.*?\$\$",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
-    for code in md_text:
-        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
-        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{strQ2B(code)}'
-    md_text = re.findall(r'\[\[.*?\]\]',  text)
-    text=re.compile(r"\[\[.*?\]\]").sub('＋－｜－－ｎ－－｜－＋',text)
-    for code in md_text:
-        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
-        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'
     # 1. 删除代码块
     md_text =re.findall(r'```.*?(.*?)```',  text, flags=re.S)
     text=re.compile(r"```.*?(.*?)```",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
     for code in md_text:
         text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
         ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'```{strQ2B(code)}```'
+    # 删除公式
+    md_text =re.findall(r'\$\$.*?\$\$',  text, flags=re.S)
+    text=re.compile(r"\$\$.*?\$\$",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
+    for code in md_text:
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{strQ2B(code)}'
+    # 删除章节标记
+    md_text = re.findall(r'\[\[.*?\]\]',  text)
+    text=re.compile(r"\[\[.*?\]\]").sub('＋－｜－－ｎ－－｜－＋',text)
+    for code in md_text:
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'
     # 2. 删除图片
     md_text = re.findall(r'(\!\[.*?\]\(.*?\))',  text, flags=re.I|re.S)
     text=re.compile(r"(\!\[.*?\]\(.*?\))",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
@@ -79,11 +81,13 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     for code in md_text:
         text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
         ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'
+    #去除pytorch tensorflow标记块
     md_text = re.findall(r'\{.*?\}',  text)
     text=re.compile(r"\{.*?\}").sub('＋－｜－－ｎ－－｜－＋',text)
     for code in md_text:
         text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
         ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{code}'
+    #去除表格
     md_text = re.findall(r'\|?:-+:\|?:-+:\|?:-+:\|?\r?\n?',  text)
     text=re.compile(r"\|?:-+:\|?:-+:\|?:-+:\|?\r?\n?").sub('＋－｜－－ｎ－－｜－＋',text)
     for code in md_text:

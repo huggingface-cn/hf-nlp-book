@@ -132,7 +132,7 @@ print(raw_datasets["validation"][2]["question"])
 
 我们从预处理训练数据开始。最困难的部分将是生成问题答案的标签，即找到 Context 中对应答案的 token 的开始和结束位置。
 
-但我们不要急于求成。首先，我们需要使用词元分析器将输入中的文本转换为模型可以理解的 ID:
+但我们不要急于求成。首先，我们需要使用 tokenizer 将输入中的文本转换为模型可以理解的 ID:
 
 ```py
 from transformers import AutoTokenizer
@@ -141,7 +141,7 @@ model_checkpoint = "bert-base-cased"
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-如前所述，我们将对 BERT 模型进行微调，但你可以使用任何其他模型类型，只要它实现了快速词元分析器即可。你可以在 [这个大表格](https://huggingface.co/transformers/#supported-frameworks) 中看到所有带有快速版本的架构，要检查你正在使用的 `tokenizer` 对象是否真的是由🤗 Tokenizers 支持的，你可以查看它的 `is_fast` 属性：
+如前所述，我们将对 BERT 模型进行微调，但你可以使用任何其他模型类型，只要它实现了快速 tokenizer 即可。你可以在 [这个大表格](https://huggingface.co/transformers/#supported-frameworks) 中看到所有带有快速版本的架构，要检查你正在使用的 `tokenizer` 对象是否真的是由🤗 Tokenizers 支持的，你可以查看它的 `is_fast` 属性：
 
 ```py
 tokenizer.is_fast
@@ -151,7 +151,7 @@ tokenizer.is_fast
 True
 ```
 
-我们可以将 question 和 context 一起传递给我们的词元分析器，它会正确插入特殊词元以形成如下句子：
+我们可以将 question 和 context 一起传递给我们的 tokenizer ，它会正确插入特殊词元以形成如下句子：
 
 ```
 [CLS] question [SEP] context [SEP]
@@ -192,7 +192,7 @@ tokenizer.decode(inputs["input_ids"])
 - `max_length` 设置最大长度 (此处为 100)
 - `truncation="only_second"` 在问题和 Context 过长时截断 Context（Context 位于第二个位置）
 - `stride` 设置两个连续块之间的重叠词元数 (这里为 50)
-- `return_overflowing_tokens=True` 让词元分析器知道我们想要保留超过长度的词元
+- `return_overflowing_tokens=True` 让 tokenizer 知道我们想要保留超过长度的词元
 
 ```py
 inputs = tokenizer(
@@ -217,7 +217,7 @@ for ids in inputs["input_ids"]:
 
 如我们所见，我们的示例被分成四个输入，每个输入都包含问题和 Context 的一部分。请注意，问题的答案 ("Bernadette Soubirous") 仅出现在第三个也是最后一个输入中，因此通过以这种方式处理较长的 Context 时，我们可能创建一些答案不包含在 Context 中的训练示例。我们把这些示例的标签设置为 `start_position = end_position = 0` (因此我们预测 `[CLS]` 词元)。如果不幸答案被截断，我们只有答案的开头（或结束），我们也这样设置这些标签。对于答案完全在 Context 中的示例，标签将是答案开始的词元的索引和答案结束的词元的索引。
 
-数据集为我们提供了 Context 中答案的开始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到词元索引，我们将需要使用我们在 [第六章](/course/chapter6/4) 中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的词元分析器返回这些内容：
+数据集为我们提供了 Context 中答案的开始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到词元索引，我们将需要使用我们在 [第六章](/course/chapter6/4) 中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的 tokenizer 返回这些内容：
 
 ```py
 inputs = tokenizer(
@@ -236,7 +236,7 @@ inputs.keys()
 dict_keys(['input_ids', 'token_type_ids', 'attention_mask', 'offset_mapping', 'overflow_to_sample_mapping'])
 ```
 
-如我们所见，我们得到了输入 ID、词元类型 ID 和注意力掩码，以及我们所需的偏移映射和一个额外的键 `overflow_to_sample_mapping` 。当我们同时对多个文本进行词元化时（为了从我们的词元分析器从对 Rust 支持中受益），这个键的的值对我们很有用。由于一个样本可以产生多个特征，它将每个特征映射到它来源的示例。因为这里我们只对一个示例进行了词元化，所以我们得到一个由 `0` 组成的列表：
+如我们所见，我们得到了inputs ID、词元类型 ID 和注意力掩码，以及我们所需的偏移映射和一个额外的键 `overflow_to_sample_mapping` 。当我们同时对多个文本进行tokenization时（为了从我们的 tokenizer 从对 Rust 支持中受益），这个键的的值对我们很有用。由于一个样本可以产生多个特征，它将每个特征映射到它来源的示例。因为这里我们只对一个示例进行了tokenization，所以我们得到一个由 `0` 组成的列表：
 
 ```py
 inputs["overflow_to_sample_mapping"]
@@ -246,7 +246,7 @@ inputs["overflow_to_sample_mapping"]
 [0, 0, 0, 0]
 ```
 
-但是，如果我们对更多的示例词元化，这将变得更加有用：
+但是，如果我们对更多的示例tokenization，这将变得更加有用：
 
 ```py
 inputs = tokenizer(
@@ -273,9 +273,9 @@ print(f"Here is where each comes from: {inputs['overflow_to_sample_mapping']}.")
 此信息将有助于将我们获得的每个特征映射到其相应的标签。如前所述，这些标签是：
 
 - 如果答案不在相应上下文的范围内，则为 `(0, 0)` 
-- 如果答案在相应上下文的范围内，则为 `(start_position, end_position)` ，其中 `start_position` 是答案开始处的词元索引（在输入 ID 中）， `end_position` 是答案结束处的词元索引（在输入 ID 中）
+- 如果答案在相应上下文的范围内，则为 `(start_position, end_position)` ，其中 `start_position` 是答案开始处的词元索引（在inputs ID 中）， `end_position` 是答案结束处的词元索引（在inputs ID 中）
 
-为了确定这两种情况中的哪一种，并且如果是第二种，则确定词元的位置，我们首先找到开始和结束上下文在输入 ID 中的索引。我们可以使用词元类型 ID 来完成此操作，但由于并非所有模型都需要它们（例如 DistilBERT 不需要它们），我们将使用词元分析器的 `sequence_ids()` 方法返回的 `BatchEncoding` 。
+为了确定这两种情况中的哪一种，并且如果是第二种，则确定词元的位置，我们首先找到开始和结束上下文在inputs ID 中的索引。我们可以使用词元类型 ID 来完成此操作，但由于并非所有模型都需要它们（例如 DistilBERT 不需要它们），我们将使用 tokenizer 的 `sequence_ids()` 方法返回的 `BatchEncoding` 。
 
 一旦我们有了这些词元的索引，我们就会查看相应的偏移量，它们是两个整数的元组，表示原始 Context 中的字符范围。因此，我们可以检测此特征中的 Context 块是在答案之后开始还是在答案开始之前结束(在这种情况下，标签是 `(0, 0)` )。如果不是这样，我们循环查找答案的第一个和最后一个词元：
 
@@ -429,7 +429,7 @@ def preprocess_training_examples(examples):
     return inputs
 ```
 
-请注意，我们定义了两个常量来确定所使用的最大长度以及滑动窗口的长度，并且在之前词元化之前对数据进行了一些清洗：SQuAD 数据集中的一些问题在开头和结尾有额外的空格，这些空格没有任何意义（如果你使用像 RoBERTa 这样的模型，它们会占用词元化时的空间），因此我们去掉了这些额外的空格。
+请注意，我们定义了两个常量来确定所使用的最大长度以及滑动窗口的长度，并且在之前tokenization之前对数据进行了一些清洗：SQuAD 数据集中的一些问题在开头和结尾有额外的空格，这些空格没有任何意义（如果你使用像 RoBERTa 这样的模型，它们会占用tokenization时的空间），因此我们去掉了这些额外的空格。
 
 要将此函数应用于整个训练集，我们使用 `Dataset.map()` 方法并传递 `batched=True` 参数。这是必要的，因为我们正在更改数据集的长度（因为一个示例可能会产生多个训练特征）：
 
@@ -452,7 +452,7 @@ len(raw_datasets["train"]), len(train_dataset)
 
 处理验证数据的预处理会更加容易，因为我们不需要生成标签（除非我们想计算验证损失，但那个数字并不能真正帮助我们了解模型的好坏）。真正的挑战在于将模型的预测转化为为原始 Context 的片段。为此，我们只需要存储偏移映射并且找到一种方法来将每个创建的特征与其来自的原始示例匹配起来。由于原始数据集中有一个 ID 列，我们将使用该 ID。
 
-我们唯一要添加的是对偏移映射的微小清洗。它们将包含问题和 Context 的偏移量，但一旦我们进入后处理阶段，我们将无法知道输入 ID 的哪个部分对应于 Context，哪个部分是问题（我们使用的 `sequence_ids()` 方法仅可用于词元分析器的输出）。因此，我们将将与问题对应的偏移设置为 `None` ：
+我们唯一要添加的是对偏移映射的微小清洗。它们将包含问题和 Context 的偏移量，但一旦我们进入后处理阶段，我们将无法知道inputs ID 的哪个部分对应于 Context，哪个部分是问题（我们使用的 `sequence_ids()` 方法仅可用于 tokenizer 的输出）。因此，我们将将与问题对应的偏移设置为 `None` ：
 
 ```py
 def preprocess_validation_examples(examples):
@@ -530,7 +530,7 @@ len(raw_datasets["validation"]), len(validation_dataset)
 
 {/if}
 
-模型将输出答案在输入 ID 中是答案的起始和结束位置输出 Logit, 正如我们在探索 [`question-answering` pipeline](/course/chapter6/3b) 时看到的那样。后处理步骤将类似于我们在那里所做的，所以这里简单回顾一下我们所采取的操作：
+模型将输出答案在inputs ID 中是答案的起始和结束位置输出 Logit, 正如我们在探索 [`question-answering` pipeline](/course/chapter6/3b) 时看到的那样。后处理步骤将类似于我们在那里所做的，所以这里简单回顾一下我们所采取的操作：
 
 - 我们屏蔽了除了 Context 之外的词元对应的起始和结束对数几率。
 - 然后，我们使用 softmax 将起始和结束 logits 转换为概率。
@@ -539,7 +539,7 @@ len(raw_datasets["validation"]), len(validation_dataset)
 
 这次我们将稍微改变这个流程，因为我们不需要计算实际分数（只需要预测的答案）。这意味着我们可以跳过 softmax 步骤。为了加快计算速度，我们也不会为所有可能的 `(start_token, end_token)` 对计算分数，而只会计算与最高的 `n_best` 对应的 logit 分数（其中 `n_best=20` ）。由于我们将跳过 softmax，这些分数将是 logit 分数，并且通过将起始和结束对数几率的和（而不是乘积，因为规则 \($\log(ab) = \log(a) + \log(b))$。
 
-为了证明这一切，我们需要一些预测。由于我们还没有训练我们的模型，我们将使用 QA 管道的默认模型对一小部分验证集生成一些预测。我们可以使用和之前一样的处理函数；因为它依赖于全局常量 `tokenizer` , 我们只需将该对象更改为我们要临时使用的模型的词元分析器：
+为了证明这一切，我们需要一些预测。由于我们还没有训练我们的模型，我们将使用 QA 管道的默认模型对一小部分验证集生成一些预测。我们可以使用和之前一样的处理函数；因为它依赖于全局常量 `tokenizer` , 我们只需将该对象更改为我们要临时使用的模型的 tokenizer ：
 
 为了测试所有这些，我们需要一些预测结果。由于我们还没有训练模型，我们将使用 QA pipeline 的默认模型在验证集的一小部分上生成一些预测结果。我们可以使用与之前相同的处理函数；因为它依赖于全局常量 `tokenizer` ，所以我们只需要暂时将该对象更改为我们想要使用的模型的 tokenizer：
 
@@ -555,7 +555,7 @@ eval_set = small_eval_set.map(
 )
 ```
 
-现在预处理已经完成，我们将词元分析器改回我们最初选择的那个：
+现在预处理已经完成，我们将 tokenizer 改回我们最初选择的那个：
 
 ```python
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
@@ -1183,7 +1183,7 @@ unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
 ```py
 from transformers import pipeline
 
-# 将其替换为你自己的检查点
+# 将其替换为你自己的 Checkpoint 
 model_checkpoint = "huggingface-course/bert-finetuned-squad"
 question_answerer = pipeline("question-answering", model=model_checkpoint)
 

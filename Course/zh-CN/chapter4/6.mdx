@@ -88,7 +88,7 @@
 <Question
 	choices={[
 		{
-			text: "模型的粗略描述，因此不如模型和词元分析器文件重要。",
+			text: "模型的粗略描述，因此不如模型和 tokenizer 文件重要。",
 			explain: "这确实是对模型的描述，但它是一个重要的部分：如果它不完整或缺失，模型的实用性将大幅降低。"
 		},
 		{
@@ -108,8 +108,8 @@
 <Question
 	choices={[
 		{
-			text: "词元分析器",
-			explain: "正确！所有词元分析器都有 `push_to_hub` 方法，使用该方法将把词元分析器的全部文件（词汇表、词元分析器的架构等）推送到给定的存储库。不过，这不是唯一正确的答案！",
+			text: " tokenizer ",
+			explain: "正确！所有 tokenizer 都有 `push_to_hub` 方法，使用该方法将把 tokenizer 的全部文件（词汇表、 tokenizer 的架构等）推送到给定的存储库。不过，这不是唯一正确的答案！",
             correct: true
 		},
 		{
@@ -124,7 +124,7 @@
 		},
         {
 			text: "Trainer",
-			explain: "没错——Trainer 也实现了 push_to_hub 方法，并且使用它可以将模型、配置、词元分析器和模型卡片上传到指定的仓库。试试其他答案！",
+			explain: "没错——Trainer 也实现了 push_to_hub 方法，并且使用它可以将模型、配置、 tokenizer 和模型卡片上传到指定的仓库。试试其他答案！",
             correct: true
 		}
 	]}
@@ -133,8 +133,8 @@
 <Question
 	choices={[
 		{
-			text: "词元分析器",
-			explain: "正确！所有词元分析器都有 push_to_hub 方法，使用该方法将把所有词元分析器文件（词汇表、词元分析器的架构等）推送到给定的存储库。不过，这不是唯一正确的答案！",
+			text: " tokenizer ",
+			explain: "正确！所有 tokenizer 都有 push_to_hub 方法，使用该方法将把所有 tokenizer 文件（词汇表、 tokenizer 的架构等）推送到给定的存储库。不过，这不是唯一正确的答案！",
             correct: true
 		},
 		{
@@ -176,18 +176,18 @@
 	]}
 />
 
-### 7．你正在使用一个模型和一个词元分析器——如何将它们上传到 Hub？
+### 7．你正在使用一个模型和一个 tokenizer ——如何将它们上传到 Hub？
 
 <Question
 	choices={[
 		{
-			text: "通过直接在模型和词元分析器上调用 push_to_hub 方法。",
+			text: "通过直接在模型和 tokenizer 上调用 push_to_hub 方法。",
 			explain: "正确！",
             correct: true
 		},
 		{
 			text: "在 Python 运行时中，使用 `huggingface_hub` 中的方法进行封装。",
-			explain: "模型和词元分析器已经使用 `huggingface_hub` 封装过了：不需要额外的封装！"
+			explain: "模型和 tokenizer 已经使用 `huggingface_hub` 封装过了：不需要额外的封装！"
 		},
 		{
 			text: "将它们保存到磁盘并调用 `transformers-cli upload-model` ",

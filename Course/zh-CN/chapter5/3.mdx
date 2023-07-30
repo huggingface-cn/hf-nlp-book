@@ -96,7 +96,7 @@ DatasetDict({
 
 </Tip>
 
-接下来，让我们使用 `Dataset.map()` 来规范所有的 `condition` 标签。正如我们在 [第三章](/course/chapter3) 中处理词元分析器一样，我们可以定义一个简单的函数，可以将该函数应用于 `drug_dataset` 每个分组的所有行：
+接下来，让我们使用 `Dataset.map()` 来规范所有的 `condition` 标签。正如我们在 [第三章](/course/chapter3) 中处理 tokenizer 一样，我们可以定义一个简单的函数，可以将该函数应用于 `drug_dataset` 每个分组的所有行：
 
 ```py
 def lowercase_condition(example):
@@ -277,7 +277,7 @@ new_drug_dataset = drug_dataset.map(
 
 如果你在笔记本中运行此代码，你会看到此命令的执行速度比前一个命令快得多。这不是因为我们的评论已经是处理过的——如果你重新执行上一节的指令（没有 `batched=True` )，它将花费与之前相同的时间。这是因为列表推导式通常比在同一代码中用 `for` 循环执行相同的代码更快，并且我们还通过同时访问多个元素而不是一个一个来处理来提高处理的速度。
 
-在 [第六章](/course/chapter6) 我们将遇到的“快速”词元分析器，它可以快速对长文本列表进行词元化。使用 `Dataset.map()` 搭配 `batched=True` 参数是加速的关键。例如，要使用快速词元分析器对所有药物评论词元化，我们可以使用如下的函数：
+在 [第六章](/course/chapter6) 我们将遇到的“快速” tokenizer ，它可以快速对长文本列表进行tokenization。使用 `Dataset.map()` 搭配 `batched=True` 参数是加速的关键。例如，要使用快速 tokenizer 对所有药物评论tokenization，我们可以使用如下的函数：
 
 ```python
 from transformers import AutoTokenizer
@@ -287,7 +287,7 @@ def tokenize_function(examples):
     return tokenizer(examples["review"], truncation=True)
 ```
 
-正如我们在 [第三章](/course/chapter3) 所看到的，我们原本就可以将一个或多个示例传递给词元分析器，因此在 `batched=True` 是一个非必须的选项。让我们借此机会比较不同选项的性能。在notebook中，你可以在你要测量的代码行之前添加 `%time` 来记录该行运行所消耗的时间：
+正如我们在 [第三章](/course/chapter3) 所看到的，我们原本就可以将一个或多个示例传递给 tokenizer ，因此在 `batched=True` 是一个非必须的选项。让我们借此机会比较不同选项的性能。在notebook中，你可以在你要测量的代码行之前添加 `%time` 来记录该行运行所消耗的时间：
 
 ```python no-format
 %time tokenized_dataset = drug_dataset.map(tokenize_function, batched=True)
@@ -297,22 +297,22 @@ def tokenize_function(examples):
 
 <Tip>
 
-✏️ **试试看！** 在有和无 `batched=True` 的情况下执行相同的指令，然后试试慢速词元分析器（在 `AutoTokenizer.from_pretrained()` 方法中添加 `use_fast=False` ），这样你就可以看看在你的电脑上它需要多长的时间。
+✏️ **试试看！** 在有和无 `batched=True` 的情况下执行相同的指令，然后试试慢速 tokenizer （在 `AutoTokenizer.from_pretrained()` 方法中添加 `use_fast=False` ），这样你就可以看看在你的电脑上它需要多长的时间。
 
 </Tip>
 
-以下是我们在使用和不使用批处理时使用快速和慢速词元分析器获得的结果：
+以下是我们在使用和不使用批处理时使用快速和慢速 tokenizer 获得的结果：
 
 Options         | Fast tokenizer | Slow tokenizer
 :--------------:|:--------------:|:-------------:
  `batched=True` | 10.8s          | 4min41s
  `batched=False` | 59.2s          | 5min3s
 
-这意味着使用快速词元分析器配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的词元化代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
+这意味着使用快速 tokenizer 配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的tokenization代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
 
-并行化也是快速词元分析器通过批处理实现近 6 倍加速的原因：单个词元化操作是不能并行的，但是当你想同时对大量文本进行词元化时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。
+并行化也是快速 tokenizer 通过批处理实现近 6 倍加速的原因：单个tokenization操作是不能并行的，但是当你想同时对大量文本进行tokenization时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。
 
- `Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速词元分析器加速（尤其是当你使用的词元分析器没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
+ `Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速 tokenizer 加速（尤其是当你使用的 tokenizer 没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
 
 ```py
 slow_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased", use_fast=False)
@@ -325,14 +325,14 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 
 你可以对处理进行一些计时的试验，以确定最佳进程数；在我们的例子中，8 似乎产生了最好的速度增益。以下是我们在有无多进程处理的情况下，得到的结果：
 
-选项         | 快速词元分析器 | 慢速词元分析器
+选项         | 快速 tokenizer  | 慢速 tokenizer 
 :--------------:|:--------------:|:-------------:
  `batched=True` | 10.8s          | 4min41s
  `batched=False` | 59.2s          | 5min3s
  `batched=True` , `num_proc=8` | 6.52s          | 41.3s
  `batched=False` , `num_proc=8` | 9.49s          | 45.2s
 
-这个结果对于慢速分词器来说是更加友好了，但快速分词器的性能也得到了显著提升。但是请注意，情况并非总是如此—对于 `num_proc` 的其他值，在我们的测试中，使用 `batched=True` 而不带有 `num_proc` 参数的选项处理起来更快。总的来说，我们并不推荐在快速词元分析器和 `batched=True` 的情况下使用 Python 的多进程处理。
+这个结果对于慢速分词器来说是更加友好了，但快速分词器的性能也得到了显著提升。但是请注意，情况并非总是如此—对于 `num_proc` 的其他值，在我们的测试中，使用 `batched=True` 而不带有 `num_proc` 参数的选项处理起来更快。总的来说，我们并不推荐在快速 tokenizer 和 `batched=True` 的情况下使用 Python 的多进程处理。
 
 <Tip>
 
@@ -348,7 +348,7 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 
 </Tip>
 
-让我们来看看它是如何实现的！在这里，我们将对我们的样本进行词元化并将最大截断长度设置 128，但我们将要求词元分析器返回全部文本块，而不仅仅是第一个。这可以通过设置 `return_overflowing_tokens=True` 来实现：
+让我们来看看它是如何实现的！在这里，我们将对我们的样本进行tokenization并将最大截断长度设置 128，但我们将要求 tokenizer 返回全部文本块，而不仅仅是第一个。这可以通过设置 `return_overflowing_tokens=True` 来实现：
 
 ```py
 def tokenize_and_split(examples):

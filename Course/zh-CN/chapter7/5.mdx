@@ -237,7 +237,7 @@ mT5 不使用前缀，但具有 T5 的大部分功能，并且具有多语言的
 
 <Youtube id="1m7BerpSq8A"/>
 
-我们接下来的任务是对我们的评论及其标题进行词元化和编码。通常，我们首先加载与预训练模型检查点相关的词元分析器。我们将使用 `mt5-small` 作为我们的检查点，这样我们就可以在合理的时间消耗内对模型进行微调：
+我们接下来的任务是对我们的评论及其标题进行tokenization和编码。通常，我们首先加载与预训练模型 Checkpoint 相关的 tokenizer 。我们将使用 `mt5-small` 作为我们的 Checkpoint ，这样我们就可以在合理的时间消耗内对模型进行微调：
 
 ```python
 from transformers import AutoTokenizer
@@ -248,11 +248,11 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
 <Tip>
 
-💡在 NLP 项目的早期阶段，一个好的做法是在小样本数据上训练一类“小”模型。这使你可以更快地调试和迭代端到端工作流。一旦你对结果充满信心，你始终可以通过简单地更改模型检查点来在大规模数据上训练模型！
+💡在 NLP 项目的早期阶段，一个好的做法是在小样本数据上训练一类“小”模型。这使你可以更快地调试和迭代端到端工作流。一旦你对结果充满信心，你始终可以通过简单地更改模型 Checkpoint 来在大规模数据上训练模型！
 
 </Tip>
 
-让我们在一个小例子上测试 mT5 词元分析器：
+让我们在一个小例子上测试 mT5  tokenizer ：
 
 ```python
 inputs = tokenizer("I loved reading the Hunger Games!")
@@ -263,7 +263,7 @@ inputs
 {'input_ids': [336, 259, 28387, 11807, 287, 62893, 295, 12507, 1], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1]}
 ```
 
-在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在 [第3章](https://chat.openai.com/course/chapter3) 的第一次微调实验中遇到过。让我们使用词元分析器的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的词元分析器：
+在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在 [第3章](https://chat.openai.com/course/chapter3) 的第一次微调实验中遇到过。让我们使用 tokenizer 的 `convert_ids_to_tokens()` 函数解码这些inputs ID，看看我们正在处理的是什么类型的 tokenizer ：
 
 ```python
 tokenizer.convert_ids_to_tokens(inputs.input_ids)
@@ -273,9 +273,9 @@ tokenizer.convert_ids_to_tokens(inputs.input_ids)
 ['▁I', '▁', 'loved', '▁reading', '▁the', '▁Hung', 'er', '▁Games', '</s>']
 ```
 
-特殊的 Unicode 字符 `▁` 和序列结束词元 `</s>` 表明我们正在使用基于 [第6章](https://chat.openai.com/course/chapter6) 中讨论的 Unigram 分段算法的 SentencePiece 词元分析器。Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 忽略口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
+特殊的 Unicode 字符 `▁` 和序列结束词元 `</s>` 表明我们正在使用基于 [第6章](https://chat.openai.com/course/chapter6) 中讨论的 Unigram 分段算法的 SentencePiece  tokenizer 。Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 忽略口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
 
-为了对我们的语料库词元化，我们必须处理与摘要相似的微妙之处：因为我们的标签也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。🤗 Transformers 中的分词器提供了一个绝妙的 `text_target` 参数，允许你将标签与输入并行词元化。以下是如何为 mT5 处理输入和目标的示例：
+为了对我们的语料库tokenization，我们必须处理与摘要相似的微妙之处：因为我们的标签也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。🤗 Transformers 中的分词器提供了一个绝妙的 `text_target` 参数，允许你将标签与输入并行tokenization。以下是如何为 mT5 处理输入和目标的示例：
 
 ```python
 max_input_length = 512
@@ -296,7 +296,7 @@ def preprocess_function(examples):
 
 让我们逐步解析这段代码，理解发生了什么。我们首先定义了 `max_input_length` 和 `max_target_length` 的值，这些值设定了我们的评论和标题的最大长度。由于评论主体通常比标题大得多，我们相应地调整了这些值。
 
-使用 `preprocess_function()` ，我们可以使用我们在这门课程中广泛使用的方便的 `Dataset.map()` 函数，轻松地对整个语料库词元化：
+使用 `preprocess_function()` ，我们可以使用我们在这门课程中广泛使用的方便的 `Dataset.map()` 函数，轻松地对整个语料库tokenization：
 
 ```python
 tokenized_datasets = books_dataset.map(preprocess_function, batched=True)
@@ -306,7 +306,7 @@ tokenized_datasets = books_dataset.map(preprocess_function, batched=True)
 
 <Tip>
 
-💡 你可能已经注意到我们在上面的 `Dataset.map()` 函数中使用了 `batched=True` 。这将以 1000（默认值）的批次编码例子，并让你可以利用 🤗 Transformers 中快速词元分析器的多线程功能。在可能的情况下，尝试使用 `batched=True` 来加速你的预处理！
+💡 你可能已经注意到我们在上面的 `Dataset.map()` 函数中使用了 `batched=True` 。这将以 1000（默认值）的批次编码例子，并让你可以利用 🤗 Transformers 中快速 tokenizer 的多线程功能。在可能的情况下，尝试使用 `batched=True` 来加速你的预处理！
 
 </Tip>
 
@@ -396,7 +396,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 然后下载标点规则：
 
 +-|--?28?--|-+
-接下来，我们从` nltk `导入句子词元分析器并创建一个简单的函数来提取评论中的前三个句子。文本摘要的约定是用换行符分隔每个摘要，因此我们也这样处理并在训练示例上对其进行测试：
+接下来，我们从` nltk `导入句子 tokenizer 并创建一个简单的函数来提取评论中的前三个句子。文本摘要的约定是用换行符分隔每个摘要，因此我们也这样处理并在训练示例上对其进行测试：
 
 +-|--?29?--|-+
 
@@ -418,7 +418,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 ## 使用` Trainer `API 微调 mT5  [[使用` Trainer `API 微调 mT5]]
 
-微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从` mt5-small `检查点加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 AutoModelForSeq2SeqLM 类加载模型，该类会自动下载并缓存权重：
+微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从` mt5-small ` Checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 AutoModelForSeq2SeqLM 类加载模型，该类会自动下载并缓存权重：
 
 +-|--?34?--|-+
 
@@ -426,7 +426,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 ## 使用` Keras `API 微调 mT5  [[使用` Keras `API 微调 mT5]]
 
-微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从` mt5-small `检查点加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用` TFAutoModelForSeq2SeqLM `类加载模型，该类会自动下载并缓存权重：
+微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从` mt5-small ` Checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用` TFAutoModelForSeq2SeqLM `类加载模型，该类会自动下载并缓存权重：
 
 +-|--?35?--|-+
 
@@ -452,7 +452,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 +-|--?38?--|-+
 
-在这里，` predict_with_generate `参数已经被设置为 True ，表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在+-|--?91?--|-+所讨论的，解码器通过逐个预测单词来执行推理，这是由模型的` generate() `方法实现的。设置` predict_with_generate=True `告诉` Seq2SeqTrainer `在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了` save_total_limit `选项，训练期间最多只保存 3 个检查点的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。` push_to_hub=True `参数将允许我们在训练后将模型推送到 Hub；你可以在由` output_dir `定义的位置下的你的用户资料中找到存储库。请注意，你可以使用` hub_model_id `参数指定要推送到的存储库的名称（特别是当你想要推送到组织时，你必须使用此参数）。例如，当我们将模型推送到+-|--?92?--|-+时，我们在` Seq2SeqTrainingArguments `中添加了` hub_model_id="huggingface-course/mt5-finetuned-amazon-en-es" `。
+在这里，` predict_with_generate `参数已经被设置为 True ，表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在+-|--?91?--|-+所讨论的，解码器通过逐个预测单词来执行推理，这是由模型的` generate() `方法实现的。设置` predict_with_generate=True `告诉` Seq2SeqTrainer `在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了` save_total_limit `选项，训练期间最多只保存 3 个 Checkpoint 的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。` push_to_hub=True `参数将允许我们在训练后将模型推送到 Hub；你可以在由` output_dir `定义的位置下的你的用户资料中找到存储库。请注意，你可以使用` hub_model_id `参数指定要推送到的存储库的名称（特别是当你想要推送到组织时，你必须使用此参数）。例如，当我们将模型推送到+-|--?92?--|-+时，我们在` Seq2SeqTrainingArguments `中添加了` hub_model_id="huggingface-course/mt5-finetuned-amazon-en-es" `。
 
 我们需要做的下一件事是为训练器提供一个` compute_metrics() `函数，以便我们可以在训练期间评估我们的模型。对于摘要模型来说，这比简单地在模型的预测上调用` rouge_score.compute() `更复杂一些，因为我们需要在计算 ROUGE 分数之前将输出和标签解码为文本。下面的函数正是这样做的，并且还利用` nltk `中的` sent_tokenize() `函数来用换行符分隔摘要语句：
 
@@ -508,7 +508,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 +-|--?50?--|-+
 
-这将把检查点和配置文件保存到` output_dir `，然后将所有文件上传到Hub。通过指定` tags `参数，我们还确保在Hub上的小工具会是一个摘要生成的小工具，而不是与mT5架构相关联的默认文本生成小工具（关于模型标签的更多信息，请参见+-|--?94?--|-+）。` trainer.push_to_hub() `的输出是Git提交哈希的URL，所以你可以轻松查看对模型库进行的修改！
+这将把 Checkpoint 和配置文件保存到` output_dir `，然后将所有文件上传到Hub。通过指定` tags `参数，我们还确保在Hub上的小工具会是一个摘要生成的小工具，而不是与mT5架构相关联的默认文本生成小工具（关于模型标签的更多信息，请参见+-|--?94?--|-+）。` trainer.push_to_hub() `的输出是Git提交哈希的URL，所以你可以轻松查看对模型库进行的修改！
 
 在结束本节之前，让我们看一下如何使用 🤗 Accelerate 提供的底层 API 对 mT5 进行微调。
 
@@ -605,7 +605,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 1. 通过在每个 epoch 迭代` train_dataloader `中的所有示例来训练模型。
 2. 在每个 epoch 结束时生成摘要，首先生成词元，然后将它们（和参考摘要）解码为文本。
 3. 使用我们之前看到的技术计算 ROUGE 分数。
-4. 保存检查点并将所有内容推送到 Hub。在这里，我们依赖` Repository `对象的巧妙的` blocking=False `参数，以便我们可以在每个 epoch 异步地上传检查点。这使我们能够继续训练，而不必等待与 GB 大小的模型慢呼呼的上传！
+4. 保存 Checkpoint 并将所有内容推送到 Hub。在这里，我们依赖` Repository `对象的巧妙的` blocking=False `参数，以便我们可以在每个 epoch 异步地上传 Checkpoint 。这使我们能够继续训练，而不必等待与 GB 大小的模型慢呼呼的上传！
 
 这些步骤可以在以下代码块中看到：
 

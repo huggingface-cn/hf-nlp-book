@@ -1,6 +1,6 @@
 <FrameworkSwitchCourse {fw} />
 
-# 在 QA 管道中使用快速词元分析器 [[在 QA 管道中使用快速词元分析器]]
+# 在 QA 管道中使用快速 tokenizer  [[在 QA 管道中使用快速 tokenizer ]]
 
 {#if fw === 'pt'}
 
@@ -112,7 +112,7 @@ question_answerer(question=question, context=long_context)
 
 ## 使用模型进行问答 [[使用模型进行问答]]
 
-与任何其他管道一样，我们首先对输入进行词元化，然后将其传入模型。 `question-answering` 管道默认情况下用于的检查点是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在 [第7章](/course/chapter7/7) 详细讨论 SQuAD 数据集):
+与任何其他管道一样，我们首先对输入进行tokenization，然后将其传入模型。 `question-answering` 管道默认情况下用于的 Checkpoint 是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在 [第7章](/course/chapter7/7) 详细讨论 SQuAD 数据集):
 
 {#if fw === 'pt'}
 
@@ -142,7 +142,7 @@ outputs = model(**inputs)
 
 {/if}
 
-请注意，我们将问题和上下文放在一起作为一对进行词元化，问题放在前面。
+请注意，我们将问题和上下文放在一起作为一对进行tokenization，问题放在前面。
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/question_tokens.svg" alt="An example of tokenization of question and context"/>
@@ -323,7 +323,7 @@ print(result)
 
 ## 处理长文本 [[处理长文本]]
 
-如果我们尝试将我们之前使用的长问题和长上下文进行词元化，我们将得到一个比 `question-answering` pipeline 中使用的最大长度（384）更大的词元数量：
+如果我们尝试将我们之前使用的长问题和长上下文进行tokenization，我们将得到一个比 `question-answering` pipeline 中使用的最大长度（384）更大的词元数量：
 
 ```py
 inputs = tokenizer(question, long_context)
@@ -379,7 +379,7 @@ Why should I use transformers?
 
 这意味着模型将很难选择正确的答案。为了解决这个问题， `question-answering` 管道允许我们将上下文分成更小的块，指定最大长度。为了确保我们不在刚好可能找到答案的地方将上下文分割，它还在各块之间包含了一些重叠。
 
-我们可以通过添加 `return_overflowing_tokens=True` ，并可以用 `stride` 参数指定我们想要的重叠长度来让词元分析器（快速或慢速）为我们做这个工作。下面是一个使用一个较短的句子的例子：
+我们可以通过添加 `return_overflowing_tokens=True` ，并可以用 `stride` 参数指定我们想要的重叠长度来让 tokenizer （快速或慢速）为我们做这个工作。下面是一个使用一个较短的句子的例子：
 
 ```py
 sentence = "This sentence is not too long but we are going to split it anyway."
@@ -403,7 +403,7 @@ for ids in inputs["input_ids"]:
 
 正如我们所看到的，句子已被分成多个块，使得每个条目 `inputs["input_ids"]` 最多有 6 个词元（我们需要添加填充以使最后一个条目与其他条目的大小相同）并且每个条目之间有 2 个词元的重叠。
 
-让我们仔细看看词元化的结果：
+让我们仔细看看tokenization的结果：
 
 ```py
 print(inputs.keys())
@@ -414,7 +414,7 @@ dict_keys(['input_ids', 'attention_mask', 'overflow_to_sample_mapping'])
 ```
 
 
-正如我们所预期的，我们得到了输入 ID 和注意力掩码。最后一个键，overflow_to_sample_mapping，是一个映射，告诉我们每个结果对应哪个句子——在这里，我们有 7 个结果，它们都来自我们传递给词元分析器的（唯一的）句子：
+正如我们所预期的，我们得到了inputs ID 和注意力掩码。最后一个键，overflow_to_sample_mapping，是一个映射，告诉我们每个结果对应哪个句子——在这里，我们有 7 个结果，它们都来自我们传递给 tokenizer 的（唯一的）句子：
 
 ```py
 print(inputs["overflow_to_sample_mapping"])
@@ -424,7 +424,7 @@ print(inputs["overflow_to_sample_mapping"])
 [0, 0, 0, 0, 0, 0, 0]
 ```
 
-当我们一起对多个句子词元化时，这会更有用。例如，这个：
+当我们一起对多个句子tokenization时，这会更有用。例如，这个：
 
 ```py
 sentences = [
@@ -446,7 +446,7 @@ print(inputs["overflow_to_sample_mapping"])
 
 这意味着第一句话被分割成 7 个块，就像上面的例子一样，接下来 4 个块来自第二句话。
 
-现在让我们回到我们的长上下文。默认情况下， `question-answering pipeline` 使用我们之前提到的 384 作为最大长度，步长为 128，这与模型的微调方式相对应（你可以通过在调用 pipeline 时传递 `max_seq_len` 和 `stride` 参数来调整这些参数）。因此，我们在词元化时将使用这些参数。我们还会添加填充（使样本具有相同的长度，这样我们就可以构建张量），并获取偏移量：
+现在让我们回到我们的长上下文。默认情况下， `question-answering pipeline` 使用我们之前提到的 384 作为最大长度，步长为 128，这与模型的微调方式相对应（你可以通过在调用 pipeline 时传递 `max_seq_len` 和 `stride` 参数来调整这些参数）。因此，我们在tokenization时将使用这些参数。我们还会添加填充（使样本具有相同的长度，这样我们就可以构建张量），并获取偏移量：
 
 
 ```py
@@ -462,7 +462,7 @@ inputs = tokenizer(
 )
 ```
 
-这些 `inputs` 将包含模型期望的输入 ID 和注意力掩码，以及我们刚刚谈到的偏移量和 `overflow_to_sample_mapping` 。由于模型不需要这两个参数，我们将它们从 `inputs` 中删除（我们不会存储映射的字典，因为这在这里没有用）然后将 `inputs` 转换为张量：
+这些 `inputs` 将包含模型期望的inputs ID 和注意力掩码，以及我们刚刚谈到的偏移量和 `overflow_to_sample_mapping` 。由于模型不需要这两个参数，我们将它们从 `inputs` 中删除（我们不会存储映射的字典，因为这在这里没有用）然后将 `inputs` 转换为张量：
 
 
 {#if fw === 'pt'}
@@ -645,4 +645,4 @@ for candidate, offset in zip(candidates, offsets):
 
 </Tip>
 
-我们已经结束了我们对词元分析器能力的深入探究。在下一章，我们将展示如何在一系列常见的 NLP 任务上微调模型，我们将对这些内容再次付诸实践。
+我们已经结束了我们对 tokenizer 能力的深入探究。在下一章，我们将展示如何在一系列常见的 NLP 任务上微调模型，我们将对这些内容再次付诸实践。

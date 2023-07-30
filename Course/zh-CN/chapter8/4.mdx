@@ -197,7 +197,7 @@ transformers.models.distilbert.modeling_distilbert.DistilBertForSequenceClassifi
 
 所以在我们的例子中，我们可以在[这个页面](https://huggingface.co/transformers/model_doc/distilbert.html#distilbertforsequenceclassification)查看模型接受的参数。 `Trainer` 也会记录它丢弃的列。
 
-我们通过解码检查了输入 ID 是否正确。 接下来是检查 `attention_mask`：
+我们通过解码检查了inputs ID 是否正确。 接下来是检查 `attention_mask`：
 
 ```py
 trainer.train_dataset[0]["attention_mask"]
@@ -207,7 +207,7 @@ trainer.train_dataset[0]["attention_mask"]
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ```
 
-由于我们没有在预处理中使用填充，这看起来没什么问题。 为确保该注意掩码没有问题，让我们检查它与输入 ID 的长度是否相同：
+由于我们没有在预处理中使用填充，这看起来没什么问题。 为确保该注意掩码没有问题，让我们检查它与inputs ID 的长度是否相同：
 
 ```py
 len(trainer.train_dataset[0]["attention_mask"]) == len(
@@ -229,7 +229,7 @@ trainer.train_dataset[0]["label"]
 1
 ```
 
-与输入 ID 一样，这是一个本身并没有真正意义的数字。 正如我们之前看到的，标签ID和标签名之间的映射存储在数据集 *features* 里的 `names` 属性中：
+与inputs ID 一样，这是一个本身并没有真正意义的数字。 正如我们之前看到的，标签ID和标签名之间的映射存储在数据集 *features* 里的 `names` 属性中：
 
 ```py
 trainer.train_dataset.features["label"].names

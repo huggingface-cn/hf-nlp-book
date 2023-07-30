@@ -179,7 +179,7 @@ print(line2)
 
 像往常一样，我们的文本需要转换为 Token ID，然后模型才能理解它们。正如我们在 [第六章](/course/chapter6/) 所学的那样。不过在词元分类任务中，一个很大的区别是我们有 pre-tokenized 的输入。幸运的是，tokenizer API 可以很容易地处理这个问题；我们只需要通过一个特殊的标志告诉 tokenizer。
 
-首先，让我们创建 `tokenizer` 对象。如前所述，我们将使用 BERT 预训练模型，因此我们将从下载并缓存关联的词元分析器开始：
+首先，让我们创建 `tokenizer` 对象。如前所述，我们将使用 BERT 预训练模型，因此我们将从下载并缓存关联的 tokenizer 开始：
 
 ```python
 from transformers import AutoTokenizer
@@ -188,7 +188,7 @@ model_checkpoint = "bert-base-cased"
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-你可以更换把 `model_checkpoint` 更换为 [Hub](https://huggingface.co/models) 上任何你喜欢的其他型号，或使用你本地保存的预训练模型和词元分析器。唯一的限制是词元分析器需要由 🤗 Tokenizers 库支持，有一个“快速”版本可用。你可以在 [这张大表](https://huggingface.co/transformers/#supported-frameworks) 上看到所有带有快速版本的架构，或者检查你可以通过查看它 `is_fast` 属性来检测正在使用的 `tokenizer` 对象是否由 🤗 Tokenizers 支持：
+你可以更换把 `model_checkpoint` 更换为 [Hub](https://huggingface.co/models) 上任何你喜欢的其他型号，或使用你本地保存的预训练模型和 tokenizer 。唯一的限制是 tokenizer 需要由 🤗 Tokenizers 库支持，有一个“快速”版本可用。你可以在 [这张大表](https://huggingface.co/transformers/#supported-frameworks) 上看到所有带有快速版本的架构，或者检查你可以通过查看它 `is_fast` 属性来检测正在使用的 `tokenizer` 对象是否由 🤗 Tokenizers 支持：
 
 ```py
 tokenizer.is_fast
@@ -198,7 +198,7 @@ tokenizer.is_fast
 True
 ```
 
-要对预先标记的输入进行词元化，我们可以像往常一样使用我们的 `tokenizer` ，只需额外添加 `is_split_into_words=True` :
+要对预先标记的输入进行tokenization，我们可以像往常一样使用我们的 `tokenizer` ，只需额外添加 `is_split_into_words=True` :
 
 ```py
 inputs = tokenizer(raw_datasets["train"][0]["tokens"], is_split_into_words=True)
@@ -266,11 +266,11 @@ print(align_labels_with_tokens(labels, word_ids))
 
 <Tip>
 
-✏️ **轮到你了！** 有些研究人员更喜欢每个单词只分配一个标签，对该单词其他部分分配 `-100` 。这是为了避免那些分解成许多子子词的长单词对损失作出过重的贡献。请按照这个规则，改变之前的函数，使标签与输入 ID 对齐。
+✏️ **轮到你了！** 有些研究人员更喜欢每个单词只分配一个标签，对该单词其他部分分配 `-100` 。这是为了避免那些分解成许多子子词的长单词对损失作出过重的贡献。请按照这个规则，改变之前的函数，使标签与inputs ID 对齐。
 
 </Tip>
 
-为了预处理我们的整个数据集，我们需要对所有输入进行词元化，并在所有标签上应用 `align_labels_with_tokens()` 函数。为了充分利用我们快速词元分析器的速度，最好是同时对大量文本词元化，所以我们将编写一个处理一组示例的函数，并使用带有 `batched=True` 选项的 `Dataset.map()` 方法。与我们之前的示例唯一不同的是，当词元分析器的输入是文本列表（或示例中单词的列表的列表）时， `word_ids()` 函数需要获取我们示例中单词 ID 的索引，所以我们也添加了这个功能：
+为了预处理我们的整个数据集，我们需要对所有输入进行tokenization，并在所有标签上应用 `align_labels_with_tokens()` 函数。为了充分利用我们快速 tokenizer 的速度，最好是同时对大量文本tokenization，所以我们将编写一个处理一组示例的函数，并使用带有 `batched=True` 选项的 `Dataset.map()` 方法。与我们之前的示例唯一不同的是，当 tokenizer 的输入是文本列表（或示例中单词的列表的列表）时， `word_ids()` 函数需要获取我们示例中单词 ID 的索引，所以我们也添加了这个功能：
 
 ```py
 def tokenize_and_align_labels(examples):
@@ -317,7 +317,7 @@ tokenized_datasets = raw_datasets.map(
 
 ### 整理数据 [[整理数据]]
 
-我们不能像 [第三章](/course/chapter3) 那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（输入 ID、注意掩码和词元类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
+我们不能像 [第三章](/course/chapter3) 那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（inputs ID、注意掩码和词元类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
 
 这些可以由 [`DataCollatorForTokenClassification`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification) 实现。它是一个带有填充功能的数据整理器，使用时只需要传入用于预处理输入的 `tokenizer` ：
 
@@ -872,7 +872,7 @@ def postprocess(predictions, labels):
 
 - 训练本身，这是经典的迭代过程，即在 `train_dataloader` 上进行迭代，向前传递模型，然后反向传递和优化参数
 - 评估，在获取模型在一个 batch 上的输出之后，这里有一个需要注意的地方：由于两个进程可能已将输入和标签填充到不同的形状，我们需要使用 `accelerator.pad_across_processes()` 使预测和标签在调用 `gather()` 方法之前具有相同的形状。如果我们不这样做，评估将会出错或无限期挂起。然后我们将结果发送到 `metric.add_batch()` ，并在评估循环结束时调用 `metric.compute()` 。
-- 保存和上传，首先保存模型和词元分析器，然后调用 `repo.push_to_hub()` 。注意，我们使用参数 `blocking=False` 来告诉 🤗 Hub 库在一个异步进程中推送。这样，在训练时，这个指令在后台将模型和词元分析器推送到 hub。
+- 保存和上传，首先保存模型和 tokenizer ，然后调用 `repo.push_to_hub()` 。注意，我们使用参数 `blocking=False` 来告诉 🤗 Hub 库在一个异步进程中推送。这样，在训练时，这个指令在后台将模型和 tokenizer 推送到 hub。
 
 以下是完整的训练循环代码：
 

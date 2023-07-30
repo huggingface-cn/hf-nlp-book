@@ -323,7 +323,7 @@ issues_with_comments_dataset = issues_dataset.map(
 
 <Youtube id="HaN6qCr_Afc"/>
 
-现在我们有了扩充后的数据集，是时候将它推送到 Hub 并与社区共享了！上传数据集非常简单：就像 🤗 Transformers 中的模型和词元分析器一样，我们可以使用 `push_to_hub()` 方法来推送数据集。为此，我们需要一个身份验证令牌，它可以通过首先使用 `notebook_login()` 函数登录到 Hugging Face Hub 来获得：
+现在我们有了扩充后的数据集，是时候将它推送到 Hub 并与社区共享了！上传数据集非常简单：就像 🤗 Transformers 中的模型和 tokenizer 一样，我们可以使用 `push_to_hub()` 方法来推送数据集。为此，我们需要一个身份验证令牌，它可以通过首先使用 `notebook_login()` 函数登录到 Hugging Face Hub 来获得：
 
 ```py
 from huggingface_hub import notebook_login

@@ -1,4 +1,4 @@
-# Unigram 词元化算法 [[Unigram 词元化算法]]
+# Unigram tokenization算法 [[Unigram tokenization算法]]
 
 <CourseFloatingBanner chapter={6}
   classNames="absolute z-10 right-0 top-0"
@@ -13,7 +13,7 @@ Unigram 算法常用于 SentencePiece 中，该切分算法被 AlBERT，T5，mBA
 
 <Tip>
 
-💡 本节将深入探讨 Unigram，甚至展示完整的实现过程。如果你只想大致了解词元化算法，可以直接跳到章节末尾。
+💡 本节将深入探讨 Unigram，甚至展示完整的实现过程。如果你只想大致了解tokenization算法，可以直接跳到章节末尾。
 
 </Tip>
 
@@ -41,7 +41,7 @@ Unigram 算法常用于 SentencePiece 中，该切分算法被 AlBERT，T5，mBA
 ["h", "u", "g", "hu", "ug", "p", "pu", "n", "un", "b", "bu", "s", "hug", "gs", "ugs"]
 ```
 
-## 词元化算法 [[词元化算法]]
+## tokenization算法 [[tokenization算法]]
 
 Unigram 模型是一种语言模型，它认为每个符号都与其之前的符号独立。这是最简单的语言模型，因为给定之前的上下文情况下，符号 X 的概率就是符号 X 的概率。所以，如果我们使用 Unigram 语言模型来生成文本，我们的预测总会是最常见的符号。
 
@@ -135,9 +135,9 @@ Character 4 (g): "un" "hug" (score 0.005442)
 10 * (-log(0.071428)) + 5 * (-log(0.007710)) + 12 * (-log(0.006168)) + 4 * (-log(0.001451)) + 5 * (-log(0.001701)) = 169.8
 ```
 
-现在，我们需要计算移除每个词元对损失值的影响。这个过程颇为繁琐，所以我们这里仅对两个单词进行演示，在我们编写代码来协助处理这个过程时，再处理全部词元化。在这个（非常）特殊的例子中，我们对所有单词的两种等效的分词方式：例如，“pug”也可以被分词为 `["p", "ug"]` ，获得的分数是相同的。因此，去除词汇表中的 `"pu"` 损失值还会是一样的。
+现在，我们需要计算移除每个词元对损失值的影响。这个过程颇为繁琐，所以我们这里仅对两个单词进行演示，在我们编写代码来协助处理这个过程时，再处理全部tokenization。在这个（非常）特殊的例子中，我们对所有单词的两种等效的分词方式：例如，“pug”也可以被分词为 `["p", "ug"]` ，获得的分数是相同的。因此，去除词汇表中的 `"pu"` 损失值还会是一样的。
 
-但是，去除 `"hug"` 损失会变得更糟，因为 `"hug"` 和 `"hugs"` 的词元化会变成：
+但是，去除 `"hug"` 损失会变得更糟，因为 `"hug"` 和 `"hugs"` 的tokenization会变成：
 
 ```
 "hug": ["hu", "g"] (score 0.006802)
@@ -364,7 +364,7 @@ while len(model) > 100:
     model = {token: -log(freq / total_sum) for token, freq in token_freqs.items()}
 ```
 
-然后，要对某些文本进行词元化，我们只需应用预分词然后使用我们的 `encode_word()` 函数：
+然后，要对某些文本进行tokenization，我们只需应用预分词然后使用我们的 `encode_word()` 函数：
 
 ```python
 def tokenize(text, model):
@@ -380,4 +380,4 @@ tokenize("This is the Hugging Face course.", model)
 ['▁This', '▁is', '▁the', '▁Hugging', '▁Face', '▁', 'c', 'ou', 'r', 's', 'e', '.']
 ```
 
-至此 Unigram 的介绍完毕！期望此刻你已感觉自身如同领域的专家一般。在下一节中，我们将深入探讨🤗Tokenizers 库的基本构造模块，并展示如何使用它们构建自己的词元分析器。
+至此 Unigram 的介绍完毕！期望此刻你已感觉自身如同领域的专家一般。在下一节中，我们将深入探讨🤗Tokenizers 库的基本构造模块，并展示如何使用它们构建自己的 tokenizer 。

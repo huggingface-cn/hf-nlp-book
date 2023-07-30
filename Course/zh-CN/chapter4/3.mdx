@@ -114,7 +114,7 @@ callback = PushToHubCallback(
 
 在更底层，你可以通过直接在模型、分词器和配置对象上调用 `push_to_hub()` 方法来访问模型中心。该方法能够同时创建仓库并直接将模型和分词器文件推送至仓库，无需手动操作，这与我们稍后要看到的 API 有些许不同。
 
-为了了解它是如何工作的，让我们首先创建一个模型和一个词元分析器：
+为了了解它是如何工作的，让我们首先创建一个模型和一个 tokenizer ：
 
 {#if fw === 'pt'}
 
@@ -140,7 +140,7 @@ tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
 {/if}
 
-你可以随意进行一些操作——给分词器添加标记，训练模型，微调模型。直到你对最终的模型、权重和分词器满意。当你对的模最终的模型、权重和词元分析器感到满意，你就可以直接在 `model` 对象上调用 `push_to_hub()` 方法：
+你可以随意进行一些操作——给分词器添加标记，训练模型，微调模型。直到你对最终的模型、权重和分词器满意。当你对的模最终的模型、权重和 tokenizer 感到满意，你就可以直接在 `model` 对象上调用 `push_to_hub()` 方法：
 
 ```py
 model.push_to_hub("dummy-model")
@@ -148,7 +148,7 @@ model.push_to_hub("dummy-model")
 
 这将在你的账户中创建新的仓库 `dummy-model` ，并将这个模型文件上传上去。
 
-对词元分析器也需要进行相同的操作：
+对 tokenizer 也需要进行相同的操作：
 
 ```py
 tokenizer.push_to_hub("dummy-model")
@@ -182,7 +182,7 @@ tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token=
 
 <Tip>
 
-✏️ **试试看** 获取与 `bert-base-cased` 检查点相关的模型和词元分析器，并使用 `push_to_hub()` 方法将它们上传到你账户中的一个仓库。并请仔细检查该仓库在你的页面上显示是否正常。
+✏️ **试试看** 获取与 `bert-base-cased`  Checkpoint 相关的模型和 tokenizer ，并使用 `push_to_hub()` 方法将它们上传到你账户中的一个仓库。并请仔细检查该仓库在你的页面上显示是否正常。
 
 </Tip>
 
@@ -345,7 +345,7 @@ repo.git_tag()
 
 此外！我们建议你查看 [此处](https://github.com/huggingface/huggingface_hub/tree/main/src/huggingface_hub#advanced-programmatic-repository-management) 的 `Repository` 文档，了解一下所有可用方法。
 
-目前，我们有一个模型和一个词元分析器，我们希望将其推送到 hub。我们已经成功克隆了仓库，因此我们可以将文件保存到在该仓库的文件夹中。
+目前，我们有一个模型和一个 tokenizer ，我们希望将其推送到 hub。我们已经成功克隆了仓库，因此我们可以将文件保存到在该仓库的文件夹中。
 
 首先，我们通过拉取最新的更改，确保我们的本地克隆是最新的：
 
@@ -353,14 +353,14 @@ repo.git_tag()
 repo.git_pull()
 ```
 
-完成后，我们保存模型和词元分析器文件：
+完成后，我们保存模型和 tokenizer 文件：
 
 ```py
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")
 ```
 
- `<path_to_dummy_folder>` 现在已经存储了模型和词元分析器文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
+ `<path_to_dummy_folder>` 现在已经存储了模型和 tokenizer 文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
 
 ```py
 repo.git_add()
@@ -413,7 +413,7 @@ README.md
 
 较小的文件，如配置文件、词汇表文件，或者基本上任何几 MB 以下的文件，就像我们平时使用 git 一样。然而，更大的文件必须通过 git-lfs 注册才能推送到 huggingface.co。
 
-让我们回到 Python，生成一些我们希望提交到 dummy 仓库的模型和词元分析器：
+让我们回到 Python，生成一些我们希望提交到 dummy 仓库的模型和 tokenizer ：
 
 {#if fw === 'pt'}
 ```py

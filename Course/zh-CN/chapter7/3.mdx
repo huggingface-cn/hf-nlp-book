@@ -125,7 +125,7 @@ DistilBERT 大约有 6700 万个参数，大约比 BERT 基本模型小两倍，
 text = "This is a great [MASK]."
 ```
 
-作为人类，我们可以想象 `[MASK]` 词元有很多可能性，例如 "day"、"ride" 或者 "painting"。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的词元分析器来生成模型的输入，所以让我们也从 Hub 下载它：
+作为人类，我们可以想象 `[MASK]` 词元有很多可能性，例如 "day"、"ride" 或者 "painting"。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的 tokenizer 来生成模型的输入，所以让我们也从 Hub 下载它：
 
 ```python
 from transformers import AutoTokenizer
@@ -133,7 +133,7 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-有了词元分析器和模型，我们现在可以将我们的文本示例传递给模型，提取 logits，并打印出前 5 个候选词：
+有了 tokenizer 和模型，我们现在可以将我们的文本示例传递给模型，提取 logits，并打印出前 5 个候选词：
 
 {#if fw === 'pt'}
 
@@ -248,9 +248,9 @@ for row in sample:
 
 <Youtube id="8PmhEIXhBvI"/>
 
-对于自回归和掩码语言建模，常见的预处理步骤是将所有的示例连接起来，然后将整个语料库切割为等大小的块。这与我们通常的做法有很大的不同，我们通常只是对单个的例子进行词元化。为什么要将所有的内容连接在一起呢？原因是如果单个例子太长，可能会被截断，这会导致我们失去可能对语言建模任务有用的信息！
+对于自回归和掩码语言建模，常见的预处理步骤是将所有的示例连接起来，然后将整个语料库切割为等大小的块。这与我们通常的做法有很大的不同，我们通常只是对单个的例子进行tokenization。为什么要将所有的内容连接在一起呢？原因是如果单个例子太长，可能会被截断，这会导致我们失去可能对语言建模任务有用的信息！
 
-因此，我们将像往常一样首先对我们的语料库词元化，但是不在我们的词元分析器中设置 `truncation=True` 选项。我们还将获取可用的单词 ID ((如果我们使用快速词元分析器，它们是可用的，如 [第六章](/course/chapter6/3) 中所述), 因为我们稍后将需要它们来进行全字屏蔽。我们将把它包装在一个简单的函数中，当我们在做的时候，我们将删除 `text` 和 `label` 列，因为我们不再需要它们：
+因此，我们将像往常一样首先对我们的语料库tokenization，但是不在我们的 tokenizer 中设置 `truncation=True` 选项。我们还将获取可用的单词 ID ((如果我们使用快速 tokenizer ，它们是可用的，如 [第六章](/course/chapter6/3) 中所述), 因为我们稍后将需要它们来进行全字屏蔽。我们将把它包装在一个简单的函数中，当我们在做的时候，我们将删除 `text` 和 `label` 列，因为我们不再需要它们：
 
 所以我们首先像往常一样对语料库进行分词，但是在分词器中_不_设置 `truncation=True` 选项。如果词 ID 可用（如果我们使用的是快速分词器，如 [第6章](https://chat.openai.com/course/chapter6/3) 所述，它们就会可用），我们也会抓取它们，因为我们稍后需要用它们进行全词遮罩。我们将这一部分包装成一个简单的函数，顺便我们还将删除不再需要的 `text` 和 `label` 列：
 
@@ -288,7 +288,7 @@ DatasetDict({
 
 由于 DistilBERT 是一个类似 BERT 的模型，我们可以看到编码文本由我们在其他章节中看到的 `input_ids` 和 `attention_mask` 组成，以及我们添加的 `word_ids` 。
 
-现在我们已经对电影评论进行了分词，下一步是将它们全部组合在一起并将结果分割成块。但是，这些块应该有多大呢？这最终将取决于你可以使用的 GPU 内存大小，但一个好的起点是查看模型的最大上下文大小。这可以通过查看词元分析器的 `model_max_length` 属性来推断：
+现在我们已经对电影评论进行了分词，下一步是将它们全部组合在一起并将结果分割成块。但是，这些块应该有多大呢？这最终将取决于你可以使用的 GPU 内存大小，但一个好的起点是查看模型的最大上下文大小。这可以通过查看 tokenizer 的 `model_max_length` 属性来推断：
 
 ```python
 tokenizer.model_max_length
@@ -298,11 +298,11 @@ tokenizer.model_max_length
 512
 ```
 
-该值来自于与检查点相关联的 `tokenizer_config.json` 文件；在这种情况下，我们可以看到上下文大小是 512 个词元，就像 BERT 一样。
+该值来自于与 Checkpoint 相关联的 `tokenizer_config.json` 文件；在这种情况下，我们可以看到上下文大小是 512 个词元，就像 BERT 一样。
 
 <Tip>
 
-✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096) , 它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。为这些检查点之一实例化词元分析器，并验证 `model_max_length` 是否与模型卡上引用的内容一致。
+✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096) , 它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。为这些 Checkpoint 之一实例化 tokenizer ，并验证 `model_max_length` 是否与模型卡上引用的内容一致。
 
 </Tip>
 
@@ -446,7 +446,7 @@ tokenizer.decode(lm_datasets["train"][1]["labels"])
 
 ## 使用 `Trainer` API 微调 DistilBERT [[使用 `Trainer` API 微调 DistilBERT]]
 
-微调屏蔽语言模型几乎与微调序列分类模型相同，就像我们在 [第三章](/course/chapter3) 所作的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些词元。幸运的是，🤗 Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将词元分析器和一个 `mlm_probability` 参数（指定掩盖词元的比例）传递给它。我们将选择 15%，这是 BERT 所使用的数量，也是文献中常见的选择：
+微调屏蔽语言模型几乎与微调序列分类模型相同，就像我们在 [第三章](/course/chapter3) 所作的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些词元。幸运的是，🤗 Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将 tokenizer 和一个 `mlm_probability` 参数（指定掩盖词元的比例）传递给它。我们将选择 15%，这是 BERT 所使用的数量，也是文献中常见的选择：
 
 ```python
 from transformers import DataCollatorForLanguageModeling
@@ -808,7 +808,7 @@ print(f"Perplexity: {math.exp(eval_loss):.2f}")
 
 {#if fw === 'pt'}
 
-一旦训练完成，我们可以将带有训练信息的模型卡片推送到 Hub（训练过程中就保存了检查点）：
+一旦训练完成，我们可以将带有训练信息的模型卡片推送到 Hub（训练过程中就保存了 Checkpoint ）：
 
 ```python
 trainer.push_to_hub()
@@ -1040,6 +1040,6 @@ for pred in preds:
 
 <Tip>
 
-✏️ **试试看！** 为了量化域适应的好处，微调 IMDb 标签上的分类器和预先训练和微调的 Distil BERT 检查点。如果你需要复习文本分类，请查看 [第三章](/course/chapter3) 。
+✏️ **试试看！** 为了量化域适应的好处，微调 IMDb 标签上的分类器和预先训练和微调的 Distil BERT  Checkpoint 。如果你需要复习文本分类，请查看 [第三章](/course/chapter3) 。
 
 </Tip>

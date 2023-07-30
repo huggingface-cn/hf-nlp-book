@@ -165,7 +165,7 @@ translator(
 
 <Youtube id="XAR8jnZZuUs"/>
 
-你现在应该知道我们的下一步该做些什么了：所有文本都需要转换为 token IDs 的集合，以便模型能够理解它们。对于这个任务，我们需要同时对输入和目标词元化。我们的首要任务是创建我们的 `tokenizer` 对象。如前所述，我们将使用 Marian 英语到法语的预训练模型。如果你使用另一对语言尝试此代码，请确保调整模型 Checkpoint。 [Helsinki-NLP](https://huggingface.co/Helsinki-NLP) 组织提供了超过一千个多语言模型。
+你现在应该知道我们的下一步该做些什么了：所有文本都需要转换为 token IDs 的集合，以便模型能够理解它们。对于这个任务，我们需要同时对输入和目标tokenization。我们的首要任务是创建我们的 `tokenizer` 对象。如前所述，我们将使用 Marian 英语到法语的预训练模型。如果你使用另一对语言尝试此代码，请确保调整模型 Checkpoint。 [Helsinki-NLP](https://huggingface.co/Helsinki-NLP) 组织提供了超过一千个多语言模型。
 
 ```python
 from transformers import AutoTokenizer
@@ -198,7 +198,7 @@ inputs
 {'input_ids': [47591, 12, 9842, 19634, 9, 0], 'attention_mask': [1, 1, 1, 1, 1, 1], 'labels': [577, 5891, 2, 3184, 16, 2542, 5, 1710, 0]}
 ```
 
-如我们所见，输出包含了与英语句子相关联的输入 IDs，而与法语句子相关联的 IDs 存储在 `labels` 字段中。如果你忘记指示你正在对 labels 进行词元化，它们将由输入 tokenizer 进行词元化，这在 Marian 模型的情况下将会出现问题：
+如我们所见，输出包含了与英语句子相关联的inputs IDs，而与法语句子相关联的 IDs 存储在 `labels` 字段中。如果你忘记指示你正在对 labels 进行tokenization，它们将由输入 tokenizer 进行tokenization，这在 Marian 模型的情况下将会出现问题：
 
 ```python
 wrong_targets = tokenizer(fr_sentence)
@@ -213,7 +213,7 @@ print(tokenizer.convert_ids_to_tokens(inputs["labels"]))
 
 如你所见，如果用英语的 tokenizer 来预处理法语句子，会产生更多的 tokens，因为这个 tokenizer 不认识任何法语单词（除了那些在英语里也出现的，比如"discussion"）。
 
-由于“inputs”是一个包含我们常用键（输入 ID、注意掩码等）的字典，最后一步是定义我们将应用于数据集的预处理函数：
+由于“inputs”是一个包含我们常用键（inputs ID、注意掩码等）的字典，最后一步是定义我们将应用于数据集的预处理函数：
 
 ```python
 max_length = 128
@@ -230,7 +230,7 @@ def preprocess_function(examples):
 
 <Tip>
 
-💡 如果你正在使用 T5 模型（更具体地说，一个 `t5-xxx` 检查点），模型会期望文本输入有一个前缀指示着手头的任务，比如 `translate: English to French:` 。
+💡 如果你正在使用 T5 模型（更具体地说，一个 `t5-xxx`  Checkpoint ），模型会期望文本输入有一个前缀指示着手头的任务，比如 `translate: English to French:` 。
 
 </Tip>
 
@@ -290,9 +290,9 @@ model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint, from_pt=True)
 
 ### 数据整理 [[数据整理]]
 
-我们需要一个数据整理器来处理动态批处理的填充。在本例中，我们不能像 [第三章](/course/chapter3) 那样只使用 `DataCollatorWithPadding` ，因为它只填充输入（输入 ID、注意掩码和词元类型 ID）。我们的标签也应该填充到标签中遇到的最大长度。而且，如前所述，用于填充标签的填充值应为 `-100` ，而不是 tokenizer 的填充词元，以确保在损失计算中忽略这些填充值。
+我们需要一个数据整理器来处理动态批处理的填充。在本例中，我们不能像 [第三章](/course/chapter3) 那样只使用 `DataCollatorWithPadding` ，因为它只填充输入（inputs ID、注意掩码和词元类型 ID）。我们的标签也应该填充到标签中遇到的最大长度。而且，如前所述，用于填充标签的填充值应为 `-100` ，而不是 tokenizer 的填充词元，以确保在损失计算中忽略这些填充值。
 
-这一切都可以由 [`DataCollatorForSeq2Seq`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorforseq2seq) 完成。与 `DataCollatorWithPadding` 一样，它接收用于预处理输入的 `tokenizer` ，但它也接收 `model` 。这是因为数据整理器还将负责准备解码器输入 ID，它们是标签偏移之后形成的，开头带有特殊词元。由于对于不同的架构有稍微不同的偏移方式， `DataCollatorForSeq2Seq` 需要知道 `model` 对象：
+这一切都可以由 [`DataCollatorForSeq2Seq`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorforseq2seq) 完成。与 `DataCollatorWithPadding` 一样，它接收用于预处理输入的 `tokenizer` ，但它也接收 `model` 。这是因为数据整理器还将负责准备解码器inputs ID，它们是标签偏移之后形成的，开头带有特殊词元。由于对于不同的架构有稍微不同的偏移方式， `DataCollatorForSeq2Seq` 需要知道 `model` 对象：
 
 {#if fw === 'pt'}
 
@@ -312,7 +312,7 @@ data_collator = DataCollatorForSeq2Seq(tokenizer, model=model, return_tensors="t
 
 {/if}
 
-为了在几个样本上进行测试，我们只需在我们已经完成词元化的训练集中的部分数据上调用它：
+为了在几个样本上进行测试，我们只需在我们已经完成tokenization的训练集中的部分数据上调用它：
 
 ```py
 batch = data_collator([tokenized_datasets["train"][i] for i in range(1, 3)])
@@ -336,7 +336,7 @@ tensor([[  577,  5891,     2,  3184,    16,  2542,     5,  1710,     0,  -100,
            550,  7032,  5821,  7907, 12649,     0]])
 ```
 
-我们还可以查看解码器输入 ID，可以看到它们是标签经过偏移形成的版本：
+我们还可以查看解码器inputs ID，可以看到它们是标签经过偏移形成的版本：
 
 ```py
 batch["decoder_input_ids"]
@@ -488,7 +488,7 @@ metric.compute(predictions=predictions, references=references)
 
 {#if fw === 'tf'}
 
-为了将模型的输出转化为评估指标可以使用的文本，我们将利用 `tokenizer.batch_decode()` 方法。我们只需要清理所有标签中的 `-100` ，词元分析器会自动对填充词元做同样的处理。让我们定义一个函数，这个函数会接收我们的模型和一个数据集，并在其上计算指标。我们还将使用一个显著提升性能的技巧 - 使用 [XLA](https://www.tensorflow.org/xla) ，TensorFlow 的加速线性代数编译器，编译我们的生成代码。XLA 对模型的计算图进行了各种优化，从而显著提升了速度和内存使用率。如 Hugging Face 的 [博客](https://huggingface.co/blog/tf-xla-generate) 所述，当我们的输入形状不变化太大时，XLA 工作得最好。为了处理这个问题，我们将把输入补齐到 128 的倍数，然后用填充整理器制作一个新的数据集，然后我们将应用 `@tf.function(jit_compile=True)` 装饰器到我们的生成函数上，这将标记整个函数用 XLA 编译。
+为了将模型的输出转化为评估指标可以使用的文本，我们将利用 `tokenizer.batch_decode()` 方法。我们只需要清理所有标签中的 `-100` ， tokenizer 会自动对填充词元做同样的处理。让我们定义一个函数，这个函数会接收我们的模型和一个数据集，并在其上计算指标。我们还将使用一个显著提升性能的技巧 - 使用 [XLA](https://www.tensorflow.org/xla) ，TensorFlow 的加速线性代数编译器，编译我们的生成代码。XLA 对模型的计算图进行了各种优化，从而显著提升了速度和内存使用率。如 Hugging Face 的 [博客](https://huggingface.co/blog/tf-xla-generate) 所述，当我们的输入形状不变化太大时，XLA 工作得最好。为了处理这个问题，我们将把输入补齐到 128 的倍数，然后用填充整理器制作一个新的数据集，然后我们将应用 `@tf.function(jit_compile=True)` 装饰器到我们的生成函数上，这将标记整个函数用 XLA 编译。
 
 ```py
 import numpy as np
@@ -541,7 +541,7 @@ def compute_metrics():
 
 {:else}
 
-为了将模型的输出转化为评估指标可以使用的文本，我们将使用 `tokenizer.batch_decode()` 方法。我们只需要清理标签中的所有 `-100` （词元分析器将自动对填充的词元执行相同操作）：
+为了将模型的输出转化为评估指标可以使用的文本，我们将使用 `tokenizer.batch_decode()` 方法。我们只需要清理标签中的所有 `-100` （ tokenizer 将自动对填充的词元执行相同操作）：
 
 ```py
 import numpy as np

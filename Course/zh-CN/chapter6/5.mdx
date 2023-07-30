@@ -1,4 +1,4 @@
-# BPE 词元化算法 [[BPE 词元化算法]]
+# BPE tokenization算法 [[BPE tokenization算法]]
 
 <CourseFloatingBanner chapter={6}
   classNames="absolute z-10 right-0 top-0"
@@ -7,13 +7,13 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section5.ipynb"},
 ]} />
 
-字节对编码（BPE）最初被开发为一种压缩文本的算法，然后在预训练 GPT 模型时被 OpenAI 用于词元化。许多 Transformer 模型都使用它，包括 GPT、GPT-2、RoBERTa、BART 和 DeBERTa。
+字节对编码（BPE）最初被开发为一种压缩文本的算法，然后在预训练 GPT 模型时被 OpenAI 用于tokenization。许多 Transformer 模型都使用它，包括 GPT、GPT-2、RoBERTa、BART 和 DeBERTa。
 
 <Youtube id="HEikzVL-lZU"/>
 
 <Tip>
 
-💡 本节深入介绍了 BPE，甚至展示了一个完整的实现。如果你只想大致了解词元化算法，可以跳到最后。
+💡 本节深入介绍了 BPE，甚至展示了一个完整的实现。如果你只想大致了解tokenization算法，可以跳到最后。
 
 </Tip>
 
@@ -25,11 +25,11 @@ BPE 训练首先计算语料库中使用的唯一单词集（在完成标准化�
 "hug", "pug", "pun", "bun", "hugs"
 ```
 
-基础词汇将是 `["b", "g", "h", "n", "p", "s", "u"]` 。对于实际情况，基本词汇表将包含所有 ASCII 字符，至少，可能还包含一些 Unicode 字符。如果你正在词元化不在训练语料库中的字符，则该字符将转换为未知词元。这就是为什么许多 NLP 模型在分析带有表情符号的内容方面非常糟糕的原因之一。
+基础词汇将是 `["b", "g", "h", "n", "p", "s", "u"]` 。对于实际情况，基本词汇表将包含所有 ASCII 字符，至少，可能还包含一些 Unicode 字符。如果你正在tokenization不在训练语料库中的字符，则该字符将转换为未知词元。这就是为什么许多 NLP 模型在分析带有表情符号的内容方面非常糟糕的原因之一。
 
 <Tip>
 
-GPT-2 和 RoBERTa 词元分析器（这两者非常相似）有一个巧妙的方法来处理这个问题：他们不把单词看成是用 Unicode 字符编写的，而是用字节编写的。这样，基本词汇表的大小很小（256），但是能包含几乎所有你能想象的字符，而不会最终转换为未知词元。这个技巧被称为 *字节级 BPE*。
+GPT-2 和 RoBERTa  tokenizer （这两者非常相似）有一个巧妙的方法来处理这个问题：他们不把单词看成是用 Unicode 字符编写的，而是用字节编写的。这样，基本词汇表的大小很小（256），但是能包含几乎所有你能想象的字符，而不会最终转换为未知词元。这个技巧被称为 *字节级 BPE*。
 
 </Tip>
 
@@ -51,7 +51,7 @@ GPT-2 和 RoBERTa 词元分析器（这两者非常相似）有一个巧妙的�
 
 然后我们看看相邻的字符对。 `("h", "u")` 在词 `"hug"` 和 `"hugs"` 中出现，所以在语料库中总共出现了 15 次。然而，最常见的对属于 `("u", "g")` ，它在 `"hug"` 、 `"pug"` 和 `"hugs"` 中出现，总共在词汇表中出现了 20 次。
 
-因此，词元分析器学习的第一个合并规则是 `("u", "g") -> "ug"` ，意思就是 `"ug"` 将被添加到词汇表中，且应在语料库的所有词中合并这一对。在这个阶段结束时，词汇表和语料库看起来像这样：
+因此， tokenizer 学习的第一个合并规则是 `("u", "g") -> "ug"` ，意思就是 `"ug"` 将被添加到词汇表中，且应在语料库的所有词中合并这一对。在这个阶段结束时，词汇表和语料库看起来像这样：
 
 ```
 词汇表: ["b", "g", "h", "n", "p", "s", "u", "ug"]
@@ -80,9 +80,9 @@ GPT-2 和 RoBERTa 词元分析器（这两者非常相似）有一个巧妙的�
 
 </Tip>
 
-## 词元化 [[词元化]]
+## tokenization [[tokenization]]
 
-完成训练之后就可以对新的输入词元化了，从某种意义上说，新的输入会依照以下步骤对新输入进行词元化：
+完成训练之后就可以对新的输入tokenization了，从某种意义上说，新的输入会依照以下步骤对新输入进行tokenization：
 
 1. 标准化
 2. 预分词
@@ -101,7 +101,7 @@ GPT-2 和 RoBERTa 词元分析器（这两者非常相似）有一个巧妙的�
 
 <Tip>
 
-✏️ **现在轮到你了！** 你认为这个词 `"unhug"` 将如何被词元化？
+✏️ **现在轮到你了！** 你认为这个词 `"unhug"` 将如何被tokenization？
 
 </Tip>
 
@@ -120,7 +120,7 @@ corpus = [
 ]
 ```
 
-接下来，我们需要将该语料库预分词为单词。由于我们正在复现一个 BPE 词元分析器（例如 GPT-2），我们将使用 `gpt2` 分词器进行预分词：
+接下来，我们需要将该语料库预分词为单词。由于我们正在复现一个 BPE  tokenizer （例如 GPT-2），我们将使用 `gpt2` 分词器进行预分词：
 
 ```python
 from transformers import AutoTokenizer

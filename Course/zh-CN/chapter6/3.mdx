@@ -1,6 +1,6 @@
 <FrameworkSwitchCourse {fw} />
 
-# 快速词元分析器的特殊能力 [[快速词元分析器的特殊能力]]
+# 快速 tokenizer 的特殊能力 [[快速 tokenizer 的特殊能力]]
 
 {#if fw === 'pt'}
 
@@ -22,20 +22,20 @@
 
 {/if}
 
-在本节中，我们将仔细研究 🤗 Transformers 中词元分析器的功能。到目前为止，我们只使用它们来对文本词元化或将 ID 解码回文本，但是词元分析器——特别是由🤗 Tokenizers 库支持的词元分析器——能够做的事情还有很多。为了说明这些附加功能，我们将探讨如何复现在 [第一章](/course/chapter1) 中首次遇到的 `token-classification` （我们称之为 `ner` ） 和 `question-answering` 管道的结果。
+在本节中，我们将仔细研究 🤗 Transformers 中 tokenizer 的功能。到目前为止，我们只使用它们来对文本tokenization或将 ID 解码回文本，但是 tokenizer ——特别是由🤗 Tokenizers 库支持的 tokenizer ——能够做的事情还有很多。为了说明这些附加功能，我们将探讨如何复现在 [第一章](/course/chapter1) 中首次遇到的 `token-classification` （我们称之为 `ner` ） 和 `question-answering` 管道的结果。
 
 <Youtube id="g8quOxoqhHQ"/>
 
-在接下来的讨论中，我们会经常区分“慢速”和“快速”词元分析器。慢速词元分析器是在 🤗 Transformers 库中用 Python 编写的，而快速版本是由 🤗 Tokenizers 提供的，它们是用 Rust 编写的。如果你还记得在 [第五章](/course/chapter5/3) 中对比了快速和慢速词元分析器对药物审查数据集进行词元化所需的时间的这张表，你应该理解为什么我们称它们为“快速”和“慢速”：
+在接下来的讨论中，我们会经常区分“慢速”和“快速” tokenizer 。慢速 tokenizer 是在 🤗 Transformers 库中用 Python 编写的，而快速版本是由 🤗 Tokenizers 提供的，它们是用 Rust 编写的。如果你还记得在 [第五章](/course/chapter5/3) 中对比了快速和慢速 tokenizer 对药物审查数据集进行tokenization所需的时间的这张表，你应该理解为什么我们称它们为“快速”和“慢速”：
 
-|               | 快速词元分析器     | 慢速词元分析器
+|               | 快速 tokenizer      | 慢速 tokenizer 
 :--------------:|:--------------:|:-------------:
  `batched=True` | 10.8s          | 4min41s
  `batched=False` | 59.2s          | 5min3s
 
 <Tip warning={true}>
 
-⚠️ 对单个句子进行词元化时，你不总是能看到同一个词元分析器的慢速和快速版本之间的速度差异。事实上，快速版本可能实际上更慢！只有同时对大量文本进行词元化时，你才能清楚地看到差异。
+⚠️ 对单个句子进行tokenization时，你不总是能看到同一个 tokenizer 的慢速和快速版本之间的速度差异。事实上，快速版本可能实际上更慢！只有同时对大量文本进行tokenization时，你才能清楚地看到差异。
 
 </Tip>
 
@@ -43,9 +43,9 @@
 
 <Youtube id="3umI3tm27Vw"/>
 
-词元分析器的输出不是简单的 Python 字典；我们得到的实际上是一个特殊的 `BatchEncoding` 对象。它是字典的子类（这就是为什么我们之前能够直接使用索引获取结果的原因），但是它还提供了一些主要由快速词元分析器提供的附加方法。
+ tokenizer 的输出不是简单的 Python 字典；我们得到的实际上是一个特殊的 `BatchEncoding` 对象。它是字典的子类（这就是为什么我们之前能够直接使用索引获取结果的原因），但是它还提供了一些主要由快速 tokenizer 提供的附加方法。
 
-除了它们的并行化能力之外，快速词元分析器的关键功能是它们始终跟踪最终词元相对于的原始文本范围——我们称之为*偏移映射*。这反过来又解锁了如将每个词映射到它生成的词元，或者将原始文本的每个字符映射到它所在的词元等功能。
+除了它们的并行化能力之外，快速 tokenizer 的关键功能是它们始终跟踪最终词元相对于的原始文本范围——我们称之为*偏移映射*。这反过来又解锁了如将每个词映射到它生成的词元，或者将原始文本的每个字符映射到它所在的词元等功能。
 
 让我们看一个例子：
 
@@ -58,13 +58,13 @@ encoding = tokenizer(example)
 print(type(encoding))
 ```
 
-如前所述，我们从词元分析器得到了一个 `BatchEncoding` 对象：
+如前所述，我们从 tokenizer 得到了一个 `BatchEncoding` 对象：
 
 ```python out
 <class 'transformers.tokenization_utils_base.BatchEncoding'>
 ```
 
-由于 `AutoTokenizer` 类默认选择快速词元分析器，因此我们可以使用 `BatchEncoding` 对象提供的附加方法。我们有两种方法来检查我们的词元分析器是快速的还是慢速的。我们可以检查 `tokenizer` 的 `is_fast` 属性：
+由于 `AutoTokenizer` 类默认选择快速 tokenizer ，因此我们可以使用 `BatchEncoding` 对象提供的附加方法。我们有两种方法来检查我们的 tokenizer 是快速的还是慢速的。我们可以检查 `tokenizer` 的 `is_fast` 属性：
 
 ```python
 tokenizer.is_fast
@@ -84,7 +84,7 @@ encoding.is_fast
 True
 ```
 
-让我们看看快速词元分析器能让为我们提供什么功能。首先，我们可以访问单词而无需将 ID 转换回单词：
+让我们看看快速 tokenizer 能让为我们提供什么功能。首先，我们可以访问单词而无需将 ID 转换回单词：
 
 ```py
 encoding.tokens()
@@ -105,17 +105,17 @@ encoding.word_ids()
 [None, 0, 1, 2, 3, 3, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10, 11, 12, None]
 ```
 
-我们可以看到词元分析器的特殊词元 `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个词元都映射到它来源的单词。这对于确定一个词元是否在单词的开头或两个词元是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的词元分析器，我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速词元分析器，它所提供的 word_ids() 方法适用于任何类型的词元分析器。在下一章，我们将看到如何利用这种能力，将我们为每个词正确地应用到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有词元（一种称为 `全词掩码（whole word masking）` 的技术）。
+我们可以看到 tokenizer 的特殊词元 `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个词元都映射到它来源的单词。这对于确定一个词元是否在单词的开头或两个词元是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的 tokenizer ，我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速 tokenizer ，它所提供的 word_ids() 方法适用于任何类型的 tokenizer 。在下一章，我们将看到如何利用这种能力，将我们为每个词正确地应用到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有词元（一种称为 `全词掩码（whole word masking）` 的技术）。
 
 <Tip>
 
-词的概念是复杂的。例如，“I'll”（“I will”的缩写）算作一个词还是两个词？这实际上取决于词元分析器和它应用的预分词操作。有些词元分析器只在空格处分割，所以它们会把这个看作是一个词。其他词元分析器在空格的基础之上还使用标点，所以会认为它是两个词。
+词的概念是复杂的。例如，“I'll”（“I will”的缩写）算作一个词还是两个词？这实际上取决于 tokenizer 和它应用的预分词操作。有些 tokenizer 只在空格处分割，所以它们会把这个看作是一个词。其他 tokenizer 在空格的基础之上还使用标点，所以会认为它是两个词。
 
-✏️ **试试看！**从 bert base cased 和 roberta base 检查点创建一个词元分析器，并用它们对“81s”进行分词。你观察到了什么？这些词的 ID 是什么？
+✏️ **试试看！**从 bert base cased 和 roberta base  Checkpoint 创建一个 tokenizer ，并用它们对“81s”进行分词。你观察到了什么？这些词的 ID 是什么？
 
 </Tip>
 
-同样，我们还有一个 `sentence_ids()` 方法，可以用它来映射一个词元到它原始的句子（尽管在这种情况下，词元分析器返回的 `token_type_ids` 也可以为我们提供相同的信息）。
+同样，我们还有一个 `sentence_ids()` 方法，可以用它来映射一个词元到它原始的句子（尽管在这种情况下， tokenizer 返回的 `token_type_ids` 也可以为我们提供相同的信息）。
 
 最后，我们可以通过 `word_to_chars()` 或 `token_to_chars()` 和 `char_to_word()` 或 `char_to_token()` 方法，将任何词或词元映射到原始文本中的字符，反之亦然。例如， `word_ids()` 方法告诉我们 `##yl` 是索引 3 处单词的一部分，但它是句子中的哪个单词？我们可以这样找出来：
 
@@ -139,7 +139,7 @@ Sylvain
 
 ## `token-classification` 管道内部流程 [[`token-classification`管道内部流程]]
 
-在 [第一章](/course/chapter1) 我们初次尝试实现命名实体识别（NER）——该任务是确定文本的哪些部分对应于人名、地名或组织名等实体——当时是使用🤗 Transformers 的 `pipeline()` 函数实现的。然后，在 [第二章](/course/chapter2) ，我们看到一个管道如何将获取原始文本到预测结果的三个阶段整合在一起：词元化、通过模型处理输入和后处理。 `token-classification` 管道中的前两步与其他任何管道中的步骤相同，但后处理稍有复杂——让我们看看具体情况！
+在 [第一章](/course/chapter1) 我们初次尝试实现命名实体识别（NER）——该任务是确定文本的哪些部分对应于人名、地名或组织名等实体——当时是使用🤗 Transformers 的 `pipeline()` 函数实现的。然后，在 [第二章](/course/chapter2) ，我们看到一个管道如何将获取原始文本到预测结果的三个阶段整合在一起：tokenization、通过模型处理输入和后处理。 `token-classification` 管道中的前两步与其他任何管道中的步骤相同，但后处理稍有复杂——让我们看看具体情况！
 
 {#if fw === 'pt'}
 
@@ -200,7 +200,7 @@ token_classifier("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 
 {#if fw === 'pt'}
 
-首先，我们需要词元我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `AutoXxx` 类实例化词元分析器和模型，然后将我们的示例传递给它们：
+首先，我们需要词元我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `AutoXxx` 类实例化 tokenizer 和模型，然后将我们的示例传递给它们：
 
 ```py
 from transformers import AutoTokenizer, AutoModelForTokenClassification
@@ -228,7 +228,7 @@ torch.Size([1, 19, 9])
 
 {:else}
 
-首先，我们需要词元我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `TFAutoXxx` 类实例化词元分析器和模型，然后将我们的示例传递给它们：
+首先，我们需要词元我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `TFAutoXxx` 类实例化 tokenizer 和模型，然后将我们的示例传递给它们：
 
 ```py
 from transformers import AutoTokenizer, TFAutoModelForTokenClassification
@@ -340,7 +340,7 @@ print(results)
  {'entity': 'I-LOC', 'score': 0.99321055, 'index': 16, 'word': 'Brooklyn'}]
 ```
 
-这与我们之前的结果非常相似，但有一点不同：管道还给我们提供了每个实体在原始句子中的 `start` 和 `end` 的信息。这就是我们的偏移映射要发挥作用的地方。要获得偏移量，我们只需要在使用词元分析器器时设置 `return_offsets_mapping=True` ：
+这与我们之前的结果非常相似，但有一点不同：管道还给我们提供了每个实体在原始句子中的 `start` 和 `end` 的信息。这就是我们的偏移映射要发挥作用的地方。要获得偏移量，我们只需要在使用 tokenizer 器时设置 `return_offsets_mapping=True` ：
 
 ```py
 inputs_with_offsets = tokenizer(example, return_offsets_mapping=True)
@@ -472,5 +472,5 @@ print(results)
  {'entity_group': 'LOC', 'score': 0.99321055, 'word': 'Brooklyn', 'start': 49, 'end': 57}]
 ```
 
-另一个非常需要偏移量的任务领域是问答。我们将在下一部分深入探索这个 pipeline 同时也会让我们看到🤗 Transformers 库中词元分析器的最后一个特性：在我们将输入超过给定长度时，处理溢出的词元。`````````
+另一个非常需要偏移量的任务领域是问答。我们将在下一部分深入探索这个 pipeline 同时也会让我们看到🤗 Transformers 库中 tokenizer 的最后一个特性：在我们将输入超过给定长度时，处理溢出的词元。`````````
 `````````
