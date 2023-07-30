@@ -30,12 +30,11 @@
 
 创建模型存储仓库的方法有以下三种：
 
-- 使用 push_to_hub API 接口
-- 使用 huggingface_hub Python 库
+- 使用 `push_to_hub` API 接口
+- 使用 `huggingface_hub` Python 库
 - 使用网页界面
 
 创建仓库后，你可以通过 git 和 git-lfs 将文件上传到其中。我们将在以下部分带领你创建模型仓库并向其中上传文件。
-
 
 ## 使用 `push_to_hub` API [[使用 push_to_hub API]]
 
@@ -53,7 +52,8 @@
 
 在进行下一步操作之前，你需要生成一个身份验证令牌，这样 `huggingface_hub` API 才会知道你是谁以及你对哪些空间具有写入权限。
 
-在一个安装了 `transformers` 环境中（参见 [Setup](/course/chapter0) ）。如果你在 notebook 中，可以运行以下代码登录：
+在一个安装了 `transformers` 环境中（参见 [第零章](/course/chapter0) ）。如果你在 notebook 中，可以运行以下代码登录：
+
 ```python
 from huggingface_hub import notebook_login
 
@@ -86,7 +86,7 @@ training_args = TrainingArguments(
 
 若要将你的模型上传到你所属的组织，只需设置 `hub_model_id = my_organization/my_repo_name` 。
 
-最后，需要在训练循环结束后运行 `trainer.push_to_hub()` 上传模型的最新版本。它还会生成一份包含所有相关元数据的模型卡片，报告使用的超参数和评估结果！以下是一个模型卡片的示例：
+最后，需要在训练循环结束后运行 `trainer.push_to_hub()` 上传模型的最新版本。它还会生成一份包含所有相关元数据的模型卡片，包含使用的超参数和评估结果！以下是一个模型卡片的示例：
 
 <div class="flex justify-center">
   <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/model_card.png" alt="An example of an auto-generated model card." width="100%"/>
@@ -112,9 +112,9 @@ callback = PushToHubCallback(
 
 {/if}
 
-在更底层，你可以通过直接在模型、分词器和配置对象上调用 `push_to_hub()` 方法来访问模型中心。该方法能够同时创建仓库并直接将模型和分词器文件推送至仓库，无需手动操作，这与我们稍后要看到的 API 有些许不同。
+在更底层，你可以通过直接在模型、tokenizer 和配置对象上调用 `push_to_hub()` 方法来访问模型中心。该方法能够同时创建仓库并直接将模型和 tokenizer 文件推送至仓库，无需手动操作，这与我们在下面要看到的 API 有些许不同。
 
-为了了解它是如何工作的，让我们首先创建一个模型和一个 tokenizer ：
+为了了解它是如何工作的，让我们首先创建一个模型和一个 tokenizer 
 
 {#if fw === 'pt'}
 
@@ -140,13 +140,13 @@ tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
 {/if}
 
-你可以随意进行一些操作——给分词器添加标记，训练模型，微调模型。直到你对最终的模型、权重和分词器满意。当你对的模最终的模型、权重和 tokenizer 感到满意，你就可以直接在 `model` 对象上调用 `push_to_hub()` 方法：
+你可以随意进行一些操作——给 tokenizer 添加 tokens 训练模型，微调模型。直到你对最终的模型、权重和 tokenizer 满意。当你对的模最终的模型、权重和 tokenizer 感到满意，你就可以直接在 `model` 对象上调用 `push_to_hub()` 方法：
 
 ```py
 model.push_to_hub("dummy-model")
 ```
 
-这将在你的账户中创建新的仓库 `dummy-model` ，并将这个模型文件上传上去。
+这将在你的账户中创建新的 `dummy-model` 仓库，并将这个模型文件上传上去。
 
 对 tokenizer 也需要进行相同的操作：
 
@@ -160,15 +160,15 @@ tokenizer.push_to_hub("dummy-model")
 tokenizer.push_to_hub("dummy-model", organization="huggingface")
 ```
 
-如果你希望使用特定的 Hugging Face 令牌，你也可以很方便地将其传递给 push_to_hub() 方法：
+如果你希望使用特定的 Hugging Face 令牌，你也可以很方便地将其传递给 `push_to_hub()` 方法：
 
 ```py
 tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token="<TOKEN>")
 ```
 
-现在你就可以前往模型中心查看你新上传的模型：*https://huggingface.co/user-or-organization/dummy-model*。
+现在你就可以前往 [模型中心](https://huggingface.co/user-or-organization/dummy-model) 查看你新上传的模型。
 
-单击“文件和版本”选项卡，你应该能看到以下的文件：
+单击“文件和版本（Files and versions）”选项卡，你应该能看到以下的文件：
 
 {#if fw === 'pt'}
 <div class="flex justify-center">
@@ -182,7 +182,7 @@ tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token=
 
 <Tip>
 
-✏️ **试试看** 获取与 `bert-base-cased`  Checkpoint 相关的模型和 tokenizer ，并使用 `push_to_hub()` 方法将它们上传到你账户中的一个仓库。并请仔细检查该仓库在你的页面上显示是否正常。
+✏️ **试试看** 获取与 `bert-base-cased` Checkpoint 相关的模型和 tokenizer 并使用 `push_to_hub()` 方法将它们上传到你账户中的一个仓库。并请仔细检查该仓库在你的页面上显示是否正常。
 
 </Tip>
 
@@ -192,17 +192,14 @@ tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token=
 
 到了最后一部分，让我们看看如何将文件上传到你新创建的仓库！
 
-## 使用 huggingface_hub python 库 [[使用 huggingface_hub python 库]]
-
- `huggingface_hub` Python 库是一个包，为模型和数据集中心提供了一系列工具。它提供了简单的方法和类，可以便捷地获取 hub 中仓库的信息以及管理仓库等常见任务。它在 git 的基础上提供了简单的 API，可以在你你的项目中管理这些仓库的内容，以及 hub 的一些功能。
+## 使用 `huggingface_hub` python 库 [[使用 `huggingface_hub` python 库]]
+`huggingface_hub` Python 库是一个包，为模型和数据集中心提供了一系列工具。它提供了简单的方法和类，可以便捷地获取 hub 中仓库的信息以及管理仓库等常见任务。它在 git 的基础上提供了简单的 API，可以在你你的项目中管理这些仓库的内容，以及 hub 的一些功能。
 
 与使用 `push_to_hub` API 类似，这需要你将 API 令牌保存在缓存中。为此，你需要在操作系统的命令行使用 CLI 中的 `login` 命令，（如果在 Notebook 中运行，请在这些命令前添加 `!` 字符）：
 
 ```bash
 huggingface-cli login
-```
-
- `huggingface_hub` 包提供了几个非常便捷方法和类可以帮助我们完成 hub 的管理。首先，有一些方法可以管理仓库的创建、删除等：
+``` `huggingface_hub` 包提供了几个非常便捷方法和类可以帮助我们完成 hub 的管理。首先，有一些方法可以管理仓库的创建、删除等：
 
 ```python no-format
 from huggingface_hub import (
@@ -229,7 +226,7 @@ from huggingface_hub import (
 
 此外，它还提供了非常强大的 `Repository` 类来管理本地仓库。我们将在接下来的几节中探讨这些方法和类，以理解如何利用它们。
 
-可以使用 `create_repo` 方法在中心上创建新的仓库：
+可以使用 `create_repo` 方法在 Hub 上创建新的仓库：
 
 ```py
 from huggingface_hub import create_repo
@@ -246,13 +243,14 @@ create_repo("dummy-model", organization="huggingface")
 ```
 
 这将在 `huggingface` 组织的账户中创建 `dummy-model` 仓库，如果你属于该组织并且有创建仓库的权限。
+
 其他可能有用的一些参数有：
 
 - `private` ，用于指定仓库是否应对其他人可见。
-- `token` ，如果你希望在这里指定身份令牌，而不是缓存中的身份令牌。
+- `token` ，如果你希望使用特定的身份令牌，而不是缓存中的身份令牌。
 - `repo_type` ，如果你希望创建一个 `dataset` 或 `space` 而不是模型。需要将 `repo_type` 设置为 `"dataset"` 和 `"space"` 。
 
-创建仓库后，我们应该向其中添加文件！让我们到下一节，看看可以处理的三种方式。
+创建仓库后，我们应该向其中添加文件！让我们到下一节，看看三种添加文件的方式。
 
 ## 使用网络界面 [[使用网络界面]]
 
@@ -284,7 +282,7 @@ README 文件采用 Markdown 格式 - 你可以根据你的需要自由编写！
 
 这一章的下一部分将帮助你建立模型卡片。这些模型卡片对于提升模型的价值非常重要，因为它们可以告诉其他人你的模型能做什么。
 
-如果你希望添加更多文件，点击页面顶部的 "Files and versions（文件和版本）" 标签页。在这里，你可以看到仓库的所有文件以及它们的版本。
+如果你希望添加更多文件，点击页面顶部的 “Files and versions（文件和版本）” 标签页。在这里，你可以看到仓库的所有文件以及它们的版本。
 
 <div class="flex justify-center">
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter4/files.png" alt="The 'Files and versions' tab only shows the .gitattributes and README.md files." width="80%"/>
@@ -294,15 +292,13 @@ README 文件采用 Markdown 格式 - 你可以根据你的需要自由编写！
 
 ## 上传模型文件 [[上传模型文件]]
 
-Hugging Face Hub 的文件管理系统基于 git 用于处理常规文件，对于较大的文件则使用 git-lfs（详情请参阅 [Git Large File Storage](https://git-lfs.github.com/) ) 
+Hugging Face Hub 的文件管理系统基于 git 用于处理常规文件，对于较大的文件则使用 git-lfs（详情请参阅 [Git 大文件存储](https://git-lfs.github.com/) ） 
 
 在下一节中，我们会讲述三种不同的方式将文件上传到 Hub： `upload_file` 方法、 `Repository` 类  以及通过 git 命令。
 
 ### `upload_file` 方法 [[ `upload_file` 方法]]
 
-使用 `upload_file` 不需要在你的系统上安装 git 和 git-lfs。它使用 HTTP POST 请求将文件直接发送到 Hub。这种方法的一个限制是它不能上传大于 5GB 的文件。如果你的文件大于 5GB，请按照下面详述的另外两种方法进行操作。
-
- `upload_file` 的使用方法如下：
+使用 `upload_file` 不需要在你的系统上安装 git 和 git-lfs。它使用 HTTP POST 请求将文件直接发送到 Hub。这种方法的一个限制是它不能上传大于 5GB 的文件。如果你的文件大于 5GB，请按照另外两种方法进行操作。 `upload_file` 的使用方法如下：
 ```py
 from huggingface_hub import upload_file
 
@@ -315,23 +311,22 @@ upload_file(
 
 以上的代码会把 `<path_to_file>` 位置的 `config.json` 文件上传到 `dummy-model` 仓库的根目录作为模型的 `config.json` 。其他可能有用的参数包括：
 
-- `token` ，如果你希望在这里指定身份令牌，而不是缓存中的身份令牌。
+- `token` ，如果你希望在这里使用特定的身份令牌，而不是缓存中的身份令牌。
 - `repo_type` ，如果你希望创建一个 `dataset` 或 `space` 而不是模型。需要将 `repo_type` 设置为 `"dataset"` 和 `"space"` 。
 
-### `Repository` 类 [[ `Repository` 类]]
+### `Repository` 类 [[ `Repository` 类]] `Repository` 类可以使用类似 git 的方式管理一个本地仓库。它解决了使用 git 可能遇到的大部分痛点，提供我们所需的所有功能。
 
- `Repository` 可以使用类似 git 的方式管理一个本地仓库。它抽象了使用 git 可能遇到的大部分痛点，提供我们所需的所有功能。
-
-使用这个类需要安装 git 和 git-lfs，所以请确保你已经安装了 git-lfs（如果没有安装，可以参见 [此处](https://git-lfs.github.com/) 的安装指南）并已经在操作系统里配置好了相关功能。
+使用这个类需要安装 git 和 git-lfs，所以请确保你已经安装了 git-lfs（如果没有安装，可以查看 [git-lfs 官网](https://git-lfs.github.com/) 的安装指南）并已经在操作系统里配置好了相关功能。
 
 为了开始使用我们刚刚创建的仓库，我们可以把远程仓库克隆到一个本地文件夹：
+
 ```py
 from huggingface_hub import Repository
 
 repo = Repository("<path_to_dummy_folder>", clone_from="<namespace>/dummy-model")
 ```
 
-以上代码会在我们当前的工作目录中创建 `<path_to_dummy_folder>` 文件夹。此文件夹里只有 `.gitattributes` 文件，这是通过 `create_repo` 创建仓库时生成的文件。
+以上代码会在我们当前的工作目录中创建 `<path_to_dummy_folder>` 文件夹。此文件夹里只有 `.gitattributes` 文件，这是使用 `create_repo` 创建仓库时生成的文件。
 
 从现在开始，我们可以利用许多传统的 git 方法：
 
@@ -343,9 +338,9 @@ repo.git_push()
 repo.git_tag()
 ```
 
-此外！我们建议你查看 [此处](https://github.com/huggingface/huggingface_hub/tree/main/src/huggingface_hub#advanced-programmatic-repository-management) 的 `Repository` 文档，了解一下所有可用方法。
+此外！我们建议你查看 [huggingface](https://github.com/huggingface/huggingface_hub/tree/main/src/huggingface_hub#advanced-programmatic-repository-management) 的 `Repository` 文档，了解一下所有可用方法。
 
-目前，我们有一个模型和一个 tokenizer ，我们希望将其推送到 hub。我们已经成功克隆了仓库，因此我们可以将文件保存到在该仓库的文件夹中。
+现在，我们有了一个模型和一个 tokenizer 我们希望将其推送到 hub。我们已经成功克隆了仓库，因此我们可以将文件保存到在该仓库的文件夹中。
 
 首先，我们通过拉取最新的更改，确保我们的本地克隆是最新的：
 
@@ -358,9 +353,7 @@ repo.git_pull()
 ```py
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")
-```
-
- `<path_to_dummy_folder>` 现在已经存储了模型和 tokenizer 文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
+``` `<path_to_dummy_folder>` 现在已经存储了模型和 tokenizer 文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
 
 ```py
 repo.git_add()
@@ -374,7 +367,7 @@ repo.git_push()
 
 这是上传文件的最基本方法：我们将直接使用 git 和 git-lfs 进行操作。在前面的方法大部分的难点都已经被封装好的库解决，但是接下来的方法有一些注意事项，所以我们会遵循一个更复杂的使用案例。
 
-使用这个方法需要安装 git 和 git-lfs，所以请确保你已经安装了 git-lfs（如果没有安装，可以参见 [此处](https://git-lfs.github.com/) 的安装指南）并已经在操作系统里配置好了相关功能。
+使用这个方法需要安装 git 和 git-lfs，所以请确保你已经安装了 git-lfs（如果没有安装，可以参见 [git-lfs 官网](https://git-lfs.github.com/) 的安装指南）并已经在操作系统里配置好了相关功能。
 
 首先，初始化 git-lfs：
 
@@ -393,7 +386,7 @@ Git LFS initialized.
 git clone https://huggingface.co/<namespace>/<your-model-id>
 ```
 
-我的用户名是 `lysandre` 我使用了模型名称 `dummy` ，所以对我来说，命令最终如下所示：
+我的用户名是 `lysandre` 我使用的模型的名称是 `dummy` ，所以对我来说，命令最终如下所示：
 
 ```
 git clone https://huggingface.co/lysandre/dummy
@@ -413,7 +406,7 @@ README.md
 
 较小的文件，如配置文件、词汇表文件，或者基本上任何几 MB 以下的文件，就像我们平时使用 git 一样。然而，更大的文件必须通过 git-lfs 注册才能推送到 huggingface.co。
 
-让我们回到 Python，生成一些我们希望提交到 dummy 仓库的模型和 tokenizer ：
+让我们回到 Python，生成一些我们希望提交到 dummy 仓库的模型和 tokenizer 
 
 {#if fw === 'pt'}
 ```py
@@ -424,7 +417,7 @@ checkpoint = "camembert-base"
 model = AutoModelForMaskedLM.from_pretrained(checkpoint)
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
-# 对模型进行一些操作，训练、微调...
+# 对模型进行一些操作,训练、微调...
 
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")
@@ -438,14 +431,14 @@ checkpoint = "camembert-base"
 model = TFAutoModelForMaskedLM.from_pretrained(checkpoint)
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
-# 对模型进行一些操作，训练、微调...
+# 对模型进行一些操作,训练、微调...
 
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")
 ```
 {/if}
 
-现在我们已经保存了模型和分词分析器，让我们再看一下 dummy 文件夹：
+现在我们已经保存了模型和 tokenizer 让我们再看一下 dummy 文件夹：
 
 ```bash
 ls
@@ -463,12 +456,12 @@ config.json  pytorch_model.bin  README.md  sentencepiece.bpe.model  special_toke
 config.json  README.md  sentencepiece.bpe.model  special_tokens_map.json  tf_model.h5  tokenizer_config.json  tokenizer.json
 ```
 
-如果你尝试查看文件大小（例如， `ls -lh` )，你应该会看到模型状态字典文件 (t5_model.h5) 唯一的异常的文件，超过了 400 MB。
+如果你尝试查看文件大小（例如， `ls -lh` ），你应该会看到模型状态字典文件 （t5_model.h5） 唯一的异常的文件，超过了 400 MB。
 
 {/if}
 
 <Tip>
-✏️ 当通过网页界面创建仓库时，*.gitattributes* 文件会自动将某些扩展名（如 *.bin* 和 *.h5*）的文件视为大文件，无需你进行任何设置 git-lfs 即可跟踪它们。
+✏️ 当通过网页界面创建仓库时， `.gitattributes` 文件会自动将某些扩展名（如 `.bin` 和 `.h5` ）的文件视为大文件，你无需对 git-lfs 进行任何设置即可跟踪它们。
 </Tip> 
 
 我们现在可以继续进行，就像我们使用传统 Git 仓库一样。我们可以使用以下命令将所有文件添加到 Git 的暂存环境中 `git add` 命令：
@@ -541,7 +534,7 @@ Objects not staged for commit:
 
 ```
 
-我们可以看到所有文件都使用 `Git` 作为处理程序，除了*pytorch_model.bin* 和 *sentencepiece.bpe.model* 它们的处理程序是 `LFS` 。
+我们可以看到所有文件都使用 `Git` 作为处理程序，除了 `pytorch_model.bin` 和 `sentencepiece.bpe.model` 它们的处理程序是 `LFS` 。
 
 {:else}
 ```bash
@@ -563,7 +556,7 @@ Objects not staged for commit:
 
 ```
 
-我们可以看到所有文件都使用 `Git` 作为处理程序，除了*t5_model.h5* ，它的处理程序是 `LFS` 。
+我们可以看到所有文件都使用 `Git` 作为处理程序，除了 `t5_model.h5` ，它的处理程序是 `LFS` 。
 
 {/if}
 

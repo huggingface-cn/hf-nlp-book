@@ -21,7 +21,7 @@
 		},
 		{
 			text: "所有与🤗 Transformers 库接口类似的模型。",
-			explain: "将模型上传到 Hugging Face Hub 时，没有设置接口要求。"
+			explain: "将模型上传到 Hugging Face Hub 时，没有对接口有限制。"
 		},
 		{
 			text: "没有限制。",
@@ -118,13 +118,13 @@
             correct: true
 		},
 		{
-			text: "模型",
-			explain: "正确！所有模型都有 `push_to_hub` 方法，使用它会将它们及其配置文件推送到给定的存储库。不过，还有其他的正确答案",
+			text: "Model 类",
+			explain: "正确！所有的 Model 类都有 `push_to_hub` 方法，使用它会将它们及其配置文件推送到给定的存储库。不过，还有其他的正确答案",
             correct: true
 		},
         {
 			text: "Trainer",
-			explain: "没错——Trainer 也实现了 push_to_hub 方法，并且使用它可以将模型、配置、 tokenizer 和模型卡片上传到指定的仓库。试试其他答案！",
+			explain: "没错 —— Trainer 也实现了 push_to_hub 方法，并且使用它可以将模型、配置、 tokenizer 和模型卡片上传到指定的仓库。试试其他答案！",
             correct: true
 		}
 	]}
@@ -143,13 +143,13 @@
             correct: true
 		},
 		{
-			text: "模型",
-			explain: "正确！所有模型都有 push_to_hub 方法，使用它会将它们及其配置文件推送到给定的存储库。不过，还有其他可以分享到hub。",
+			text: "Model 类",
+			explain: "正确！所有Model 类都有 push_to_hub 方法，使用它会将它们及其配置文件推送到给定的存储库。不过，还有其他可以分享到hub。",
             correct: true
 		},
 		{
 			text: "所有以上的对象都可以通过专用的回调方法共享到 hub",
-			explain: "正确——在训练期间， `PushToHubCallback` 会定期将所有这些对象发送到 hub。",
+			explain: "正确 —— 在训练期间， `PushToHubCallback` 会定期将所有这些对象发送到 hub。",
             correct: true
 		}
 	]}
@@ -200,22 +200,22 @@
 <Question
 	choices={[
 		{
-			text: "提交",
+			text: "提交（commit）",
 			explain: "正确， `git_commit()` 方法就是为此而存在的。",
             correct: true
 		},
 		{
-			text: "拉取",
+			text: "拉取（pull）",
 			explain: "这就是 `git_pull()` 方法的功能。",
             correct: true
 		},
 		{
-			text: "推送",
+			text: "推送（push）",
 			explain: "方法 `git_push()` 可以做到这一点。",
             correct: true
 		},
 		{
-			text: "合并",
+			text: "合并（merge）",
 			explain: "不，这个操作在这个 API 中是无法实现的。"
 		}
 	]}

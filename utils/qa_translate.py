@@ -28,18 +28,18 @@ def write_to_markdown_file(filepath, data):
     with open(filepath, 'w', encoding='utf-8') as file:
         for i, question_data in enumerate(data, 1):
             # Write question and choices to the question section
-            file.write(f'### {question_data["question"]}\n')
+            file.write(f'#### {question_data["question"]}\n')
             file.write(f'{question_data["content"]}\n')
             for j, choice in enumerate(question_data["choices"], 1):
                 file.write(f'{j}. {choice["text"]}\n')
             file.write('\n')
 
         # Write a separator between question and answer sections
-        file.write('---\n\n')
+        file.write('### 解析\n\n')
 
         for i, question_data in enumerate(data, 1):
             # Write question and explanations to the answer section
-            file.write(f'### {question_data["question"]}\n')
+            file.write(f'#### {question_data["question"]}\n')
             file.write(f'{question_data["content"]}\n')
             for j, choice in enumerate(question_data["choices"], 1):
                 if choice["correct"] == True:
@@ -48,8 +48,8 @@ def write_to_markdown_file(filepath, data):
                 file.write(f'{j}. {choice["text"]}    \n')
                 file.write(f'解析: {choice["explain"]}\n')
             file.write('\n')
-input_file='Course\publish\chapter2/8.mdx'
-output_file='Course\publish\chapter2/8_fix.mdx'
+input_file='Course\publish\chapter4/6.mdx'
+output_file='Course\publish\chapter4/6_fix.mdx'
 # markdown = open(input_file, 'r', encoding='utf-8').read()
 data = parse_mdx_file(input_file)
 write_to_markdown_file(output_file, data)
@@ -61,4 +61,4 @@ text=text.replace('\n\n\n','\n\n').replace('\n\n\n','\n\n')
 # transformed = transform_mdx(input_file)
 
 with open(output_file, 'w',encoding='utf-8') as f:
-    f.write(text)
+    f.write("### 章末测试 \n\n"+text)

@@ -1,0 +1,171 @@
+####  1.往Hub 上传模型有什么限制？
+
+1. 模型需要来自Transformers 库。
+2. 所有与Transformers 库接口类似的模型。
+3. 没有限制。
+4. 在某种程度上与 NLP 相关的模型。
+
+###  2．如何管理 Hub 上的模型？
+
+1. 通过 GCP 帐户。
+2. 通过点对点分发。
+3. 通过 git 和 git-lfs。
+
+###  3．你能使用 Hugging Face Hub 网页接口做什么？
+
+1. Fork 现有的存储库。
+2. 创建一个新的模型库。
+3. 管理和编辑文件。
+4. 上传文件。
+5. 看看不同版本的差异。
+
+###  4．什么是模型卡片？
+
+1. 模型的粗略描述，因此不如模型和 tokenizer 文件重要。
+2. 一种确保可复现性、可重用性和公平性的方法。
+3. 一个 Python 文件，可以运行它来检索有关模型的信息。
+
+###  5．哪些Transformers 库的对象可以直接通过 `push_to_hub()` 分享到 Hub？
+
+1.  tokenizer 
+2. 模型的 Config 对象
+3. Model 类
+4. Trainer(只在pytorch中的类，tensorflow中没有)
+
+###  6．当使用 `push_to_hub()` 方法或 CLI 工具时，第一步是什么？
+
+1. 在浏览器中登录网站。
+2. 在终端中运行'huggingface-cli login'。
+3. 在 Notebook 中运行'notebook_login ()'。
+
+###  7．你正在使用一个模型和一个 tokenizer ——如何将它们上传到 Hub？
+
+1. 通过直接在模型和 tokenizer 上调用 push_to_hub 方法。
+2. 在 Python 运行时中，使用 `huggingface_hub` 中的方法进行封装。
+3. 将它们保存到磁盘并调用 `transformers-cli upload-model` 
+
+###  8．你可以使用'Repository'类执行哪些 git 操作？
+
+1. 提交（commit）
+2. 拉取（pull）
+3. 推送（push）
+4. 合并（merge）
+
+---
+
+###  1.往Hub 上传模型有什么限制？
+
+正确选项: 3. 没有限制。
+
+1. 模型需要来自Transformers 库。    
+解析: 虽然 Hugging Face Hub 支持 Transformers 库中的模型，但是其他的库的模型也可以上传到 Hub！
+2. 所有与Transformers 库接口类似的模型。    
+解析: 将模型上传到 Hugging Face Hub 时，没有对接口有限制。
+3. 没有限制。    
+解析: 对！在将模型上传到 Hub 时没有限制。
+4. 在某种程度上与 NLP 相关的模型。    
+解析: 对模型应用的领域没有要求！
+
+###  2．如何管理 Hub 上的模型？
+
+正确选项: 3. 通过 git 和 git-lfs。
+
+1. 通过 GCP 帐户。    
+解析: 不对！
+2. 通过点对点分发。    
+解析: 不对！
+3. 通过 git 和 git-lfs。    
+解析: 正确！Hub 上的模型就是简单的 Git 仓库，并使用 `git-lfs` 处理大型文件。
+
+###  3．你能使用 Hugging Face Hub 网页接口做什么？
+
+正确选项: 2. 创建一个新的模型库。
+
+正确选项: 3. 管理和编辑文件。
+
+正确选项: 4. 上传文件。
+
+正确选项: 5. 看看不同版本的差异。
+
+1. Fork 现有的存储库。    
+解析: 在 Hugging Face Hub 上无法 Fork 存储库。
+2. 创建一个新的模型库。    
+解析: 没错！不过，但你能做的不止这些。
+3. 管理和编辑文件。    
+解析: 正确！不过，但这不是唯一正确的答案。
+4. 上传文件。    
+解析: 对！但还有更多可以做的。
+5. 看看不同版本的差异。    
+解析: 没错！不过，这并不是你能做的全部。
+
+###  4．什么是模型卡片？
+
+正确选项: 2. 一种确保可复现性、可重用性和公平性的方法。
+
+1. 模型的粗略描述，因此不如模型和 tokenizer 文件重要。    
+解析: 这确实是对模型的描述，但它是一个重要的部分：如果它不完整或缺失，模型的实用性将大幅降低。
+2. 一种确保可复现性、可重用性和公平性的方法。    
+解析: 正确！在模型卡片中共享正确的信息将帮助用户利用你的模型，并了解其局限性和偏见。
+3. 一个 Python 文件，可以运行它来检索有关模型的信息。    
+解析: 模型卡片是简单的 Markdown 文件。
+
+###  5．哪些Transformers 库的对象可以直接通过 `push_to_hub()` 分享到 Hub？
+
+正确选项: 1.  tokenizer 
+
+正确选项: 2. 模型的 Config 对象
+
+正确选项: 3. Model 类
+
+正确选项: 4. Trainer(只在pytorch中的类，tensorflow中没有)
+
+1.  tokenizer     
+解析: 正确！所有 tokenizer 都有 `push_to_hub` 方法，使用该方法将把 tokenizer 的全部文件（词汇表、 tokenizer 的架构等）推送到给定的存储库。不过，这不是唯一正确的答案！
+2. 模型的 Config 对象    
+解析: 对！所有模型的 Config 对象都有 push_to_hub 方法，使用这个方法可以将它们推送到给定的存储库。你还有其他的答案吗？
+3. Model 类    
+解析: 正确！所有的 Model 类都有 `push_to_hub` 方法，使用它会将它们及其配置文件推送到给定的存储库。不过，还有其他的正确答案
+4. Trainer(只在pytorch中的类，tensorflow中没有)    
+解析: 没错 —— Trainer 也实现了 push_to_hub 方法，并且使用它可以将模型、配置、 tokenizer 和模型卡片上传到指定的仓库。试试其他答案！
+
+###  6．当使用 `push_to_hub()` 方法或 CLI 工具时，第一步是什么？
+
+正确选项: 2. 在终端中运行'huggingface-cli login'。
+
+正确选项: 3. 在 Notebook 中运行'notebook_login ()'。
+
+1. 在浏览器中登录网站。    
+解析: 在浏览器中登录网站这对你的本地上使用 `push_to_hub()` 方法或 CLI 工具没有帮助。
+2. 在终端中运行'huggingface-cli login'。    
+解析: 正确——这将下载并缓存你的个人令牌。
+3. 在 Notebook 中运行'notebook_login ()'。    
+解析: 正确——这将显示一个小部件，让你进行身份验证。
+
+###  7．你正在使用一个模型和一个 tokenizer ——如何将它们上传到 Hub？
+
+正确选项: 1. 通过直接在模型和 tokenizer 上调用 push_to_hub 方法。
+
+1. 通过直接在模型和 tokenizer 上调用 push_to_hub 方法。    
+解析: 正确！
+2. 在 Python 运行时中，使用 `huggingface_hub` 中的方法进行封装。    
+解析: 模型和 tokenizer 已经使用 `huggingface_hub` 封装过了：不需要额外的封装！
+3. 将它们保存到磁盘并调用 `transformers-cli upload-model`     
+解析: 命令 `upload-model` 不存在。
+
+###  8．你可以使用'Repository'类执行哪些 git 操作？
+
+正确选项: 1. 提交（commit）
+
+正确选项: 2. 拉取（pull）
+
+正确选项: 3. 推送（push）
+
+1. 提交（commit）    
+解析: 正确， `git_commit()` 方法就是为此而存在的。
+2. 拉取（pull）    
+解析: 这就是 `git_pull()` 方法的功能。
+3. 推送（push）    
+解析: 方法 `git_push()` 可以做到这一点。
+4. 合并（merge）    
+解析: 不，这个操作在这个 API 中是无法实现的。
+

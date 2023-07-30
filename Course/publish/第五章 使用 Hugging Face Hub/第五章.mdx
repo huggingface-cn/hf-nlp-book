@@ -1,4 +1,91 @@
-## 共享预训练模型 
+# 第五章 使用 Hugging Face Hub
+
+[Hugging Face中心](https://huggingface.co/)(https://huggingface.co/) 是一个集发现、使用及贡献最新先进模型与数据集为一体的中心平台。这里汇聚了超过 10,000 个公开可用的各种领域的模型。我们将在本章节专注探讨这些模型，并在第六章深入讨论数据集。
+
+Hub 中的模型不仅限于Transformers 或者是自然语言处理。这里有许多模型，比如用于自然语言处理的 [Flair](https://github.com/flairNLP/flair)(https://github.com/flairNLP/flair) 和 [AllenNLP](https://github.com/allenai/allennlp)(https://github.com/allenai/allennlp) 模型，用于音频检测的 [Asteroid](https://github.com/asteroid-team/asteroid)(https://github.com/asteroid-team/asteroid) 和 [pyannote](https://github.com/pyannote/pyannote-audio)(https://github.com/pyannote/pyannote-audio) 模型，以及用于视觉的 [timm](https://github.com/rwightman/pytorch-image-models)(https://github.com/rwightman/pytorch-image-models) 模型等，这些例子只是 Hub 中模型的冰山一角，更多的模型可以由你去探索。
+
+这些模型中的每一个都以 Git 仓库的形式托管，方便进行版本控制和复现。在 Hub 上共享模型意味着向社区开放，让任何希望使用模型的人都可以轻松访问，从而使他们免于训练模型之苦，并且简化了模型分享和使用。
+
+此外，在 Hub 上分享一个模型会自动为该模型部署一个推理 API。社区中的任何人都可以直接在模型页面上使用各自的输入和相应的小工具来进行测试。
+
+最妙的是，在 Hub 上分享和使用任何公共模型都是完全免费的！如果你希望只把模型分享给特定的人，也有 [付费计划](https://huggingface.co/pricing)(https://huggingface.co/pricing) 。
+
+
+如果你想跟进实现这一部分内容，你需要有一个 Huggingface.co 帐户，因为这一节我们将在 Hugging Face Hub 上创建和管理存储库： [创建一个账户](https://huggingface.co/join)(https://huggingface.co/join) 
+
+## 5.1 使用预训练模型 
+
+模型中心使选择合适的模型变得简单，只需几行代码即可在任何下游库中使用它。让我们来看看如何使用这些模型，以及如何将模型贡献到社区。
+
+假设我们正在寻找一种可以执行掩码填充（mask filling 又称完形填空）的 French-based（法语）模型。
+
+![选择 Camembert 模型](./assets/camembert.png "Selecting the Camembert model.")
+
+我们选择 `camembert-base` Checkpoint 来尝试一下。我们需要做的仅仅是输入 `camembert-base` 标签！正如你在前几章中学习的，我们可以使用 `pipeline()` 功能：
+
+```python
+from transformers import pipeline
+
+camembert_fill_mask = pipeline("fill-mask", model="camembert-base")
+results = camembert_fill_mask("Le camembert est <mask> :)")
+```
+
+```python
+[
+  {'sequence': 'Le camembert est délicieux :)', 'score': 0.49091005325317383, 'token': 7200, 'token_str': 'délicieux'}, 
+  {'sequence': 'Le camembert est excellent :)', 'score': 0.1055697426199913, 'token': 2183, 'token_str': 'excellent'}, 
+  {'sequence': 'Le camembert est succulent :)', 'score': 0.03453313186764717, 'token': 26202, 'token_str': 'succulent'}, 
+  {'sequence': 'Le camembert est meilleur :)', 'score': 0.0330314114689827, 'token': 528, 'token_str': 'meilleur'}, 
+  {'sequence': 'Le camembert est parfait :)', 'score': 0.03007650189101696, 'token': 1654, 'token_str': 'parfait'}
+]
+```
+
+如你所见，在管道中加载模型非常简单。你唯一需要注意的是所选 Checkpoint 是否适合它将用于的任务。例如，这里我们正在将 `camembert-base` Checkpoint 加载在 `fill-mask` 管道，这完全没问题。但是如果我们在 `text-classification` 管道中加载该 Checkpoint 结果没有任何意义，因为 `camembert-base` 不适合这个任务！我们建议使用 Hugging Face Hub 中的任务选择器来选择合适的 Checkpoint 
+
+![Web 界面上的任务类型选择器](./assets/tasks.png "The task selector on the web interface.")
+
+你还可以直接使用模型架构实例化 Checkpoint 
+
+{#if fw === 'pt'}
+```python
+from transformers import CamembertTokenizer, CamembertForMaskedLM
+
+tokenizer = CamembertTokenizer.from_pretrained("camembert-base")
+model = CamembertForMaskedLM.from_pretrained("camembert-base")
+```
+
+然而，我们建议使用 [`Auto*` 类](https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes)(https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes) ，因为 `Auto*` 类在设计时不依赖模型架构。前面的代码示例将只能在 CamemBERT 架构中加载可用的 Checkpoint 但使用 `Auto*` 类使切换不同的 Checkpoint 变得简单：
+
+```python
+from transformers import AutoTokenizer, AutoModelForMaskedLM
+
+tokenizer = AutoTokenizer.from_pretrained("camembert-base")
+model = AutoModelForMaskedLM.from_pretrained("camembert-base")
+```
+{:else}
+```python
+from transformers import CamembertTokenizer, TFCamembertForMaskedLM
+
+tokenizer = CamembertTokenizer.from_pretrained("camembert-base")
+model = TFCamembertForMaskedLM.from_pretrained("camembert-base")
+```
+
+然而，我们建议使用 [`TFAuto*` 类](https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes)(https://huggingface.co/transformers/model_doc/auto.html?highlight=auto#auto-classes) ，因为 `TFAuto*` 类在设计时不依赖模型架构。前面的代码示例将只能在 CamemBERT 架构中加载可用的 Checkpoint 但使用 `TFAuto*` 类使切换不同的 Checkpoint 变得简单：
+
+```python
+from transformers import AutoTokenizer, TFAutoModelForMaskedLM
+
+tokenizer = AutoTokenizer.from_pretrained("camembert-base")
+model = TFAutoModelForMaskedLM.from_pretrained("camembert-base")
+```
+{/if}
+
+<div custom-style="Tip-green">
+
+使用预训练模型时，一定要检查它是如何训练的、在哪些数据集上训练的、它的局限性和偏见。所有这些信息都应在其模型卡片上有所展示。
+</div>
+
+## 5.2 共享预训练模型 
 
 接下来，我们将探索把预训练模型分享到 Hub 最便捷的方法。我们将一同研究一些工具和功能，它们可以简化直接在中心上分享和更新模型的流程。
 
@@ -302,7 +389,9 @@ repo.git_pull()
 ```python
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")
-``` `<path_to_dummy_folder>` 现在已经存储了模型和 tokenizer 文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
+```
+
+`<path_to_dummy_folder>` 现在已经存储了模型和 tokenizer 文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
 
 ```python
 repo.git_add()
@@ -465,6 +554,7 @@ git lfs status
 ```
 
 {#if fw === 'pt'}
+
 ```python
 On branch main
 Objects to be pushed to origin/main:
@@ -485,6 +575,7 @@ Objects not staged for commit:
 我们可以看到所有文件都使用 `Git` 作为处理程序，除了 `pytorch_model.bin` 和 `sentencepiece.bpe.model` 它们的处理程序是 `LFS` 。
 
 {:else}
+
 ```python
 On branch main
 Objects to be pushed to origin/main:
@@ -574,3 +665,264 @@ To https://huggingface.co/lysandre/dummy
 
 ![最近提交引入的差异](./assets/diffstf.png "The diff introduced by the recent commit.")
 {/if}
+
+## 5.3 构建模型卡片 
+
+模型卡片是一个配置文件，可以说与模型存储库中的模型和 tokenizer 文件一样重要。它包含了模型的核心定义，确保了社区成员可以复现模型的结果，并提供一个其他成员可以在这个模型基础上构建他们的组件的平台。
+
+记录训练和评估过程并提供有关使用的数据以及已完成的预处理和后续处理的足够信息，有助于其他人了解对模型的能力——模型存的局限性、偏见以及模型有效或无效的使用场景。
+
+因此，创建一个清晰定义你的模型的模型卡片是非常重要的一步。在这里，我们提供了一些可以帮助你创建模型卡片的建议。创建模型卡片是通过你之前看到的 README.md 文件完成的，这是一个 Markdown 文件。
+
+“模型卡片”的概念源于谷歌的一个研究方向，Margaret Mitchell 等人在论文 [“模型卡片用于模型报告”](https://arxiv.org/abs/1810.03993)(https://arxiv.org/abs/1810.03993) 中首次提出，这里许多内容均基于该论文，我们建议你查看这篇论文以了解为什么模型卡片在实现可复现性、可重用性和公平性的中如此重要。
+
+模型卡通常以非常简短的概述开始，说明模型的用途，然后是模型卡片需要的其他信息：
+
+- 模型描述
+- 预期用途和限制
+- 如何使用
+- 局限性和偏见
+- 训练数据
+- 训练程序
+- 评价结果
+
+让我们来看看每个部分应该包含什么。
+
+#### 模型描述：
+
+提供了有关模型的基本详细信息。这包括架构、版本、如果它是在论文中介绍的，是否有原始的实现可用？作者以及有关模型的一般信息、任何版权都应归于此处。这一部分还可以提及有关训练程序、参数和重要免责声明的一般信息。
+
+#### 预期用途和限制：
+
+在此描述模型可以适用的例子，包括可以应用它的语言、领域。模型卡的这一部分还可以记录已知超出模型范围的区域，或者可能表现不佳的区域。
+
+#### 使用方法：
+
+此部分应包括一些有关如何使用模型的示例。这可以展示使用 `pipeline()` 函数、模型和 tokenizer 的使用以及其他任何你认为可能有帮助的代码。
+
+#### 训练数据：
+
+这部分应该指出模型是在哪个数据集上训练的。也欢迎对数据集进行简要描述。
+
+#### 训练过程：
+
+此部分中，你应该描述从再现性角度来看有用的训练的所有相关方面。这包括对数据进行的任何预处理和后处理，以及模型训练的批量数、批量大小、学习率等细节。
+
+#### 变量和指标：
+
+在这里，你应该描述你用于评估的指标，以及你测量的不同因素。提及使用了哪些指标、在哪个数据集上以及哪个数据集部分，可以轻松地将你的模型的性能与其他模型的性能进行比较。
+
+#### 评估结果：
+
+这些应该提前在前面的部分告知，例如预期的使用效果和示例。最后，提供模型在评估数据集上的表现的指示。如果模型使用决策阈值，要么提供评估中使用的决策阈值，要么提供在不同阈值下针对预期用途进行评估的详细信息。
+
+### 示例 
+
+请查看以下几个精心制作的模型卡的示例：
+
+* [bert-base-cased](https://huggingface.co/bert-base-cased)(https://huggingface.co/bert-base-cased) 
+* [gpt2](https://huggingface.co/gpt2)(https://huggingface.co/gpt2) 
+* [distilbert](https://huggingface.co/distilbert-base-uncased)(https://huggingface.co/distilbert-base-uncased) 
+
+更多来自于不同组织和公司的示例可以在 [模型卡片示例](https://github.com/huggingface/model_card/blob/master/examples.md)(https://github.com/huggingface/model_card/blob/master/examples.md) 中查阅．
+
+### 注意事项 
+
+发布模型时，并非必须有模型卡片，制作一个模型时不需要包含上述所有部分。但是，模型的文档会使未来的用户受益，因此我们建议你尽你所知和能力所及地尽可能填写尽可能多的部分。
+
+### 模型卡片元数据 
+
+如果你对 Hugging Face Hub 进行了一些探索，你应该已经看到某些模型属于某些类别：你可以按任务、语言、库等对其进行筛选。模型所属的类别来自于你在模型卡片头部中添加的元数据。
+
+例如，如果你看一下 [`camembert-base` 模型卡片](https://huggingface.co/camembert-base/blob/main/README.md)(https://huggingface.co/camembert-base/blob/main/README.md) ，你应该在模型卡头部中看到以下几行：
+
+```python
+---
+language: fr
+license: mit
+datasets:
+- oscar
+---
+```
+
+该元数据由 Hugging Face Hub 解析，然后将这个模型识别为法语模型，拥有 MIT 许可证，在 Oscar 数据集上训练。
+
+可以在 [全部模型卡片的规格](https://raw.githubusercontent.com/huggingface/huggingface_hub/main/modelcard.md)(https://raw.githubusercontent.com/huggingface/huggingface_hub/main/modelcard.md) 查阅支持的语言、许可证、标签、数据集、指标以及模型在训练时获得的评估结果。
+
+## 5.4 章末总结及测试
+
+你现在应该能够针对文本分类问题（单个或成对句子）对预训练模型进行微调，并将结果上传到模型中心。为确保你掌握了第一部分的内容，你应该针对你感兴趣的想法进行尝试（不一定是英语）！一旦你完成，你可以在 [Hugging Face 社区](https://discuss.huggingface.co/)(https://discuss.huggingface.co/) 的 [这个话题](https://discuss.huggingface.co/t/share-your-projects/6803)(https://discuss.huggingface.co/t/share-your-projects/6803) 分享你的项目。
+
+我们迫不及待地想看到你会用这些内容做出什么！
+
+### 章末小测试
+
+让我们测试一下你在本章所学的知识！
+
+####  1.往Hub 上传模型有什么限制？
+
+1. 模型需要来自Transformers 库。
+2. 所有与Transformers 库接口类似的模型。
+3. 没有限制。
+4. 在某种程度上与 NLP 相关的模型。
+
+####  2．如何管理 Hub 上的模型？
+
+1. 通过 GCP 帐户。
+2. 通过点对点分发。
+3. 通过 git 和 git-lfs。
+
+####  3．你能使用 Hugging Face Hub 网页接口做什么？
+
+1. Fork 现有的存储库。
+2. 创建一个新的模型库。
+3. 管理和编辑文件。
+4. 上传文件。
+5. 看看不同版本的差异。
+
+####  4．什么是模型卡片？
+
+1. 模型的粗略描述，因此不如模型和 tokenizer 文件重要。
+2. 一种确保可复现性、可重用性和公平性的方法。
+3. 一个 Python 文件，可以运行它来检索有关模型的信息。
+
+####  5．哪些Transformers 库的对象可以直接通过 `push_to_hub()` 分享到 Hub？
+
+1.  tokenizer 
+2. 模型的 Config 对象
+3. Model 类
+4. Trainer(只在pytorch中的类，tensorflow中没有)
+
+####  6．当使用 `push_to_hub()` 方法或 CLI 工具时，第一步是什么？
+
+1. 在浏览器中登录网站。
+2. 在终端中运行'huggingface-cli login'。
+3. 在 Notebook 中运行'notebook_login ()'。
+
+####  7．你正在使用一个模型和一个 tokenizer ——如何将它们上传到 Hub？
+
+1. 通过直接在模型和 tokenizer 上调用 push_to_hub 方法。
+2. 在 Python 运行时中，使用 `huggingface_hub` 中的方法进行封装。
+3. 将它们保存到磁盘并调用 `transformers-cli upload-model` 
+
+####  8．你可以使用'Repository'类执行哪些 git 操作？
+
+1. 提交（commit）
+2. 拉取（pull）
+3. 推送（push）
+4. 合并（merge）
+
+### 解析
+
+####  1.往Hub 上传模型有什么限制？
+
+正确选项: 3. 没有限制。
+
+1. 模型需要来自Transformers 库。    
+解析: 虽然 Hugging Face Hub 支持 Transformers 库中的模型，但是其他的库的模型也可以上传到 Hub！
+2. 所有与Transformers 库接口类似的模型。    
+解析: 将模型上传到 Hugging Face Hub 时，没有对接口有限制。
+3. 没有限制。    
+解析: 对！在将模型上传到 Hub 时没有限制。
+4. 在某种程度上与 NLP 相关的模型。    
+解析: 对模型应用的领域没有要求！
+
+####  2．如何管理 Hub 上的模型？
+
+正确选项: 3. 通过 git 和 git-lfs。
+
+3. 通过 git 和 git-lfs。    
+解析: 正确！Hub 上的模型就是简单的 Git 仓库，并使用 `git-lfs` 处理大型文件。
+
+####  3．你能使用 Hugging Face Hub 网页接口做什么？
+
+正确选项: 2. 创建一个新的模型库。
+
+正确选项: 3. 管理和编辑文件。
+
+正确选项: 4. 上传文件。
+
+正确选项: 5. 看看不同版本的差异。
+
+1. Fork 现有的存储库。    
+解析: 在 Hugging Face Hub 上无法 Fork 存储库。
+2. 创建一个新的模型库。    
+解析: 没错！不过，但你能做的不止这些。
+3. 管理和编辑文件。    
+解析: 正确！不过，但这不是唯一正确的答案。
+4. 上传文件。    
+解析: 对！但还有更多可以做的。
+5. 看看不同版本的差异。    
+解析: 没错！不过，这并不是你能做的全部。
+
+####  4．什么是模型卡片？
+
+正确选项: 2. 一种确保可复现性、可重用性和公平性的方法。
+
+1. 模型的粗略描述，因此不如模型和 tokenizer 文件重要。    
+解析: 这确实是对模型的描述，但它是一个重要的部分：如果它不完整或缺失，模型的实用性将大幅降低。
+2. 一种确保可复现性、可重用性和公平性的方法。    
+解析: 正确！在模型卡片中共享正确的信息将帮助用户利用你的模型，并了解其局限性和偏见。
+3. 一个 Python 文件，可以运行它来检索有关模型的信息。    
+解析: 模型卡片是简单的 Markdown 文件。
+
+####  5．哪些Transformers 库的对象可以直接通过 `push_to_hub()` 分享到 Hub？
+
+正确选项: 1.  tokenizer 
+
+正确选项: 2. 模型的 Config 对象
+
+正确选项: 3. Model 类
+
+正确选项: 4. Trainer(只在pytorch中的类，tensorflow中没有)
+
+1.  tokenizer     
+解析: 正确！所有 tokenizer 都有 `push_to_hub` 方法，使用该方法将把 tokenizer 的全部文件（词汇表、 tokenizer 的架构等）推送到给定的存储库。不过，这不是唯一正确的答案！
+2. 模型的 Config 对象    
+解析: 对！所有模型的 Config 对象都有 push_to_hub 方法，使用这个方法可以将它们推送到给定的存储库。你还有其他的答案吗？
+3. Model 类    
+解析: 正确！所有的 Model 类都有 `push_to_hub` 方法，使用它会将它们及其配置文件推送到给定的存储库。不过，还有其他的正确答案
+4. Trainer(只在pytorch中的类，tensorflow中没有)    
+解析: 没错 —— Trainer 也实现了 push_to_hub 方法，并且使用它可以将模型、配置、 tokenizer 和模型卡片上传到指定的仓库。试试其他答案！
+
+####  6．当使用 `push_to_hub()` 方法或 CLI 工具时，第一步是什么？
+
+正确选项: 2. 在终端中运行'huggingface-cli login'。
+
+正确选项: 3. 在 Notebook 中运行'notebook_login ()'。
+
+1. 在浏览器中登录网站。    
+解析: 在浏览器中登录网站这对你的本地上使用 `push_to_hub()` 方法或 CLI 工具没有帮助。
+2. 在终端中运行'huggingface-cli login'。    
+解析: 正确——这将下载并缓存你的个人令牌。
+3. 在 Notebook 中运行'notebook_login ()'。    
+解析: 正确——这将显示一个小部件，让你进行身份验证。
+
+####  7．你正在使用一个模型和一个 tokenizer ——如何将它们上传到 Hub？
+
+正确选项: 1. 通过直接在模型和 tokenizer 上调用 push_to_hub 方法。
+
+1. 通过直接在模型和 tokenizer 上调用 push_to_hub 方法。    
+解析: 正确！
+2. 在 Python 运行时中，使用 `huggingface_hub` 中的方法进行封装。    
+解析: 模型和 tokenizer 已经使用 `huggingface_hub` 封装过了：不需要额外的封装！
+3. 将它们保存到磁盘并调用 `transformers-cli upload-model`     
+解析: 命令 `upload-model` 不存在。
+
+####  8．你可以使用'Repository'类执行哪些 git 操作？
+
+正确选项: 1. 提交（commit）
+
+正确选项: 2. 拉取（pull）
+
+正确选项: 3. 推送（push）
+
+1. 提交（commit）    
+解析: 正确， `git_commit()` 方法就是为此而存在的。
+2. 拉取（pull）    
+解析: 这就是 `git_pull()` 方法的功能。
+3. 推送（push）    
+解析: 方法 `git_push()` 可以做到这一点。
+4. 合并（merge）    
+解析: 不，这个操作在这个 API 中是无法实现的。
+
