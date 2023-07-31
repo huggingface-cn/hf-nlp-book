@@ -11,7 +11,7 @@
 
 <Youtube id="DQ-CpJn6Rc4"/>
 
-我们为这一节准备了一个 [模板模型库](https://huggingface.co/lewtun/distilbert-base-uncased-finetuned-squad-d5716d28), 如果你想运行本章中的代码, 你首先需要将模型复制到你的 [Hugging Face Hub](https://huggingface.co) 账号。为此, 首先通过在 Jupyter 笔记本中运行以下任一命令来登录:
+我们为这一节准备了一个 [模板模型库](https://huggingface.co/lewtun/distilbert-base-uncased-finetuned-squad-d5716d28), 如果你想运行本章中的代码, 你首先需要将模型复制到你的 [Hugging Face Hub](https://huggingface.co) 账号。为此, 首先通过在 Jupyter Notebook 中运行以下任一命令来登录:
 
 ```python
 from huggingface_hub import notebook_login
@@ -77,13 +77,13 @@ OSError: Can't load config for 'lewtun/distillbert-base-uncased-finetuned-squad-
 """
 ```
 
-哦不对, 好像出了什么问题! 如果你是编程新手, 这些类型的错误一开始看起来有点神秘 (甚至是一个 `OSError`?!)。这里显示的错误只是一个更大的错误报告的最后一部分, 称为 _Python traceback_ (又名堆栈跟踪)。例如, 如果你在 Google Colab 上运行此代码, 你应该会看到类似于以下屏幕截图的内容:
+哦不对, 好像出了什么问题! 如果你是编程新手, 这些类型的错误一开始看起来有点神秘 (甚至是一个 `OSError`?!)。这里显示的错误只是一个更大的错误报告的最后一部分, 称为 `Python traceback` (又名堆栈跟踪)。例如, 如果你在 Google Colab 上运行此代码, 你应该会看到类似于以下屏幕截图的内容:
 
 <div class="flex justify-center">
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/traceback.png" alt="A Python traceback." width="100%"/>
 </div>
 
-这些报告中包含很多信息, 所以让我们一起来看看关键部分。首先要注意的是, 应该从 _从底部到顶部_ 读取回溯。如果你习惯于从上到下阅读英文文本, 这可能听起来很奇怪,但它反映了这样一个事实,即回溯显示了在下载模型和标记器时 `管道` 进行的函数调用序列。(查看 [第二章](/course/chapter2) 了解有关 `pipeline` 如何在后台工作的更多详细信息。)
+这些报告中包含很多信息, 所以让我们一起来看看关键部分。首先要注意的是, 应该从 `从底部到顶部` 读取回溯。如果你习惯于从上到下阅读英文文本, 这可能听起来很奇怪,但它反映了这样一个事实,即回溯显示了在下载模型和标记器时 `管道` 进行的函数调用序列。(查看 [第二章](/course/chapter2) 了解有关 `pipeline` 如何在后台工作的更多详细信息。)
 
 <Tip>
 
@@ -109,7 +109,7 @@ Make sure that:
 
 </Tip>
 
-第一个建议是要求我们检查模型ID是否真的正确, 所以首先要做的就是复制标识符并将其粘贴到Hub的搜索栏中:
+第一个建议是要求我们检查模型ID是否真的正确, 所以首先要做的就是复制标签并将其粘贴到Hub的搜索栏中:
 
 <div class="flex justify-center">
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/wrong-model-id.png" alt="The wrong model name." width="100%"/>
@@ -200,9 +200,9 @@ reader(question=question, context=context)
 
 哇哦, 成功了!让我们回顾一下你刚刚学到的东西:
 
-- Python 中的错误消息称为 _tracebacks_ , 并从下到上阅读。错误消息的最后一行通常包含定位问题根源所需的信息。
-- 如果最后一行没有包含足够的信息, 请按照您的方式进行回溯, 看看您是否可以确定源代码中发生错误的位置。
-- 如果没有任何错误消息可以帮助您调试问题, 请尝试在线搜索类似问题的解决方案。
+- Python 中的错误消息称为 `tracebacks`, 并从下到上阅读。错误消息的最后一行通常包含定位问题根源所需的信息。
+- 如果最后一行没有包含足够的信息, 请按照你的方式进行回溯, 看看你是否可以确定源代码中发生错误的位置。
+- 如果没有任何错误消息可以帮助你调试问题, 请尝试在线搜索类似问题的解决方案。
 - `huggingface_hub` 
 // 🤗 Hub?
 库提供了一套工具, 你可以使用这些工具与 Hub 上的存储库进行交互和调试。
@@ -211,7 +211,7 @@ reader(question=question, context=context)
 
 ## 调试模型的前向传递 [[调试模型的前向传递]]
 
-尽管 `pipeline` 对于大多数需要快速生成预测的应用程序来说非常有用, 有时您需要访问模型的 logits (例如, 如果您有一些想要应用的自定义后处理)。为了看看在这种情况下会出现什么问题, 让我们首先从 `pipeline` 中获取模型和标记器:
+尽管 `pipeline` 对于大多数需要快速生成预测的应用程序来说非常有用, 有时你需要访问模型的 logits (例如, 如果你有一些想要应用的自定义后处理)。为了看看在这种情况下会出现什么问题, 让我们首先从 `pipeline` 中获取模型和标记器:
 
 ```python
 tokenizer = reader.tokenizer
@@ -288,7 +288,7 @@ AttributeError: 'list' object has no attribute 'size'
 """
 ```
 
-噢, 看起来我们的代码中有一个错误!但我们不怕一点调试。您可以在笔记本中使用 Python 调试器:
+噢, 看起来我们的代码中有一个错误!但我们不怕一点调试。你可以在 Notebook 中使用 Python 调试器:
 
 <Youtube id="rSPyvPw0p9k"/>
 
@@ -316,7 +316,7 @@ type(inputs["input_ids"])
 list
 ```
 
-是的, 这肯定是一个 Python `list`。那么出了什么问题呢? 回忆 [第二章](/course/chapter2) 🤗 Transformers 中的 `AutoModelForXxx` 类在 _tensors_ 上运行(PyTorch或者or TensorFlow), 一个常见的操作是使用 `Tensor.size()` 方法提取张量的维度, 例如, 在 PyTorch 中。让我们再看看回溯, 看看哪一行触发了异常:
+是的, 这肯定是一个 Python `list`。那么出了什么问题呢? 回忆 [第二章](/course/chapter2) 🤗 Transformers 中的 `AutoModelForXxx` 类在 `tensors` 上运行(PyTorch或者or TensorFlow), 一个常见的操作是使用 `Tensor.size()` 方法提取张量的维度, 例如, 在 PyTorch 中。让我们再看看回溯, 看看哪一行触发了异常:
 
 ```
 ~/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/models/distilbert/modeling_distilbert.py in forward(self, input_ids, attention_mask, head_mask, inputs_embeds, output_attentions, output_hidden_states, return_dict)

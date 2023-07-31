@@ -1,0 +1,383 @@
+## Unigram 词元化算法 
+
+
+
+Unigram 算法常用于 SentencePiece 中，该切分算法被 AlBERT，T5，mBART，Big Bird 和 XLNet 等模型广泛采用。
+
+
+
+<div custom-style="Tip-green">
+
+
+💡 本节将深入探讨 Unigram，甚至展示完整的实现过程。如果你只想大致了解词元化算法，可以直接跳到章节末尾。
+
+</div>
+
+## Unigram 训练 
+
+与BPE 和 WordPiece 相比，Unigram 的工作方式正好相反：它从一个大词汇库开始，然后逐步删除词汇，直到达到目标词汇库大小。构建基础词汇库有多种方法：例如，我们可以选取预切分词汇中最常见的子串，或者在具有大词汇量的初始语料库上应用 BPE。
+
+在训练的每一步，Unigram 算法都会在给定当前词汇的情况下计算语料库的损失。然后，对于词汇表中的每个符号，算法计算如果删除该符号，整体损失会增加多少，并寻找增加最少的符号。这些符号对语料库的整体损失影响较小，因此从某种意义上说，它们“相对不必要”并且是移除的最佳候选者。
+
+这个过程非常消耗计算资源，因此我们不只是删除与最低损失增长相关的单个符号，而是删除与最低损失增长相关的百分之/(p\) (\(p\)是一个可以控制的超参数，通常是 10 或 20)的符号。然后重复此过程，直到词汇库达到所需大小。
+
+注意，我们永远不会删除基础字符，以确保任何词都能被切分。
+
+然而，这仍然有些模糊：算法的主要部分是在词汇库中计算语料库的损失并观察当我们从词汇库中移除一些符号时损失如何变化，但我们尚未解释如何做到这一点。这一步依赖于 Unigram 模型的切分算法，接下来我们将深入研究。
+
+我们将复用前面例子中的语料库：
+
+```
+("hug", 10), ("pug", 5), ("pun", 12), ("bun", 4), ("hugs", 5)
+```
+
+而在这个例子中，我们将取所有的子串作为初始词汇库：
+
+```
+["h", "u", "g", "hu", "ug", "p", "pu", "n", "un", "b", "bu", "s", "hug", "gs", "ugs"]
+```
+
+## 词元化算法 
+
+Unigram 模型是一种语言模型，它认为每个符号都与其之前的符号独立。这是最简单的语言模型，因为给定之前的上下文情况下，符号 X 的概率就是符号 X 的概率。所以，如果我们使用 Unigram 语言模型来生成文本，我们的预测总会是最常见的符号。
+
+给定符号的概率是其在原始语料库中的频率（我们计算它出现的次数），除以词汇库中所有符号的频率总和（以确保概率总和为 1）。例如， `"ug"` 出现在 `"hug"` ， `"pug"` 和 `"hugs"` 中，所以它在我们的语料库中的频率是 20。
+
+以下是词汇库中所有可能出现子词的频率：
+
+```
+("h", 15) ("u", 36) ("g", 20) ("hu", 15) ("ug", 20) ("p", 17) ("pu", 17) ("n", 16)
+("un", 16) ("b", 4) ("bu", 4) ("s", 5) ("hug", 15) ("gs", 5) ("ugs", 5)
+```
+
+所以，所有频率之和为 210, 子词 `"ug"` 出现的概率是 20/210。
+
+<div custom-style="Tip-green">
+
+
+✏️ **现在轮到你了！** 编写代码计算上述频率，然后验证结果的准确性，以及总和是否正确。
+
+
+</div>
+
+现在，为了对一个给定的单词进行分词，我们会查看所有可能的分词组合，并根据 Unigram 模型计算出每种可能的概率。由于所有的分词都被视为独立的，这个概率就是每个子词概率的乘积。例如，将 "pug" 分词为 ["p", "u", "g"] 的概率为：
+
+
+$$P([``p", ``u", ``g"]) = P(``p") \times P(``u") \times P(``g") = \frac{5}{210} \times\frac{36}{210} \times\frac{20}{210} = 0.000389$$
+
+相比之下，将 "pug" 分词为 `["pu", "g"]` 的概率为：
+
+$$P([``pu", ``g"]) = P(``pu") \times P(``g") = \frac{5}{210} \times\frac{20}{210} = 0.0022676$$
+
+因此，后者的可能性更大。一般来说，分词数最少的分词方式将具有最高的概率（因为每个分词都要除以 210），这正符合我们的直觉：将一个词分割为尽可能少的子词。
+
+利用 Unigram 模型对一个词进行分词，就是找出概率最高的分词。以 `"pug"` 为例，我们得到的各种可能分词的概率如下：
+
+```
+["p", "u", "g"] : 0.000389
+["p", "ug"] : 0.0022676
+["pu", "g"] : 0.0022676
+```
+
+因此， `"pug"` 将被分词为 `["p", "ug"]` 或 `["pu", "g"]` ，取决于哪种分词方式排在前面（注意，在更大的语料库中，像这样的相等情况将很少见）。
+
+在这个例子中，找出所有可能的分词方式并计算其概率是容易的，但在语料库比较大的情况下有些困难。有一个经典的算法可以用来计算这个概率，叫做 *Viterbi 算法*。基本上，我们可以通过创建一个图来检测一个给定单词的所有可能分词，如果从字符 *a* 到字符 *b* 的子词在词汇表中，那么就存在一个从 *a* 到 *b* 的分支，分支的边就是进行这个切分的概率。
+
+为了在图中找到得分最高的路径，Viterbi 算法会确定出每个位置上结束的最佳得分分割。我们从头到尾进行处理，可以通过遍历所有在当前位置结束的子词，然后使用这个子词开始位置的最佳得分，找到最高得分。然后，我们只需要回溯走过的路径，就能找到最终的最优路径。
+
+让我们看一个使用我们的词汇表和单词 `"unhug"` 的例子。对于每个位置，最佳切分子词的分数如下：
+
+```
+Character 0 (u): "u" (score 0.171429)
+Character 1 (n): "un" (score 0.076191)
+Character 2 (h): "un" "h" (score 0.005442)
+Character 3 (u): "un" "hu" (score 0.005442)
+Character 4 (g): "un" "hug" (score 0.005442)
+```
+
+因此 "unhug" 将被分词为 `["un", "hug"]` 。
+
+
+<div custom-style="Tip-green">
+
+
+✏️ **现在轮到你了！**  确定单词 "huggun" 的分词方式以及其得分。
+
+</div>
+
+## 回到训练 
+
+我们已经了解了如何进行分词处理，接下来我们可以更详细地了解一下在训练过程中如何计算损失值。在训练的任何阶段，我们都会将语料库中的每个词进行分词，分词所使用的词表和 Unigram 模型是基于目前的情况（即根据每个词在语料库中出现的频率）进行确定的。然后，基于这种分词结果，我们就可以计算出损失值（loss）。
+
+语料库中的每个词都有一个分数，损失（loss）值是这些分数的负对数似然 —— 即所有词的语料库中所有词的 `-log(P(word))` 总和 
+
+让我们回到我们的例子，以下是我们的语料库：
+
+```
+("hug", 10), ("pug", 5), ("pun", 12), ("bun", 4), ("hugs", 5)
+```
+
+每个单词的分词及其相应的得分如下：
+
+```
+"hug": ["hug"] (score 0.071428)
+"pug": ["pu", "g"] (score 0.007710)
+"pun": ["pu", "n"] (score 0.006168)
+"bun": ["bu", "n"] (score 0.001451)
+"hugs": ["hug", "s"] (score 0.001701)
+```
+
+因此，损失值(loss)是：
+
+```
+10 * (-log(0.071428)) + 5 * (-log(0.007710)) + 12 * (-log(0.006168)) + 4 * (-log(0.001451)) + 5 * (-log(0.001701)) = 169.8
+```
+
+现在，我们需要计算移除每个词元对损失值的影响。这个过程颇为繁琐，所以我们这里仅对两个单词进行演示，在我们编写代码来协助处理这个过程时，再处理全部词元化。在这个（非常）特殊的例子中，我们对所有单词的两种等效的分词方式：例如，"pug"也可以被分词为 `["p", "ug"]` ，获得的分数是相同的。因此，去除词汇表中的 `"pu"` 损失值还会是一样的。
+
+但是，去除 `"hug"` 损失会变得更糟，因为 `"hug"` 和 `"hugs"` 的词元化会变成：
+
+```
+"hug": ["hu", "g"] (score 0.006802)
+"hugs": ["hu", "gs"] (score 0.001701)
+```
+
+这些变化将导致损失增加：
+
+```
+- 10 * (-log(0.071428)) + 10 * (-log(0.006802)) = 23.5
+```
+
+因此， `"pu"` 词元可能会从词汇表中移除，但 `"hug"` 则不会。
+
+## 实现 Unigram 
+
+现在让我们在代码中实现我们迄今为止看到的所有内容。与 BPE 和 WordPiece 一样，这不是 Unigram 算法的高效实现(恰恰相反，这套代码的效率并不高)，但它应该可以帮助你更好地理解它。
+
+我们将使用与之前相同的语料库作为示例：
+
+```python
+corpus = [
+    "This is the Hugging Face Course.",
+    "This chapter is about tokenization.",
+    "This section shows several tokenizer algorithms.",
+    "Hopefully, you will be able to understand how they are trained and generate tokens.",
+]
+```
+
+这次，我们将使用 `xlnet-base-cased` 作为我们的模型：
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("xlnet-base-cased")
+```
+
+与 BPE 和 WordPiece 一样，我们首先计算语料库中每个单词的出现次数：
+
+```python
+from collections import defaultdict
+
+word_freqs = defaultdict(int)
+for text in corpus:
+    words_with_offsets = tokenizer.backend_tokenizer.pre_tokenizer.pre_tokenize_str(text)
+    new_words = [word for word, offset in words_with_offsets]
+    for word in new_words:
+        word_freqs[word] += 1
+
+word_freqs
+```
+
+然后，我们需要将我们的词汇表初始化为大于我们最终想要的词汇量。我们必须包含所有基本字符(否则我们将无法对每个单词赋予一个词元)，但对于较大的子字符串，我们将只保留最常见的字符，因此我们按出现频率对它们进行排序：
+
+```python
+char_freqs = defaultdict(int)
+subwords_freqs = defaultdict(int)
+for word, freq in word_freqs.items():
+    for i in range(len(word)):
+        char_freqs[word[i]] += freq
+        # 循环遍历长度至少为2的子字
+        for j in range(i + 2, len(word) + 1):
+            subwords_freqs[word[i:j]] += freq
+
+# 按频率对子词排序
+sorted_subwords = sorted(subwords_freqs.items(), key=lambda x: x[1], reverse=True)
+sorted_subwords[:10]
+```
+
+```python out
+[('▁t', 7), ('is', 5), ('er', 5), ('▁a', 5), ('▁to', 4), ('to', 4), ('en', 4), ('▁T', 3), ('▁Th', 3), ('▁Thi', 3)]
+```
+
+我们用最优的子词对字符进行分组，以获得大小为 300 的初始词汇表：
+
+```python
+token_freqs = list(char_freqs.items()) + sorted_subwords[: 300 - len(char_freqs)]
+token_freqs = {token: freq for token, freq in token_freqs}
+```
+
+<div custom-style="Tip-green">
+
+
+💡 SentencePiece 使用一种名为增强后缀数组（ESA）的更高效的算法来创建初始词汇表。
+
+</div>
+
+接下来，我们需要计算所有频率的总和，将频率转化为概率。在我们的模型中，我们将存储概率的对数，因为相较于小数相乘，对数相加在数值上更稳定，而且这将简化模型损失的计算：
+
+```python
+from math import log
+
+total_sum = sum([freq for token, freq in token_freqs.items()])
+model = {token: -log(freq / total_sum) for token, freq in token_freqs.items()}
+```
+
+现在，主函数是使用维特比算法对单词进行切词。像我们之前看到的那样，这个算法会计算出每个词的最好的分割方式，我们把这个结果保存在一个叫做 `best_segmentations` 的变量里。我们会为词的每一个位置（从 0 开始，一直到词的总长度）都保存一个字典，字典里有两个键：最好的分割中最后一个词的起始位置，以及最好的分割的得分。有了最后一个词的起始位置，当我们把整个列表都填满后，我们就能找到完整的分割方式。
+
+我们只需要两个循环就可以填充这个列表：一个主循环用来遍历每个可能的开始位置，第二个循环则试着找出所有以这个开始位置开始的子串。如果这个子串在我们的词表里，那么我们就找到了一个新的分词方式，这个分词方式会在当前位置结束。然后，我们会把这个新的分词方式和 `best_segmentations` 里的内容进行比较。
+
+当主循环结束后，我们就从词的最后一个位置开始，然后一步步往前跳，跳过的每一步，我们都会记录下来，直到我们回到词的开头。
+
+```python
+def encode_word(word, model):
+    best_segmentations = [{"start": 0, "score": 1}] + [
+        {"start": None, "score": None} for _ in range(len(word))
+    ]
+    for start_idx in range(len(word)):
+        # best_score_at_start应该由循环的前面的步骤计算和填充
+        best_score_at_start = best_segmentations[start_idx]["score"]
+        for end_idx in range(start_idx + 1, len(word) + 1):
+            token = word[start_idx:end_idx]
+            if token in model and best_score_at_start is not None:
+                score = model[token] + best_score_at_start
+                # 如果我们发现以 end_idx 结尾的更好分段，我们会更新
+                if (
+                    best_segmentations[end_idx]["score"] is None
+                    or best_segmentations[end_idx]["score"] > score
+                ):
+                    best_segmentations[end_idx] = {"start": start_idx, "score": score}
+
+    segmentation = best_segmentations[-1]
+    if segmentation["score"] is None:
+        # 我们没有找到单词的词元 -> unknown
+        return ["<unk>"], None
+
+    score = segmentation["score"]
+    start = segmentation["start"]
+    end = len(word)
+    tokens = []
+    while start != 0:
+        tokens.insert(0, word[start:end])
+        next_start = best_segmentations[start]["start"]
+        end = start
+        start = next_start
+    tokens.insert(0, word[start:end])
+    return tokens, score
+```
+
+我们已经可以在一些词上尝试我们的初始模型：
+
+```python
+print(encode_word("Hopefully", model))
+print(encode_word("This", model))
+```
+
+```python out
+(['H', 'o', 'p', 'e', 'f', 'u', 'll', 'y'], 41.5157494601402)
+(['This'], 6.288267030694535)
+```
+
+现在，计算语料库上的模型损失就很简单了！
+
+```python
+def compute_loss(model):
+    loss = 0
+    for word, freq in word_freqs.items():
+        _, word_loss = encode_word(word, model)
+        loss += freq * word_loss
+    return loss
+```
+
+我们可以检查一下我们的模型是否有效：
+
+```python
+compute_loss(model)
+```
+
+```python out
+413.10377642940875
+```
+
+计算每个词的分数也并非难事；我们只需要计算通过删除每个词得到的模型的损失：
+
+```python
+import copy
+
+
+def compute_scores(model):
+    scores = {}
+    model_loss = compute_loss(model)
+    for token, score in model.items():
+        # 我们将保留长度为 1 的词元
+        if len(token) == 1:
+            continue
+        model_without_token = copy.deepcopy(model)
+        _ = model_without_token.pop(token)
+        scores[token] = compute_loss(model_without_token) - model_loss
+    return scores
+```
+
+我们可以试试看对于给定的词是否有效：
+
+```python
+scores = compute_scores(model)
+print(scores["ll"])
+print(scores["his"])
+```
+
+因为 `"ll"` 这个词在 `"Hopefully"` 这个词的分词中被使用了，如果我们把它删掉，我们可能会需要用两个 `"l"` 来代替，所以我们预计它会导致损失值增加。而 `"his"` 这个词只在 `"This"` 这个词里面被使用，而且 `"This"` 是作为一个完整的词被分割的，所以我们预计它的损失值会是零。下面就是实验结果：
+
+```python out
+6.376412403623874
+0.0
+```
+
+<div custom-style="Tip-green">
+
+
+💡 这种方式效率非常低，所以 SentencePiece 使用了一种估算方法来计算如果没有词元 X，模型的损失会是多少：它不是重新开始，而是只是用剩下的词表里词元 X 的分词方式来替代它。这样，所有的得分都能在和模型损失一起的同时计算出来。
+
+</div>
+
+至此，我们需要做的最后一件事就是将模型使用的特殊词元添加到词汇表中，然后循环直到我们从词汇表中剪除足够多的词元以达到我们期望的规模：
+
+```python
+percent_to_remove = 0.1
+while len(model) > 100:
+    scores = compute_scores(model)
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1])
+    # 删除分数最低的percent_to_remov词元。
+    for i in range(int(len(model) * percent_to_remove)):
+        _ = token_freqs.pop(sorted_scores[i][0])
+
+    total_sum = sum([freq for token, freq in token_freqs.items()])
+    model = {token: -log(freq / total_sum) for token, freq in token_freqs.items()}
+```
+
+然后，要对某些文本进行词元化，我们只需应用预分词然后使用我们的 `encode_word()` 函数：
+
+```python
+def tokenize(text, model):
+    words_with_offsets = tokenizer.backend_tokenizer.pre_tokenizer.pre_tokenize_str(text)
+    pre_tokenized_text = [word for word, offset in words_with_offsets]
+    encoded_words = [encode_word(word, model)[0] for word in pre_tokenized_text]
+    return sum(encoded_words, [])
+
+tokenize("This is the Hugging Face course.", model)
+```
+
+```python out
+['▁This', '▁is', '▁the', '▁Hugging', '▁Face', '▁', 'c', 'ou', 'r', 's', 'e', '.']
+```
+
+至此 Unigram 的介绍完毕！期望此刻你已感觉自身如同领域的专家一般。在下一节中，我们将深入探讨Tokenizers 库的基本构造模块，并展示如何使用它们构建自己的词元分析器。

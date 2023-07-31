@@ -2,10 +2,10 @@
 
 # 章末小测试 [[章末小测试]]
 
-<CourseFloatingBanner
+`<CourseFloatingBanner
     chapter={1}
     classNames="absolute z-10 right-0 top-0"
-/>
+/>`
 
 这一章涵盖了很多内容！ 如果有一些不太明白的地方，请不要担心； 下一章将帮助你了解这些模块在底层是如何工作的。
 
@@ -13,21 +13,20 @@
 
 ### 1. 探索 Hub 并寻找 `roberta-large-mnli` checkpoint。 它可以完成什么类型的任务？
 
-
 <Question
 	choices={[
 		{
 			text: "文本摘要提取",
-			explain: "点击前往<a href=\"https://huggingface.co/roberta-large-mnli\">roberta-large-mnli 页面</a>再仔细看一下."
+			explain: "点击前往<a href=\"https://huggingface.co/roberta-large-mnli\">`roberta-large-mnli` 页面 </a>再仔细看一下。"
 		},
 		{
 			text: "文本分类",
-			explain: "更准确地说，它能判断两句话是否在逻辑上有关联，通过三个标签（矛盾，无关，蕴含）分类——这项任务也称为<em>自然语言推理</em>.",
+			explain: "更准确地说，它能通过三个标签（矛盾，无关，蕴含）分类，判断两句话是否在逻辑上有关联——这项任务也称为自然语言推理（natural language inference）。",
 			correct: true
 		},
 		{
 			text: "文本生成",
-			explain: "点击前往<a href=\"https://huggingface.co/roberta-large-mnli\">roberta-large-mnli 页面</a>回顾一下."
+			explain: "点击前往<a href=\"https://huggingface.co/roberta-large-mnli\">`roberta-large-mnli` 页面 `</a>`再仔细看一下。"
 		}
 	]}
 />
@@ -45,11 +44,11 @@ ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 	choices={[
 		{
 			text: "它将输出带有 \"positive\" 或者 \"negative\"标签分类的分数。",
-			explain: "不对 — <code>sentiment-analysis（情感分析）</code> pipeline才会输出这些。"
+			explain: "不对 —— <code>sentiment-analysis（情感分析）</code> pipeline才会输出这些。"
 		},
 		{
 			text: "它将生成这句话的下一句话。",
-			explain: "不对— <code>text-generation（文本生成）</code> pipeline才会输出这些。",
+			explain: "不对 —— <code>text-generation（文本生成）</code> pipeline才会输出这些。",
 		},
 		{
 			text: "它找出代表人员、组织或位置的单词。",
@@ -71,17 +70,17 @@ result = filler("...")
 <Question
 	choices={[
 		{
-			text: "This <mask> has been waiting for you.",
+			text: "This &#60;mask> has been waiting for you.",
 			explain: "不对。 请查看 <code>bert-base-cased</code> 模型卡片,然后再尝试找找错在哪里。"
 		},
 		{
 			text: "This [MASK] has been waiting for you.",
-			explain: "正解! 这个模型的掩码标记是[MASK].",
+			explain: "正解! 这个模型的mask token是[MASK]。",
 			correct: true
 		},
 		{
 			text: "This man has been waiting for you.",
-			explain: "不对。 这个pipeline的作用是填充经过mask的文字，因此它需要在输入中有一个掩码标记。"
+			explain: "不对。 这个pipeline的作用是填充经过mask的文字，因此它需要在输入中有一个mask token。"
 		}
 	]}
 />
@@ -99,7 +98,7 @@ result = classifier("This is a course about the Transformers library")
 	choices={[
 		{
 			text: "这个pipeline要求提供用来分类此文本的标签。",
-			explain: "正解 — 正确的代码需要包含：<code>candidate_labels=[...]</code>.",
+			explain: "正解 —— 正确的代码需要包含：<code>candidate_labels=[...]</code>。",
 			correct: true
 		},
 		{
@@ -107,7 +106,7 @@ result = classifier("This is a course about the Transformers library")
 			explain: "不对。尽管正确使用时，此pipeline可以同时处理多个句子（像所有其他pipeline一样）。"
 		},
 		{
-			text: "🤗 Transformers库又出故障了",
+			text: "🤗 Transformers库又出故障了。",
 			explain: "对此，我们不予置评！"
 		},
 		{
@@ -127,7 +126,7 @@ result = classifier("This is a course about the Transformers library")
 		},
 		{
 			text: "通过使用第一个模型的权重初始化第二个模型，将预训练模型的知识迁移到新模型。",
-			explain: "正确：当第二个模型接受新任务训练时，它*迁移*第一个模型的知识。",
+			explain: "正确：当第二个模型接受新任务训练时，它迁移（transfers）第一个模型的知识。",
 			correct: true
 		},
 		{
@@ -139,12 +138,11 @@ result = classifier("This is a course about the Transformers library")
 
 ### 6. 语言模型在预训练时通常不需要标签，这样的说法是否正确。
 
-
 <Question
 	choices={[
 		{
 			text: "正确",
-			explain: "预训练通常是<em>自监督</em>，这意味着标签是根据输入自动创建的（例如：预测下一个单词或填充一些[MARSK]单词）。",
+			explain: "预训练通常是`自监督（self-supervised）`，这意味着标签是根据输入自动创建的（例如：预测下一个单词或填充一些[MARSK]单词）。",
 			correct: true
 		},
 		{
@@ -154,8 +152,8 @@ result = classifier("This is a course about the Transformers library")
 	]}
 />
 
-
 ### 7. 选择最能描述“模型(model)”、“架构(architecture)”和“权重(weights)”的句子。
+
 <Question
 	choices={[
 		{
@@ -174,8 +172,8 @@ result = classifier("This is a course about the Transformers library")
 	]}
 />
 
-
 ### 8. 你将使用以下哪种类型的模型来根据输入的提示生成文本？
+
 <Question
 	choices={[
 		{
@@ -204,7 +202,7 @@ result = classifier("This is a course about the Transformers library")
 		},
 		{
 			text: "“解码器”模型",
-			explain: "“解码器”模型对于生成输出文本(如摘要)很好，但它们不具备利用上下文(如整个文本)进行总结的能力。"
+			explain: "“解码器”模型对于生成输出文本(如摘要)很好，但它们不具备利用上下文(整个文本)进行总结的能力。"
 		},
 		{
 			text: "“序列到序列”模型",

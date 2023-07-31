@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1707"
+   height="746"
+   viewBox="0 0 1707 746"
+   fill="none"
+   version="1.1"
+   id="svg58"
+   sodipodi:docname="semantic-search.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs62" />
+  <sodipodi:namedview
+     id="namedview60"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.73637961"
+     inkscape:cx="854.858"
+     inkscape:cy="373.44869"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="2872"
+     inkscape:window-y="251"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg58" />
+  <rect
+     width="1707"
+     height="746"
+     fill="white"
+     id="rect2" />
+  <path
+     d="M492.414 107.586C491.633 106.805 490.367 106.805 489.586 107.586L476.858 120.314C476.077 121.095 476.077 122.361 476.858 123.142C477.639 123.923 478.905 123.923 479.686 123.142L491 111.828L502.314 123.142C503.095 123.923 504.361 123.923 505.142 123.142C505.923 122.361 505.923 121.095 505.142 120.314L492.414 107.586ZM493 654L493 109L489 109L489 654L493 654Z"
+     fill="#212C38"
+     id="path4" />
+  <circle
+     cx="622"
+     cy="251"
+     r="14"
+     fill="#BAC4F5"
+     id="circle6" />
+  <circle
+     cx="679"
+     cy="287"
+     r="14"
+     fill="#BAC4F5"
+     id="circle8" />
+  <circle
+     cx="857"
+     cy="305"
+     r="14"
+     fill="#BAC4F5"
+     id="circle10" />
+  <circle
+     cx="924"
+     cy="341"
+     r="14"
+     fill="#BAC4F5"
+     id="circle12" />
+  <circle
+     cx="906"
+     cy="413"
+     r="14"
+     fill="#BAC4F5"
+     id="circle14" />
+  <circle
+     cx="715"
+     cy="520"
+     r="14"
+     fill="#BAC4F5"
+     id="circle16" />
+  <circle
+     cx="777"
+     cy="485"
+     r="14"
+     fill="#BAC4F5"
+     id="circle18" />
+  <circle
+     cx="888"
+     cy="502"
+     r="14"
+     fill="#BAC4F5"
+     id="circle20" />
+  <circle
+     cx="950"
+     cy="503"
+     r="14"
+     fill="#BAC4F5"
+     id="circle22" />
+  <circle
+     cx="1012"
+     cy="485"
+     r="14"
+     fill="#BAC4F5"
+     id="circle24" />
+  <circle
+     cx="1066"
+     cy="525"
+     r="14"
+     fill="#BAC4F5"
+     id="circle26" />
+  <circle
+     cx="1084"
+     cy="413"
+     r="14"
+     fill="#BAC4F5"
+     id="circle28" />
+  <circle
+     cx="1048"
+     cy="331"
+     r="14"
+     fill="#BAC4F5"
+     id="circle30" />
+  <circle
+     cx="984.082"
+     cy="228.082"
+     r="14"
+     transform="rotate(-0.338309 984.082 228.082)"
+     fill="#FFBB8B"
+     id="circle32" />
+  <circle
+     cx="932.655"
+     cy="227.655"
+     r="14"
+     transform="rotate(18.0892 932.655 227.655)"
+     fill="#BAC4F5"
+     id="circle34" />
+  <circle
+     cx="950"
+     cy="561"
+     r="14"
+     fill="#BAC4F5"
+     id="circle36" />
+  <circle
+     cx="875"
+     cy="561"
+     r="14"
+     fill="#BAC4F5"
+     id="circle38" />
+  <circle
+     cx="604"
+     cy="359"
+     r="14"
+     fill="#BAC4F5"
+     id="circle40" />
+  <circle
+     cx="658"
+     cy="395"
+     r="14"
+     fill="#BAC4F5"
+     id="circle42" />
+  <circle
+     cx="568"
+     cy="431"
+     r="14"
+     fill="#BAC4F5"
+     id="circle44" />
+  <circle
+     cx="622"
+     cy="467"
+     r="14"
+     fill="#BAC4F5"
+     id="circle46" />
+  <path
+     d="M1217.41 653.414C1218.2 652.633 1218.2 651.367 1217.41 650.586L1204.69 637.858C1203.91 637.077 1202.64 637.077 1201.86 637.858C1201.08 638.639 1201.08 639.905 1201.86 640.686L1213.17 652L1201.86 663.314C1201.08 664.095 1201.08 665.361 1201.86 666.142C1202.64 666.923 1203.91 666.923 1204.69 666.142L1217.41 653.414ZM491 654L1216 654L1216 650L491 650L491 654Z"
+     fill="#212C38"
+     id="path48" />
+  <line
+     x1="916.451"
+     y1="167.619"
+     x2="929.758"
+     y2="218.224"
+     stroke="#BAC4F5"
+     stroke-width="3"
+     id="line50" />
+  <line
+     x1="991.646"
+     y1="224.518"
+     x2="1045.09"
+     y2="211.543"
+     stroke="#FFBB8B"
+     stroke-width="3"
+     id="line52" />
+  <text
+     xml:space="preserve"
+     style="font-size:26.6667px;font-family:'Sans Serif Collection';-inkscape-font-specification:'Sans Serif Collection';fill:#000000"
+     x="843.315"
+     y="150.73746"
+     id="text276"><tspan
+       sodipodi:role="line"
+       id="tspan274"
+       x="843.315"
+       y="150.73746">相关的文档</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:26.6667px;font-family:'Sans Serif Collection';-inkscape-font-specification:'Sans Serif Collection';fill:#000000"
+     x="1057.8783"
+     y="202.34128"
+     id="text280"><tspan
+       sodipodi:role="line"
+       id="tspan278"
+       x="1057.8783"
+       y="202.34128">查询（Query）</tspan></text>
+</svg>
