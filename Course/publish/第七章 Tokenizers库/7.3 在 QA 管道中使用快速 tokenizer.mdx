@@ -1,56 +1,26 @@
-<FrameworkSwitchCourse {fw} />
 
-# 在 QA 管道中使用快速 tokenizer  [[在 QA 管道中使用快速 tokenizer ]]
 
-{#if fw === 'pt'}
-
-<CourseFloatingBanner chapter={6}
-  classNames="absolute z-10 right-0 top-0"
-  notebooks={[
-    {label: "Google Colab", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section3b_pt.ipynb"},
-    {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section3b_pt.ipynb"},
-]} />
-
-{:else}
-
-<CourseFloatingBanner chapter={6}
-  classNames="absolute z-10 right-0 top-0"
-  notebooks={[
-    {label: "Google Colab", value: "https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section3b_tf.ipynb"},
-    {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section3b_tf.ipynb"},
-]} />
-
-{/if}
+## 7.3 在 QA 管道中使用快速 tokenizer  
 
 我们现在将深入研究 `question-answering` 管道，看看如何利用偏移量从上下文（context）中获取当前问题的答案，这与我们在上一节中处理分组实体的方式有些相似。我们会看到如何处理那些因为过长而最终被截断的上下文（context）。如果你对问答任务不感兴趣，可以跳过这一节。
 
-{#if fw === 'pt'}
+### 使用 `question-answering` 管道 
 
-<Youtube id="_wxyB3j3mk4"/>
+正如我们在第二章，我们可以使用 `question-answering` 像这样的管道以获得问题的答案：
 
-{:else}
-
-<Youtube id="b3u8RzBCX9Y"/>
-
-{/if}
-
-## 使用 `question-answering` 管道 [[使用 `question-answering` 管道]]
-
-正如我们在 [第一章](/course/chapter1) ，我们可以使用 `question-answering` 像这样的管道以获得问题的答案：
-
-```py
+```python
 from transformers import pipeline
 
 question_answerer = pipeline("question-answering")
 context = """
-🤗 Transformers is backed by the three most popular deep learning libraries — Jax, PyTorch, and TensorFlow — with a seamless integration
+Transformers is backed by the three most popular deep learning libraries — Jax, PyTorch, and TensorFlow — with a seamless integration
 between them. It's straightforward to train your models with one before loading them for inference with the other.
 """
-question = "Which deep learning libraries back 🤗 Transformers?"
+question = "Which deep learning libraries back Transformers?"
 question_answerer(question=question, context=context)
 ```
 
-```python out
+```python
 {'score': 0.97773,
  'start': 78,
  'end': 105,
@@ -59,16 +29,15 @@ question_answerer(question=question, context=context)
 
 与其他不能处理超过模型接受的最大长度的文本的管道不同，这个管道可以处理非常长的上下文（context），并且即使答案在末尾也能返回问题的答案：
 
-
-```py
+```python
 long_context = """
-🤗 Transformers: State of the Art NLP
+Transformers: State of the Art NLP
 
-🤗 Transformers provides thousands of pretrained models to perform tasks on texts such as classification, information extraction,
+Transformers provides thousands of pretrained models to perform tasks on texts such as classification, information extraction,
 question answering, summarization, translation, text generation and more in over 100 languages.
 Its aim is to make cutting-edge NLP easier to use for everyone.
 
-🤗 Transformers provides APIs to quickly download and use those pretrained models on a given text, fine-tune them on your own datasets and
+Transformers provides APIs to quickly download and use those pretrained models on a given text, fine-tune them on your own datasets and
 then share them with the community on our model hub. At the same time, each python module defining an architecture is fully standalone and
 can be modified to enable quick research experiments.
 
@@ -95,13 +64,13 @@ Why should I use transformers?
   - Model internals are exposed as consistently as possible.
   - Model files can be used independently of the library for quick experiments.
 
-🤗 Transformers is backed by the three most popular deep learning libraries — Jax, PyTorch and TensorFlow — with a seamless integration
+Transformers is backed by the three most popular deep learning libraries — Jax, PyTorch and TensorFlow — with a seamless integration
 between them. It's straightforward to train your models with one before loading them for inference with the other.
 """
 question_answerer(question=question, context=long_context)
 ```
 
-```python out
+```python
 {'score': 0.97149,
  'start': 1892,
  'end': 1919,
@@ -110,13 +79,13 @@ question_answerer(question=question, context=long_context)
 
 让我们看看它是如何做到这一切的！
 
-## 使用模型进行问答 [[使用模型进行问答]]
+### 使用模型进行问答 
 
-与任何其他管道一样，我们首先对输入进行tokenization，然后将其传入模型。 `question-answering` 管道默认情况下用于的 Checkpoint 是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在 [第7章](/course/chapter7/7) 详细讨论 SQuAD 数据集）:
+与任何其他管道一样，我们首先对输入进行tokenization，然后将其传入模型。 `question-answering` 管道默认情况下用于的 Checkpoint 是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad)(https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在第八章详细讨论 SQuAD 数据集）:
 
 {#if fw === 'pt'}
 
-```py
+```python
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 
 model_checkpoint = "distilbert-base-cased-distilled-squad"
@@ -129,7 +98,7 @@ outputs = model(**inputs)
 
 {:else}
 
-```py
+```python
 from transformers import AutoTokenizer, TFAutoModelForQuestionAnswering
 
 model_checkpoint = "distilbert-base-cased-distilled-squad"
@@ -144,14 +113,11 @@ outputs = model(**inputs)
 
 请注意在这里，我们将问题放在前面和上下文放后面，一起作为一对进行tokenization。
 
-<div class="flex justify-center">
-<img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/question_tokens.svg" alt="An example of tokenization of question and context"/>
-<img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/question_tokens-dark.svg" alt="An example of tokenization of question and context"/>
-</div>
+![问题和上下文 tokenization 的示例](./assets/question_tokens.png "An example of tokenization of question and context")
 
 问答模型的工作方式与我们迄今为止看到的模型略有不同。以上图为例，模型已经被训练来预测答案开始的 token 的索引（这里是 21）和答案结束的 token 的索引（这里是 24）。这就是为什么这些模型不返回一个 logits 的张量，而是返回两个：一个对应于答案的开始 token 的 logits，另一个对应于答案的结束 token 的 logits。在这个例子中，我们的输入包含了 66 个 token ，因此我们得到：
 
-```py
+```python
 start_logits = outputs.start_logits
 end_logits = outputs.end_logits
 print(start_logits.shape, end_logits.shape)
@@ -159,13 +125,13 @@ print(start_logits.shape, end_logits.shape)
 
 {#if fw === 'pt'}
 
-```python out
+```python
 torch.Size([1, 66]) torch.Size([1, 66])
 ```
 
 {:else}
 
-```python out
+```python
 (1, 66) (1, 66)
 ```
 
@@ -177,13 +143,13 @@ torch.Size([1, 66]) torch.Size([1, 66])
 
 {#if fw === 'pt'}
 
-```py
+```python
 import torch
 
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除context之外的所有内容
+## 屏蔽除context之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 不屏蔽 [CLS]  token 
+## 不屏蔽 [CLS]  token 
 mask[0] = False
 mask = torch.tensor(mask)[None]
 
@@ -193,13 +159,13 @@ end_logits[mask] = -10000
 
 {:else}
 
-```py
+```python
 import tensorflow as tf
 
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除context之外的所有内容
+## 屏蔽除context之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 不屏蔽 [CLS]  token 
+## 不屏蔽 [CLS]  token 
 mask[0] = False
 mask = tf.constant(mask)[None]
 
@@ -213,14 +179,14 @@ end_logits = tf.where(mask, -10000, end_logits)
 
 {#if fw === 'pt'}
 
-```py
+```python
 start_probabilities = torch.nn.functional.softmax(start_logits, dim=-1)[0]
 end_probabilities = torch.nn.functional.softmax(end_logits, dim=-1)[0]
 ```
 
 {:else}
 
-```py
+```python
 start_probabilities = tf.math.softmax(start_logits, axis=-1)[0].numpy()
 end_probabilities = tf.math.softmax(end_logits, axis=-1)[0].numpy()
 ```
@@ -235,10 +201,9 @@ $$\mathrm{start\_probabilities}[\mathrm{start\_index}] \times\mathrm{end\_probab
 
 所以，要计算所有的分数，我们只需要计算所有的 `start_index <= end_index` 的 \($$\mathrm{start\_probabilities}[\mathrm{start\_index}] \times\mathrm{end\_probabilities}[\mathrm{end\_index}]$$\)  的乘积。
 
-
 首先让我们计算所有可能的乘积：
 
-```py
+```python
 scores = start_probabilities[:, None] * end_probabilities[None, :]
 ```
 
@@ -246,7 +211,7 @@ scores = start_probabilities[:, None] * end_probabilities[None, :]
 
 然后我们将 `start_index > end_index` 的值设置为 `0` 来屏蔽他们（其他概率都是正数）。 `torch.triu()` 函数返回传入的 2D 张量的上三角部分，所以我们可以使用它来完成屏蔽：
 
-```py
+```python
 import numpy as np
 
 scores = torch.triu(scores)
@@ -255,7 +220,7 @@ scores = torch.triu(scores)
 {:else}
 
 然后我们将 `start_index > end_index` 的值设置为 `0` 来屏蔽他们（其他概率都是正数）。 `np.triu()` 函数返回传入的 2D 张量的上三角部分，所以我们做可以使用它来完成屏蔽：
-```py
+```python
 scores = np.triu(scores)
 ```
 
@@ -263,7 +228,7 @@ scores = np.triu(scores)
 
 现在我们只需要得到最大值的索引。由于 PyTorch 将返回展平（flattened）后张量中的索引，因此我们需要使用向下取整的除法 `//` 和取模 `%` 操作来获得 `start_index` 和 `end_index` ：
 
-```py
+```python
 max_index = scores.argmax().item()
 start_index = max_index // scores.shape[1]
 end_index = max_index % scores.shape[1]
@@ -272,19 +237,19 @@ print(scores[start_index, end_index])
 
 我们还没有完全完成，但至少我们已经有了正确的答案分数（你可以通过将其与上一节中的第一个结果进行比较来检查这一点）：
 
-```python out
+```python
 0.97773
 ```
 
-<Tip>
+<div custom-style="Tip-green">
 
 ✏️ **试试看！** 计算五个最可能的答案的开始和结束索引。
 
-</Tip>
+</div>
 
 我们有了答案的 `start_index` 和 `end_index` ，所以现在我们只需要转换为上下文中的字符索引。这就是偏移量将会非常有用的地方。我们可以像我们在 token 分类任务中那样获取偏移量并使用它们：
 
-```py
+```python
 inputs_with_offsets = tokenizer(question, context, return_offsets_mapping=True)
 offsets = inputs_with_offsets["offset_mapping"]
 
@@ -295,8 +260,7 @@ answer = context[start_char:end_char]
 
 现在我们只需要格式化所有内容，获取我们的结果：
 
-
-```py
+```python
 result = {
     "answer": answer,
     "start": start_char,
@@ -306,7 +270,7 @@ result = {
 print(result)
 ```
 
-```python out
+```python
 {'answer': 'Jax, PyTorch and TensorFlow',
  'start': 78,
  'end': 105,
@@ -315,33 +279,33 @@ print(result)
 
 太棒了！这和我们的第一个例子的结果一样！
 
-<Tip>
+<div custom-style="Tip-green">
 
 ✏️ **试试看！** 使用你之前计算的最佳分数来显示五个最可能的答案。你可以回到之前的 QA pipeline，并在调用时传入 `top_k=5` 来检查你的结果。
 
-</Tip>
+</div>
 
-## 处理长文本 [[处理长文本]]
+### 处理长文本 
 
 如果我们尝试将我们之前使用的长问题和长上下文进行tokenization，我们将得到一个比 `question-answering` pipeline 中使用的最大长度（384）更大的 tokens 数量：
 
-```py
+```python
 inputs = tokenizer(question, long_context)
 print(len(inputs["input_ids"]))
 ```
 
-```python out
+```python
 461
 ```
 
 所以，我们需要将我们的输入截断到模型允许输入的最大长度。我们可以用几种方式做到这一点，但我们不想截断问题部分，只想截断上下文部分，并且由于上下文部分是第二项，因此我们将使用 `"only_second"` 截断策略。然后又出现了新的问题：问题的答案可能在截断后被丢弃了，并没有在截断后保留下来的上下文文本中。例如，我们选了一个问题，其中的答案在上下文的末尾，当我们截断它时，答案就不在里面了：
 
-```py
+```python
 inputs = tokenizer(question, long_context, max_length=384, truncation="only_second")
 print(tokenizer.decode(inputs["input_ids"]))
 ```
 
-```python out
+```python
 """
 [CLS] Which deep learning libraries back [UNK] Transformers? [SEP] [UNK] Transformers : State of the Art NLP
 
@@ -381,7 +345,7 @@ Why should I use transformers?
 
 我们可以通过添加 `return_overflowing_tokens=True` 参数，并可以用 `stride` 参数指定我们想要的重叠长度来让 tokenizer （快速或慢速）为我们做这个工作。下面是一个使用一个较短的句子的例子：
 
-```py
+```python
 sentence = "This sentence is not too long but we are going to split it anyway."
 inputs = tokenizer(
     sentence, truncation=True, return_overflowing_tokens=True, max_length=6, stride=2
@@ -391,7 +355,7 @@ for ids in inputs["input_ids"]:
     print(tokenizer.decode(ids))
 ```
 
-```python out
+```python
 '[CLS] This sentence is not [SEP]'
 '[CLS] is not too long [SEP]'
 '[CLS] too long but we [SEP]'
@@ -405,28 +369,27 @@ for ids in inputs["input_ids"]:
 
 让我们仔细看看tokenization的结果：
 
-```py
+```python
 print(inputs.keys())
 ```
 
-```python out
+```python
 dict_keys(['input_ids', 'attention_mask', 'overflow_to_sample_mapping'])
 ```
 
-
 正如我们所预期的，我们得到了inputs ID 和注意力掩码。最后一个键，overflow_to_sample_mapping，是一个映射，告诉我们每个结果对应哪个句子——在这里，我们有 7 个结果，它们都来自我们传递给 tokenizer 的（唯一的）句子：
 
-```py
+```python
 print(inputs["overflow_to_sample_mapping"])
 ```
 
-```python out
+```python
 [0, 0, 0, 0, 0, 0, 0]
 ```
 
 当我们一起对多个句子tokenization时，这会更有用。例如，这个：
 
-```py
+```python
 sentences = [
     "This sentence is not too long but we are going to split it anyway.",
     "This sentence is shorter but will still get split.",
@@ -440,7 +403,7 @@ print(inputs["overflow_to_sample_mapping"])
 
 输出的结果是：
 
-```python out
+```python
 [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
 ```
 
@@ -448,8 +411,7 @@ print(inputs["overflow_to_sample_mapping"])
 
 现在让我们回到我们的长上下文。默认情况下， `question-answering pipeline` 使用我们之前提到的 384 作为最大长度，步长为 128，这与模型的微调方式相对应（你可以通过在调用 pipeline 时传递 `max_seq_len` 和 `stride` 参数来调整这些参数）。因此，我们在tokenization时将使用这些参数。我们还会添加填充（使样本具有相同的长度，这样我们就可以构建张量），并获取偏移量：
 
-
-```py
+```python
 inputs = tokenizer(
     question,
     long_context,
@@ -464,10 +426,9 @@ inputs = tokenizer(
 
 这些 `inputs` 将包含模型期望的inputs ID 和注意力掩码，以及我们刚刚谈到的偏移量和 `overflow_to_sample_mapping` 。由于模型不需要这两个参数，我们将它们从 `inputs` 中删除（我们不会存储映射的字典，因为这在这里没有用）然后将 `inputs` 转换为张量：
 
-
 {#if fw === 'pt'}
 
-```py
+```python
 _ = inputs.pop("overflow_to_sample_mapping")
 offsets = inputs.pop("offset_mapping")
 
@@ -475,13 +436,13 @@ inputs = inputs.convert_to_tensors("pt")
 print(inputs["input_ids"].shape)
 ```
 
-```python out
+```python
 torch.Size([2, 384])
 ```
 
 {:else}
 
-```py
+```python
 _ = inputs.pop("overflow_to_sample_mapping")
 offsets = inputs.pop("offset_mapping")
 
@@ -489,7 +450,7 @@ inputs = inputs.convert_to_tensors("tf")
 print(inputs["input_ids"].shape)
 ```
 
-```python out
+```python
 (2, 384)
 ```
 
@@ -497,7 +458,7 @@ print(inputs["input_ids"].shape)
 
 我们的长上下文被分成两部分，这意味着在经过我们的模型后，我们将得到两组开始和结束的 logits：
 
-```py
+```python
 outputs = model(**inputs)
 
 start_logits = outputs.start_logits
@@ -507,13 +468,13 @@ print(start_logits.shape, end_logits.shape)
 
 {#if fw === 'pt'}
 
-```python out
+```python
 torch.Size([2, 384]) torch.Size([2, 384])
 ```
 
 {:else}
 
-```python out
+```python
 (2, 384) (2, 384)
 ```
 
@@ -523,13 +484,13 @@ torch.Size([2, 384]) torch.Size([2, 384])
 
 {#if fw === 'pt'}
 
-```py
+```python
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除上下文tokens之外的所有内容
+## 屏蔽除上下文tokens之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 取消对[CLS] token的屏蔽
+## 取消对[CLS] token的屏蔽
 mask[0] = False
-# 屏蔽所有的[PAD] tokens
+## 屏蔽所有的[PAD] tokens
 mask = torch.logical_or(torch.tensor(mask)[None], (inputs["attention_mask"] == 0))
 
 start_logits[mask] = -10000
@@ -538,13 +499,13 @@ end_logits[mask] = -10000
 
 {:else}
 
-```py
+```python
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除上下文tokens之外的所有内容
+## 屏蔽除上下文tokens之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 取消对[CLS] token的屏蔽
+## 取消对[CLS] token的屏蔽
 mask[0] = False
-# 屏蔽所有的[PAD] tokens
+## 屏蔽所有的[PAD] tokens
 mask = tf.math.logical_or(tf.constant(mask)[None], inputs["attention_mask"] == 0)
 
 start_logits = tf.where(mask, -10000, start_logits)
@@ -557,14 +518,14 @@ end_logits = tf.where(mask, -10000, end_logits)
 
 {#if fw === 'pt'}
 
-```py
+```python
 start_probabilities = torch.nn.functional.softmax(start_logits, dim=-1)
 end_probabilities = torch.nn.functional.softmax(end_logits, dim=-1)
 ```
 
 {:else}
 
-```py
+```python
 start_probabilities = tf.math.softmax(start_logits, axis=-1).numpy()
 end_probabilities = tf.math.softmax(end_logits, axis=-1).numpy()
 ```
@@ -575,7 +536,7 @@ end_probabilities = tf.math.softmax(end_logits, axis=-1).numpy()
 
 {#if fw === 'pt'}
 
-```py
+```python
 candidates = []
 for start_probs, end_probs in zip(start_probabilities, end_probabilities):
     scores = start_probs[:, None] * end_probs[None, :]
@@ -591,7 +552,7 @@ print(candidates)
 
 {:else}
 
-```py
+```python
 candidates = []
 for start_probs, end_probs in zip(start_probabilities, end_probabilities):
     scores = start_probs[:, None] * end_probs[None, :]
@@ -607,22 +568,21 @@ print(candidates)
 
 {/if}
 
-```python out
+```python
 [(0, 18, 0.33867), (173, 184, 0.97149)]
 ```
 
 这两个候选范围对应的是模型在每个块中能够找到的最好的答案。模型对于正确的答案在第二部分更有信心（这是个好兆头！）。现在我们只需要将这两个 token 范围映射到上下文中的字符范围（我们只需要映射第二个就能得到我们的答案，但是看看模型在第一块中选取了什么作为答案还是很有意思的）。
 
-
-<Tip>
+<div custom-style="Tip-green">
 
 ✏️ **试试看！**  调整上面的代码，以返回五个最可能的答案的得分和范围（对于整个上下文，而不是单个块）。
 
-</Tip>
+</div>
 
 我们之前抓取 `offsets` 的实际上是一个偏移量列表，每个文本块都有一个列表：
 
-```py
+```python
 for candidate, offset in zip(candidates, offsets):
     start_token, end_token, score = candidate
     start_char, _ = offset[start_token]
@@ -632,17 +592,17 @@ for candidate, offset in zip(candidates, offsets):
     print(result)
 ```
 
-```python out
-{'answer': '\n🤗 Transformers: State of the Art NLP', 'start': 0, 'end': 37, 'score': 0.33867}
+```python
+{'answer': '\nTransformers: State of the Art NLP', 'start': 0, 'end': 37, 'score': 0.33867}
 {'answer': 'Jax, PyTorch and TensorFlow', 'start': 1892, 'end': 1919, 'score': 0.97149}
 ```
 
 如果我们选择分数最高的第二个结果，我们会得到与 QA 管道相同结果——耶！
 
-<Tip>
+<div custom-style="Tip-green">
 
 ✏️ **试试看！** 使用你之前计算的最佳分数来显示五个最可能的答案（对于整个上下文，而不是单个块）。要检查你的结果的话，返回之前的 QA 管道，并在调用时传入 `top_k=5` 。
 
-</Tip>
+</div>
 
 我们已经结束了我们对 tokenizer 能力的深入探究。在下一章，我们将展示如何在一系列常见的 NLP 任务上微调模型，我们将对这些内容再次付诸实践。

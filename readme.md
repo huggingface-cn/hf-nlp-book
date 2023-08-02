@@ -196,37 +196,53 @@ TODO：尝试搭建Github的Bot自动化处理
 
 二审的目标是提供一个可以出版的版本
 
-代码：划分TensorFlow和 Pytorch，处理python out
+1. 再审内容和格式
 
-斜体：取消正文斜体改为双引号
+   内容：
 
-图片：更改链接（更改space），下载，翻译，题注
+   token，tokenization，tokenizer，checkpoint，笔记本：Notebook，logist
+
+   代词：更换为具体的名词
+
+   指代性描述：标注具体位置
+
+   斜体：取消正文斜体改为双引号
+
+   在使用链接时，防止最后的\导致链接失效
+
+   格式：
+
+   format_tools.py
+
+2. 修改一个书的版本
+
+   格式：
+
+   public_export_format.py
+
+   内容：
+
+   双版本代码的不同：处理相同的描述只是专有名词不同
+
+   QA：尝试自动化处理 qa_translate.py
+
+   代码：处理python out  python_source_format.py
+
+   图片：download_img.py 更改链接（更改space），下载，翻译，题注
+
+   去除视频描述
+
+   3.章节层级
+
+
 
 章节层级：根据readme更改
 
-双版本代码的不同：处理相同的描述只是专有名词不同
-
-QA：尝试自动化处理
-
 章节的描述：更改章节链接，章节标号
-
-代词：更换为具体的名词
-
-指代性描述：标注具体位置
-
-标点：半角全角符号规范统一
-
-chapter7，QA：logist统一
-
-token :统一
 
 图片：转png插入文稿
 
-属于规范：笔记本：Notebook token
 
-在使用链接时，防止最后的\导致链接失效
-
-去除视频描述
 
 流程：
 
@@ -322,10 +338,13 @@ token :统一
    - 章末总结及测试（c5s7,c5s8）
 7. 🤗 Tokenizers库(c6s1)
 
-   - 新旧分词器的训练(c6s2)
-   - 快速分词器的特性(c6s3,c6s3b)
+   - 基于已有的 tokenizer 训练新的 tokenizer (c6s2)
+   - 快速分词器的特殊能力(c6s3)
+   - 在 QA 管道中使用快速 tokenizer (c6s3b)
    - 标准化与预分词(c6s4)
-   - 各种分词算法的应用(c6s5,c6s6,c6s7)
+   - BPE tokenization 算法(c6s5)
+   - WordPiece tokenization 算法(c6s6)
+   - Unigram tokenization 算法c6s7)
    - 模块化构建词元分析器(c6s8)
    - 章末总结及测试（c6s9,c6s10）
 8. 主要NLP任务(c7s1)

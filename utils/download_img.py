@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 # 你的文件夹路径
-directory = 'Course\publish\chapter4'
+directory = 'Course\publish\chapter6'
 if 'assets' not in os.listdir(directory):
     os.makedirs(os.path.join(directory, 'assets'))
 for filename in os.listdir(directory):

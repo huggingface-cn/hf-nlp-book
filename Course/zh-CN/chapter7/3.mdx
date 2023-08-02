@@ -26,14 +26,14 @@
 
 但是，在某些情况下，你需要先微调数据上的语言模型，然后再训练特定于任务的 head。例如，如果你的数据集包含法律合同或科学文章，像 BERT 这样的普通 Transformer 模型通常会将你语料库中的特定领域词视为稀有词元，结果性能可能不尽如人意。通过在域内数据上微调语言模型，你可以提高许多下游任务的性能，这意味着你通常只需执行一次此步骤！
 
-这种在域内数据上微调预训练语言模型的过程通常称为 _领域适应_。它于 2018 年由 [ULMFiT](https://arxiv.org/abs/1801.06146) 推广，这是使迁移学习真正适用于 NLP 的首批神经架构之一 (基于 LSTM)。下图显示了使用 ULMFiT 进行域自适应的示例；在本节中，我们将做类似的事情，但使用的是 Transformer 而不是 LSTM!
+这种在域内数据上微调预训练语言模型的过程通常称为 _领域适应_。它于 2018 年由 [ULMFiT](https://arxiv.org/abs/1801.06146) 推广，这是使迁移学习真正适用于 NLP 的首批神经架构之一 （基于 LSTM）。下图显示了使用 ULMFiT 进行域自适应的示例；在本节中，我们将做类似的事情，但使用的是 Transformer 而不是 LSTM！
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/ulmfit.svg" alt="ULMFiT."/>
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/ulmfit-dark.svg" alt="ULMFiT."/>
 </div>
 
-在本节结束时，你将在 Hub 上拥有一个 [掩码语言模型(masked language model)](https://huggingface.co/huggingface-course/distilbert-base-uncased-finetuned-imdb?text=This+is+a+great+%5BMASK%5D.) , 该模型可以自动完成句子，如下所示：
+在本节结束时，你将在 Hub 上拥有一个 [掩码语言模型(masked language model)](https://huggingface.co/huggingface-course/distilbert-base-uncased-finetuned-imdb?text=This+is+a+great+%5BMASK%5D.) ，该模型可以自动完成句子，如下所示：
 
 <iframe src="https://course-demos-distilbert-base-uncased-finetuned-imdb.hf.space" frameBorder="0" height="300" title="Gradio app" class="block dark:hidden container p-0 flex-grow space-iframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"></iframe>
 
@@ -43,22 +43,22 @@
 
 <Tip>
 
-🙋 如果你对“掩码语言建模”和“预训练模型”这两个术语感到陌生，请查看 [第一章](/course/chapter1) , 我们在其中解释了所有这些核心概念，并附有视频！
+🙋 如果你对“掩码语言建模”和“预训练模型”这两个术语感到陌生，请查看 [第一章](/course/chapter1) ，我们在其中解释了所有这些核心概念，并附有视频！
 
 </Tip>
 
 ## 选择用于掩码语言建模的预训练模型 [[选择用于掩码语言建模的预训练模型]]
 
-首先，让我们为掩码语言建模选择一个合适的预训练模型。如以下屏幕截图所示，你可以通过在 [Hugging Face Hub](https://huggingface.co/models?pipeline_tag=fill-mask&sort=downloads) 上选择"Fill-Mask"过滤器：
+首先，让我们为掩码语言建模选择一个合适的预训练模型。如以下屏幕截图所示，你可以通过在 [Hugging Face Hub](https://huggingface.co/models?pipeline_tag=fill-mask&sort=downloads) 上选择“Fill-Mask”过滤器：
 
 <div class="flex justify-center">
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/mlm-models.png" alt="Hub models." width="80%"/>
 </div>
-尽管 BERT 和 RoBERTa 系列模型的下载量最大，但我们将使用名为 [DistilBERT](https://huggingface.co/distilbert-base-uncased) 的模型。它可以更快地训练，而对下游性能几乎没有损失。这个模型使用一种称为 [_知识蒸馏_](https://en.wikipedia.org/wiki/Knowledge_distillation) 的特殊技术进行训练，其中使用像 BERT 这样的大型“教师模型”来指导参数少得多的“学生模型”的训练。在本节中对知识蒸馏细节的解释会使我们离题太远，但如果你有兴趣，可以阅读 [_Natural Language Processing with Transformers_](https://www.oreilly.com/library/view/natural-language-processing/9781098136789/) (俗称 Transformers 教科书)相关内容。
+尽管 BERT 和 RoBERTa 系列模型的下载量最大，但我们将使用名为 [DistilBERT](https://huggingface.co/distilbert-base-uncased) 的模型。它可以更快地训练，而对下游性能几乎没有损失。这个模型使用一种称为 [_知识蒸馏_](https://en.wikipedia.org/wiki/Knowledge_distillation) 的特殊技术进行训练，其中使用像 BERT 这样的大型“教师模型”来指导参数少得多的“学生模型”的训练。在本节中对知识蒸馏细节的解释会使我们离题太远，但如果你有兴趣，可以阅读 [_Natural Language Processing with Transformers_](https://www.oreilly.com/library/view/natural-language-processing/9781098136789/) （俗称 Transformers 教科书）相关内容。
 
 {#if fw === 'pt'}
 
-让我们继续，我们可以使用 `AutoModelForMaskedLM` 类下载 DistilBERT:
+让我们继续，我们可以使用 `AutoModelForMaskedLM` 类下载 DistilBERT：
 
 ```python
 from transformers import AutoModelForMaskedLM
@@ -82,7 +82,7 @@ print(f"'>>> BERT number of parameters: 110M'")
 
 {:else}
 
-让我们继续，我们可以使用 `TFAutoModelForMaskedLM` 类下载 DistilBERT:
+让我们继续，我们可以使用 `TFAutoModelForMaskedLM` 类下载 DistilBERT：
 
 ```python
 from transformers import TFAutoModelForMaskedLM
@@ -125,7 +125,7 @@ DistilBERT 大约有 6700 万个参数，大约比 BERT 基本模型小两倍，
 text = "This is a great [MASK]."
 ```
 
-作为人类，我们可以想象 `[MASK]` 词元有很多可能性，例如 "day"、"ride" 或者 "painting"。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的 tokenizer 来生成模型的输入，所以让我们也从 Hub 下载它：
+作为人类，我们可以想象 `[MASK]` 词元有很多可能性，例如 “day”、“ride” 或者 “painting”。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的 tokenizer 来生成模型的输入，所以让我们也从 Hub 下载它：
 
 ```python
 from transformers import AutoTokenizer
@@ -164,7 +164,7 @@ token_logits = model(**inputs).logits
 mask_token_index = np.argwhere(inputs["input_ids"] == tokenizer.mask_token_id)[0, 1]
 mask_token_logits = token_logits[0, mask_token_index, :]
 # 选择具有最高logits的[MASK]候选词
-# 在argsort前对数组取负，以得到最大的而不是最小的logits
+# 在argsort前对数组取负,以得到最大的而不是最小的logits
 top_5_tokens = np.argsort(-mask_token_logits)[:5].tolist()
 
 for token in top_5_tokens:
@@ -186,7 +186,7 @@ for token in top_5_tokens:
 
 ## 数据集 [[数据集]]
 
-为了展示领域适应性，我们将使用著名的 [大型电影评论数据集(Large Movie Review Dataset)](https://huggingface.co/datasets/imdb) (或者简称为 IMDb), 这是一个电影评论语料库，通常用于对情感分析模型进行基准测试。通过在这个语料库上对 DistilBERT 进行微调，我们期望语言模型会从其预训练的维基百科的事实性数据，适应到电影评论更主观的元素。我们可以使用🤗 Datasets 中的 `load_dataset()` 函数从 Hugging Face 中获取数据：
+为了展示领域适应性，我们将使用著名的 [大型电影评论数据集(Large Movie Review Dataset)](https://huggingface.co/datasets/imdb) （或者简称为 IMDb），这是一个电影评论语料库，通常用于对情感分析模型进行基准测试。通过在这个语料库上对 DistilBERT 进行微调，我们期望语言模型会从其预训练的维基百科的事实性数据，适应到电影评论更主观的元素。我们可以使用🤗 Datasets 中的 `load_dataset()` 函数从 Hugging Face 中获取数据：
 
 ```python
 from datasets import load_dataset
@@ -234,7 +234,7 @@ for row in sample:
 '>>> Label: 1'
 ```
 
-是的，这些肯定是电影评论，如果你年龄足够大，你甚至可能会理解上次评论中关于拥有 VHS 版本的评论😜! 虽然我们对于语言模型不需要标签，但我们已经可以看到， `0` 代表负面评论， `1` 代表正面评论。
+是的，这些肯定是电影评论，如果你年龄足够大，你甚至可能会理解上次评论中关于拥有 VHS 版本的评论😜！虽然我们对于语言模型不需要标签，但我们已经可以看到， `0` 代表负面评论， `1` 代表正面评论。
 
 <Tip>
 
@@ -248,9 +248,9 @@ for row in sample:
 
 <Youtube id="8PmhEIXhBvI"/>
 
-对于自回归和掩码语言建模，常见的预处理步骤是将所有的示例连接起来，然后将整个语料库切割为等大小的块。这与我们通常的做法有很大的不同，我们通常只是对单个的例子进行tokenization。为什么要将所有的内容连接在一起呢？原因是如果单个例子太长，可能会被截断，这会导致我们失去可能对语言建模任务有用的信息！
+对于自回归和掩码语言建模，常见的预处理步骤是将所有的示例连接起来，然后将整个语料库切割为等大小的块。这与我们通常的做法有很大的不同，我们通常只是对单个的例子进行 tokenization。为什么要将所有的内容连接在一起呢？原因是如果单个例子太长，可能会被截断，这会导致我们失去可能对语言建模任务有用的信息！
 
-因此，我们将像往常一样首先对我们的语料库tokenization，但是不在我们的 tokenizer 中设置 `truncation=True` 选项。我们还将获取可用的单词 ID ((如果我们使用快速 tokenizer ，它们是可用的，如 [第六章](/course/chapter6/3) 中所述), 因为我们稍后将需要它们来进行全字屏蔽。我们将把它包装在一个简单的函数中，当我们在做的时候，我们将删除 `text` 和 `label` 列，因为我们不再需要它们：
+因此，我们将像往常一样首先对我们的语料库 tokenization，但是不在我们的 tokenizer 中设置 `truncation=True` 选项。我们还将获取可用的单词 ID （（如果我们使用快速 tokenizer 它们是可用的，如 [第六章](/course/chapter6/3) 中所述），因为我们稍后将需要它们来进行全字屏蔽。我们将把它包装在一个简单的函数中，当我们在做的时候，我们将删除 `text` 和 `label` 列，因为我们不再需要它们：
 
 所以我们首先像往常一样对语料库进行分词，但是在分词器中_不_设置 `truncation=True` 选项。如果词 ID 可用（如果我们使用的是快速分词器，如 [第6章](https://chat.openai.com/course/chapter6/3) 所述，它们就会可用），我们也会抓取它们，因为我们稍后需要用它们进行全词遮罩。我们将这一部分包装成一个简单的函数，顺便我们还将删除不再需要的 `text` 和 `label` 列：
 
@@ -262,7 +262,7 @@ def tokenize_function(examples):
     return result
 
 
-# 使用batched=True来激活快速多线程！
+# 使用batched=True来激活快速多线程!
 tokenized_datasets = imdb_dataset.map(
     tokenize_function, batched=True, remove_columns=["text", "label"]
 )
@@ -302,7 +302,7 @@ tokenizer.model_max_length
 
 <Tip>
 
-✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096) , 它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。为这些 Checkpoint 之一实例化 tokenizer ，并验证 `model_max_length` 是否与模型卡上引用的内容一致。
+✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096) ，它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。为这些 Checkpoint 之一实例化 tokenizer 并验证 `model_max_length` 是否与模型卡上引用的内容一致。
 
 </Tip>
 
@@ -373,7 +373,7 @@ for chunk in chunks["input_ids"]:
 
 正如你在这个例子中看到的，最后一个块通常会小于最大块大小。有两种主要的策略来处理这个问题：
 
-* 如果最后一个块小于 `chunk_size` , 就丢弃。
+* 如果最后一个块小于 `chunk_size` ，就丢弃。
 * 填充最后一个块，直到其长度等于 `chunk_size` 。
 
 我们将在这里采用第一种方法，因此让我们将上述所有逻辑包装在一个函数中，以便我们可以将其应用于我们的已分词数据集上：
@@ -384,7 +384,7 @@ def group_texts(examples):
     concatenated_examples = {k: sum(examples[k], []) for k in examples.keys()}
     # 计算拼接文本的长度
     total_length = len(concatenated_examples[list(examples.keys())[0]])
-    # 如果最后一个块小于 chunk_size，我们将其丢弃
+    # 如果最后一个块小于 chunk_size,我们将其丢弃
     total_length = (total_length // chunk_size) * chunk_size
     # 按最大长度分块
     result = {
@@ -446,7 +446,7 @@ tokenizer.decode(lm_datasets["train"][1]["labels"])
 
 ## 使用 `Trainer` API 微调 DistilBERT [[使用 `Trainer` API 微调 DistilBERT]]
 
-微调屏蔽语言模型几乎与微调序列分类模型相同，就像我们在 [第三章](/course/chapter3) 所作的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些词元。幸运的是，🤗 Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将 tokenizer 和一个 `mlm_probability` 参数（指定掩盖词元的比例）传递给它。我们将选择 15%，这是 BERT 所使用的数量，也是文献中常见的选择：
+微调屏蔽语言模型几乎与微调序列分类模型相同，就像我们在 [第三章](/course/chapter3) 所作的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些词元。幸运的是，🤗 Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将 tokenizer 和一个 `mlm_probability` 参数（指定掩盖词元的比例）传递给它。我们将选择 15％，这是 BERT 所使用的数量，也是文献中常见的选择：
 
 ```python
 from transformers import DataCollatorForLanguageModeling
@@ -485,7 +485,7 @@ for chunk in data_collator(samples)["input_ids"]:
 
 {/if}
 
-在为掩码语言建模训练模型时，可以使用的一种技术是一次遮蔽整个单词，而不仅仅是单个的词元。这种方法称为 _全词屏蔽(whole word masking)_。如果我们想使用全词屏蔽(whole word masking)，我们需要自己构建一个数据整理器。数据整理器只是一个函数，它接受一个样本列表并将它们转换为一个批次，所以现在让我们这样做吧！我们将使用先前计算的单词 ID，构建一个单词索引和相应词元之间的映射，然后随机决定遮蔽哪些单词，并在输入上应用该遮蔽。请注意，除了与掩码对应的标签外，所有的标签均为 `-100` 。
+在为掩码语言建模训练模型时，可以使用的一种技术是一次遮蔽整个单词，而不仅仅是单个的词元。这种方法称为 _全词屏蔽（whole word masking）_。如果我们想使用全词屏蔽（whole word masking），我们需要自己构建一个数据整理器。数据整理器只是一个函数，它接受一个样本列表并将它们转换为一个批次，所以现在让我们这样做吧！我们将使用先前计算的单词 ID，构建一个单词索引和相应词元之间的映射，然后随机决定遮蔽哪些单词，并在输入上应用该遮蔽。请注意，除了与掩码对应的标签外，所有的标签均为 `-100` 。
 
 {#if fw === 'pt'}
 
@@ -618,7 +618,7 @@ DatasetDict({
 })
 ```
 
-这会自动创建新的 `train` 和 `test` 数据集，训练集大小设置为 10,000 个示例，验证设置为其中的 10% —— 如果你有一个强大的 GPU, 可以自由增加这个比例！我们接下来要做的事情是登录 Hugging Face Hub。如果你在 Notebook 中运行这段代码，你可以通过以下的工具函数进行登录：
+这会自动创建新的 `train` 和 `test` 数据集，训练集大小设置为 10,000 个示例，验证设置为其中的 10％ —— 如果你有一个强大的 GPU，可以自由增加这个比例！我们接下来要做的事情是登录 Hugging Face Hub。如果你在 Notebook 中运行这段代码，你可以通过以下的工具函数进行登录：
 
 ```python
 from huggingface_hub import notebook_login
@@ -636,7 +636,7 @@ huggingface-cli login
 
 {#if fw === 'tf'}
 
-登录后，我们可以创建我们的“tf.data”数据集。为此，我们将使用 `prepare_tf_dataset()` 方法，该方法会使用我们的模型自动推断哪些列应进入数据集。如果你想准确控制要使用的列，可以改用 `Dataset.to_tf_dataset()` 方法。为了简单起见，我们在这里只使用标准数据整理器，但你也可以尝试全词屏蔽(whole word masking)整理器，并作为一个练习比较结果：
+登录后，我们可以创建我们的“tf.data”数据集。为此，我们将使用 `prepare_tf_dataset()` 方法，该方法会使用我们的模型自动推断哪些列应进入数据集。如果你想准确控制要使用的列，可以改用 `Dataset.to_tf_dataset()` 方法。为了简单起见，我们在这里只使用标准数据整理器，但你也可以尝试全词屏蔽（whole word masking）整理器，并作为一个练习比较结果：
 
 ```python
 tf_train_dataset = model.prepare_tf_dataset(
@@ -681,7 +681,7 @@ callback = PushToHubCallback(
 )
 ```
 
-我们现在已经准备好运行 `model.fit()` 了 —— 但在此之前，让我们先简单地看看 _困惑度(perplexity)_, 它是一种常用的评估语言模型性能的指标。
+我们现在已经准备好运行 `model.fit()` 了 —— 但在此之前，让我们先简单地看看 _困惑度（perplexity）_，它是一种常用的评估语言模型性能的指标。
 
 {:else}
 
@@ -709,7 +709,7 @@ training_args = TrainingArguments(
 )
 ```
 
-在这里，我们调整了一些默认选项，包括 `logging_steps` , 以确保我们可以跟踪每个 epoch 的训练损失。我们还使用了 `fp16=True` 来实现混合精度训练，从而进一步提高训练速度。默认情况下， `Trainer` 将删除模型的 `forward()` 方法中未使用的列。这意味着，如果你使用全词屏蔽(whole word masking)数据整理器，你还需要设置 `remove_unused_columns=False` , 以确保我们不会在训练期间丢失 `word_ids` 列。
+在这里，我们调整了一些默认选项，包括 `logging_steps` ，以确保我们可以跟踪每个 epoch 的训练损失。我们还使用了 `fp16=True` 来实现混合精度训练，从而进一步提高训练速度。默认情况下， `Trainer` 将删除模型的 `forward()` 方法中未使用的列。这意味着，如果你使用全词屏蔽（whole word masking）数据整理器，你还需要设置 `remove_unused_columns=False` ，以确保我们不会在训练期间丢失 `word_ids` 列。
 
 请注意，你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` organization](https://huggingface.co/huggingface-course) 时，我们在 `TrainingArguments` 中添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。默认情况下，使用的存储库将在你的账户中并以你设置的输出目录命名，因此在我们的示例中，它将是 `"lewtun/distilbert-finetuned-imdb"` 。
 
@@ -728,19 +728,19 @@ trainer = Trainer(
 )
 ```
 
-我们现在准备运行 `trainer.train()` —— 但在此之前让我们简要地看一下 _困惑度(perplexity)_, 这是评估语言模型性能的常用指标。
+我们现在准备运行 `trainer.train()` —— 但在此之前让我们简要地看一下 _困惑度（perplexity）_，这是评估语言模型性能的常用指标。
 
 {/if}
 
-### 语言模型的困惑度(perplexity) [[语言模型的困惑度(perplexity)]]
+### 语言模型的困惑度（perplexity） [[语言模型的困惑度(perplexity)]]
 
 <Youtube id="NURcDHhYe98"/>
 
-与文本分类或问答等其他任务不同，在这些任务中，我们会得到一个带标签的语料库进行训练，而语言建模则没有任何明确的标签。那么我们如何确定什么是好的语言模型呢？就像手机中的自动更正功能一样，一个好的语言模型是为语法正确的句子分配高概率，为无意义的句子分配低概率。为了给你一个更直观感受，你可以在网上找到一整套"自动校正失败"的例子。其中，人们的手机中的模型产生了一些相当有趣（并且常常不妥当）的自动完成的结果！
+与文本分类或问答等其他任务不同，在这些任务中，我们会得到一个带标签的语料库进行训练，而语言建模则没有任何明确的标签。那么我们如何确定什么是好的语言模型呢？就像手机中的自动更正功能一样，一个好的语言模型是为语法正确的句子分配高概率，为无意义的句子分配低概率。为了给你一个更直观感受，你可以在网上找到一整套“自动校正失败”的例子。其中，人们的手机中的模型产生了一些相当有趣（并且常常不妥当）的自动完成的结果！
 
 {#if fw === 'pt'}
 
-如果我们的测试集主要由语法正确的句子组成，那么衡量我们语言模型质量的一种方式就是计算它给测试集中所有句子的下一个词分配的概率。高概率表示模型对未见过的例子不感到"惊讶"或"困惑"，这表明它已经学习了语言的基本语法模式。困惑度有各种数学定义，我们将使用的定义是交叉熵损失的指数。因此，我们可以使用 `Trainer.evaluate()` 函数计算测试集上的交叉熵损失，然后取结果的指数，来计算我们预训练模型的困惑度：
+如果我们的测试集主要由语法正确的句子组成，那么衡量我们语言模型质量的一种方式就是计算它给测试集中所有句子的下一个词分配的概率。高概率表示模型对未见过的例子不感到“惊讶”或“困惑”，这表明它已经学习了语言的基本语法模式。困惑度有各种数学定义，我们将使用的定义是交叉熵损失的指数。因此，我们可以使用 `Trainer.evaluate()` 函数计算测试集上的交叉熵损失，然后取结果的指数，来计算我们预训练模型的困惑度：
 
 ```python
 import math
@@ -751,7 +751,7 @@ print(f">>> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 
 {:else}
 
-如果我们的测试集主要由语法正确的句子组成，那么衡量我们语言模型质量的一种方式就是计算它给测试集中所有句子的下一个词分配的概率。高概率表示模型对未见过的例子不感到"惊讶"或"困惑"，这表明它已经学习了语言的基本语法模式。困惑度有各种数学定义，我们将使用的定义是交叉熵损失的指数。因此，我们可以使用 `model.evaluate()` 函数计算测试集上的交叉熵损失，然后取结果的指数，来计算我们预训练模型的困惑度：
+如果我们的测试集主要由语法正确的句子组成，那么衡量我们语言模型质量的一种方式就是计算它给测试集中所有句子的下一个词分配的概率。高概率表示模型对未见过的例子不感到“惊讶”或“困惑”，这表明它已经学习了语言的基本语法模式。困惑度有各种数学定义，我们将使用的定义是交叉熵损失的指数。因此，我们可以使用 `model.evaluate()` 函数计算测试集上的交叉熵损失，然后取结果的指数，来计算我们预训练模型的困惑度：
 
 ```python
 import math
@@ -882,7 +882,7 @@ eval_dataloader = DataLoader(
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
 ```
 
-然后我们需要指定优化器；我们将使用标准的 `AdamW` :
+然后我们需要指定优化器；我们将使用标准的 `AdamW` ：
 
 ```python
 from torch.optim import AdamW
@@ -1015,7 +1015,7 @@ mask_filler = pipeline(
 )
 ```
 
-然后我们可以将样本文本"This is a great [MASK]"提供给 pipeline，看看前 5 个预测是什么：
+然后我们可以将样本文本“This is a great [MASK]”提供给 pipeline，看看前 5 个预测是什么：
 
 ```python
 preds = mask_filler(text)
@@ -1040,6 +1040,6 @@ for pred in preds:
 
 <Tip>
 
-✏️ **试试看！** 为了量化域适应的好处，微调 IMDb 标签上的分类器和预先训练和微调的 Distil BERT  Checkpoint 。如果你需要复习文本分类，请查看 [第三章](/course/chapter3) 。
+✏️ **试试看！** 为了量化域适应的好处，微调 IMDb 标签上的分类器和预先训练和微调的 Distil BERT  Checkpoint 如果你需要复习文本分类，请查看 [第三章](/course/chapter3) 。
 
 </Tip>

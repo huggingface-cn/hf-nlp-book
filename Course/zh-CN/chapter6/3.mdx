@@ -22,20 +22,18 @@
 
 {/if}
 
-在本节中，我们将仔细研究 🤗 Transformers 中 tokenizer 的功能。到目前为止，我们只使用它们来对文本tokenization或将 ID 解码回文本，但是 tokenizer ——特别是由🤗 Tokenizers 库支持的 tokenizer ——能够做的事情还有很多。为了说明这些附加功能，我们将探讨如何复现在 [第一章](/course/chapter1) 中首次遇到的 `token-classification` （我们称之为 `ner` ） 和 `question-answering` 管道的结果。
+在本节中，我们将仔细研究 🤗 Transformers 中 tokenizer 的功能。到目前为止，我们只使用它们来对文本进行 tokenization 或将 ID 解码回文本，但是 tokenizer ——特别是由🤗 Tokenizers 库支持的 tokenizer ——能够做的事情还有很多。为了说明这些附加功能，我们将探讨如何复现在 [第一章](/course/chapter1) 中首次遇到的 `token-classification` （我们称之为 `ner` ） 和 `question-answering` 管道的结果。
 
 <Youtube id="g8quOxoqhHQ"/>
 
-在接下来的讨论中，我们会经常区分“慢速”和“快速” tokenizer 。慢速 tokenizer 是在 🤗 Transformers 库中用 Python 编写的，而快速版本是由 🤗 Tokenizers 提供的，它们是用 Rust 编写的。如果你还记得在 [第五章](/course/chapter5/3) 中对比了快速和慢速 tokenizer 对药物审查数据集进行tokenization所需的时间的这张表，你应该理解为什么我们称它们为“快速”和“慢速”：
+在接下来的讨论中，我们会经常区分“慢速”和“快速” tokenizer 慢速 tokenizer 是在 🤗 Transformers 库中用 Python 编写的，而快速版本是由 🤗 Tokenizers 提供的，它们是用 Rust 编写的。如果你还记得在 [第五章](/course/chapter5/3) 中对比了快速和慢速 tokenizer 对药物审查数据集进行 tokenization 所需的时间的这张表，你应该理解为什么我们称它们为“快速”和“慢速”：
 
 |               | 快速 tokenizer      | 慢速 tokenizer 
-:--------------:|:--------------:|:-------------:
- `batched=True` | 10.8s          | 4min41s
- `batched=False` | 59.2s          | 5min3s
+:--------------:|:--------------:|:-------------: `batched=True` | 10.8s          | 4min41s `batched=False` | 59.2s          | 5min3s
 
 <Tip warning={true}>
 
-⚠️ 对单个句子进行tokenization时，你不总是能看到同一个 tokenizer 的慢速和快速版本之间的速度差异。事实上，快速版本可能实际上更慢！只有同时对大量文本进行tokenization时，你才能清楚地看到差异。
+⚠️ 对单个句子进行 tokenization 时，你不总是能看到同一个 tokenizer 的慢速和快速版本之间的速度差异。事实上，快速版本可能实际上更慢！只有同时对大量文本进行 tokenization 时，你才能清楚地看到差异。
 
 </Tip>
 
@@ -43,9 +41,9 @@
 
 <Youtube id="3umI3tm27Vw"/>
 
- tokenizer 的输出不是简单的 Python 字典；我们得到的实际上是一个特殊的 `BatchEncoding` 对象。它是字典的子类（这就是为什么我们之前能够直接使用索引获取结果的原因），但是它还提供了一些主要由快速 tokenizer 提供的附加方法。
+tokenizer 的输出不是简单的 Python 字典；我们得到的实际上是一个特殊的 `BatchEncoding` 对象。它是字典的子类（这就是为什么我们之前能够直接使用索引获取结果的原因），但是它还提供了一些主要由快速 tokenizer 提供的附加方法。
 
-除了它们的并行化能力之外，快速 tokenizer 的关键功能是它们始终跟踪最终词元相对于的原始文本范围——我们称之为*偏移映射*。这反过来又解锁了如将每个词映射到它生成的词元，或者将原始文本的每个字符映射到它所在的词元等功能。
+除了它们的并行化能力之外，快速 tokenizer 的关键功能是它们始终跟踪最终 token 相对于的原始文本范围——我们称之为 `偏移映射（offset mapping）` 。这反过来又解锁了如将每个词映射到它生成的 token，或者将原始文本的每个字符映射到它所在的 token 等功能。
 
 让我们看一个例子：
 
@@ -64,7 +62,7 @@ print(type(encoding))
 <class 'transformers.tokenization_utils_base.BatchEncoding'>
 ```
 
-由于 `AutoTokenizer` 类默认选择快速 tokenizer ，因此我们可以使用 `BatchEncoding` 对象提供的附加方法。我们有两种方法来检查我们的 tokenizer 是快速的还是慢速的。我们可以检查 `tokenizer` 的 `is_fast` 属性：
+由于 `AutoTokenizer` 类默认选择快速 tokenizer 因此我们可以使用 `BatchEncoding` 对象提供的附加方法。我们有两种方法来检查我们的 tokenizer 是快速的还是慢速的。我们可以检查 `tokenizer` 的 `is_fast` 属性：
 
 ```python
 tokenizer.is_fast
@@ -95,7 +93,7 @@ encoding.tokens()
  'Brooklyn', '.', '[SEP]']
 ```
 
-在这种情况下，索引 5 处的词元是 `##yl` ，它是原始句子中“Sylvain”一词的一部分。我们也可以使用 `word_ids()` 方法来获取每个词元原始单词的索引：
+在这种情况下，索引 5 处的 token 是 `##yl` ，它是原始句子中“Sylvain”一词的一部分。我们也可以使用 `word_ids()` 方法来获取每个 token 原始单词的索引：
 
 ```py
 encoding.word_ids()
@@ -105,19 +103,19 @@ encoding.word_ids()
 [None, 0, 1, 2, 3, 3, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10, 11, 12, None]
 ```
 
-我们可以看到 tokenizer 的特殊词元 `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个词元都映射到它来源的单词。这对于确定一个词元是否在单词的开头或两个词元是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的 tokenizer ，我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速 tokenizer ，它所提供的 word_ids() 方法适用于任何类型的 tokenizer 。在下一章，我们将看到如何利用这种能力，将我们为每个词正确地应用到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有词元（一种称为 `全词掩码（whole word masking）` 的技术）。
+我们可以看到 tokenizer 的特殊 token `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个 token 都映射到它来源的单词。这对于确定一个 token 是否在单词的开头或两个 token 是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的 tokenizer 我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速 tokenizer 它所提供的 `word_ids()` 方法适用于任何类型的 tokenizer 在下一章，我们将看到如何利用这种能力，将我们为每个词正确地应用到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有 token（一种称为 `全词掩码（whole word masking）` 的技术）。
 
 <Tip>
 
 词的概念是复杂的。例如，“I'll”（“I will”的缩写）算作一个词还是两个词？这实际上取决于 tokenizer 和它应用的预分词操作。有些 tokenizer 只在空格处分割，所以它们会把这个看作是一个词。其他 tokenizer 在空格的基础之上还使用标点，所以会认为它是两个词。
 
-✏️ **试试看！**从 bert base cased 和 roberta base  Checkpoint 创建一个 tokenizer ，并用它们对“81s”进行分词。你观察到了什么？这些词的 ID 是什么？
+✏️ **试试看！**从 bert base cased 和 roberta base  Checkpoint 创建一个 tokenizer 并用它们对“81s”进行分词。你观察到了什么？这些词的 ID 是什么？
 
 </Tip>
 
-同样，我们还有一个 `sentence_ids()` 方法，可以用它来映射一个词元到它原始的句子（尽管在这种情况下， tokenizer 返回的 `token_type_ids` 也可以为我们提供相同的信息）。
+同样，我们还有一个 `sentence_ids()` 方法，可以用它来映射一个 token 到它原始的句子（尽管在这种情况下，tokenizer 返回的 `token_type_ids` 也可以为我们提供相同的信息）。
 
-最后，我们可以通过 `word_to_chars()` 或 `token_to_chars()` 和 `char_to_word()` 或 `char_to_token()` 方法，将任何词或词元映射到原始文本中的字符，反之亦然。例如， `word_ids()` 方法告诉我们 `##yl` 是索引 3 处单词的一部分，但它是句子中的哪个单词？我们可以这样找出来：
+最后，我们可以通过 `word_to_chars()` 或 `token_to_chars()` 和 `char_to_word()` 或 `char_to_token()` 方法，将任何词或 token 映射到原始文本中的字符，反之亦然。例如， `word_ids()` 方法告诉我们 `##yl` 是索引 3 处单词的一部分，但它是句子中的哪个单词？我们可以这样找出来：
 
 ```py
 start, end = encoding.word_to_chars(3)
@@ -128,12 +126,12 @@ example[start:end]
 Sylvain
 ```
 
-如前所述，这一切都是由于快速分词器跟踪每个词元来自的文本范围的一组*偏移*。为了说明它们的使用，接下来我们将展示如何手动复现 `token-classification` 管道的结果。
+如前所述，这一切都是由于快速分词器跟踪每个 token 来自的文本范围的一组*偏移*。为了说明它们的使用，接下来我们将展示如何手动复现 `token-classification` 管道的结果。
 
 
 <Tip>
 
-✏️ **试试看！**创建你自己的示例文本，看看你是否能理解哪些词元与单词 ID 相关联，以及如何提取单个单词的字符跨度。附加题：请尝试使用两个句子作为输入，看看句子 ID 是否对你有意义。
+✏️ **试试看！**创建你自己的示例文本，看看你是否能理解哪些 token 与单词 ID 相关联，以及如何提取单个单词的字符跨度。附加题：请尝试使用两个句子作为输入，看看句子 ID 是否对你有意义。
 
 </Tip>
 
@@ -153,7 +151,7 @@ Sylvain
 
 ### 使用管道获得基本结果 [[使用管道获得基本结果]]
 
-首先，让我们获取一个词元分类管道，以便我们可以手动比较一些结果。这次我们选用的模型是 [`dbmdz/bert-large-cased-finetuned-conll03-english`](https://huggingface.co/dbmdz/bert-large-cased-finetuned-conll03-english) ；我们使用它对句子进行 NER：
+首先，让我们获取一个 token 分类管道，以便我们可以手动比较一些结果。这次我们选用的模型是 [`dbmdz/bert-large-cased-finetuned-conll03-english`](https://huggingface.co/dbmdz/bert-large-cased-finetuned-conll03-english) ；我们使用它对句子进行 NER：
 
 ```py
 from transformers import pipeline
@@ -173,7 +171,7 @@ token_classifier("My name is Sylvain and I work at Hugging Face in Brooklyn.")
  {'entity': 'I-LOC', 'score': 0.99321055, 'index': 16, 'word': 'Brooklyn', 'start': 49, 'end': 57}]
 ```
 
-模型正确地识别出：“Sylvain”是一个人，“Hugging Face”是一个组织，以及“Brooklyn”是一个地点。我们也可以让管道将同一实体的词元组合在一起：
+模型正确地识别出：“Sylvain”是一个人，“Hugging Face”是一个组织，以及“Brooklyn”是一个地点。我们也可以让管道将同一实体的 token 组合在一起：
 
 ```py
 from transformers import pipeline
@@ -188,10 +186,10 @@ token_classifier("My name is Sylvain and I work at Hugging Face in Brooklyn.")
  {'entity_group': 'LOC', 'score': 0.99321055, 'word': 'Brooklyn', 'start': 49, 'end': 57}]
 ```
 
-选择不同的 `aggregation_strategy` 可以更改每个分组实体计算的策略。对于 `simple` 策略，最终的分数就是给定实体中每个词元的分数的平均值：例如，“Sylvain”的分数是我们在前一个例子中看到的词元 `S` ， `##yl` ， `##va` ，和 `##in` 的分数的平均值。其他可用的策略包括：
+选择不同的 `aggregation_strategy` 可以更改每个分组实体计算的策略。对于 `simple` 策略，最终的分数就是给定实体中每个 token 的分数的平均值：例如，“Sylvain”的分数是我们在前一个例子中看到的 token `S` ， `##yl` ， `##va` ，和 `##in` 的分数的平均值。其他可用的策略包括：
 
-- “first”，其中每个实体的分数是该实体的第一个词元的分数（因此对于“Sylvain”，它将是 0.993828，这是“S”的分数）
-- “max”，其中每个实体的分数是该实体中词元的最大分数（因此对于“Hugging Face”，它将是 0.98879766，即“Face”的分数）
+- “first”，其中每个实体的分数是该实体的第一个 token 的分数（因此对于“Sylvain”，它将是 0.993828，这是“S”的分数）
+- “max”，其中每个实体的分数是该实体中 token 的最大分数（因此对于“Hugging Face”，它将是 0.98879766，即“Face”的分数）
 - “average”，其中每个实体的分数是组成该实体的单词分数的平均值（因此对于“Sylvain”，与“simple”策略相同，但“Hugging Face”的得分将是 0.9819，这是“Hugging”的分数 0.975 和“Face”的分数 0.98879 的平均值）
 
 现在让我们看看如何在不使用 `pipeline()` 函数的情况下获得这些结果！
@@ -200,7 +198,7 @@ token_classifier("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 
 {#if fw === 'pt'}
 
-首先，我们需要词元我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `AutoXxx` 类实例化 tokenizer 和模型，然后将我们的示例传递给它们：
+首先，我们需要 token 我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `AutoXxx` 类实例化 tokenizer 和模型，然后将我们的示例传递给它们：
 
 ```py
 from transformers import AutoTokenizer, AutoModelForTokenClassification
@@ -214,7 +212,7 @@ inputs = tokenizer(example, return_tensors="pt")
 outputs = model(**inputs)
 ```
 
-由于我们在此使用了 `AutoModelForTokenClassification` ，所以我们得到了输入序列中每个词元的一组 logits：
+由于我们在此使用了 `AutoModelForTokenClassification` ，所以我们得到了输入序列中每个 token 的一组 logits：
 
 ```py
 print(inputs["input_ids"].shape)
@@ -228,7 +226,7 @@ torch.Size([1, 19, 9])
 
 {:else}
 
-首先，我们需要词元我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `TFAutoXxx` 类实例化 tokenizer 和模型，然后将我们的示例传递给它们：
+首先，我们需要 token 我们的输入并将其传递给模型。这个过程与 [第二章](/course/chapter2) 中的方法完全相同；我们使用 `TFAutoXxx` 类实例化 tokenizer 和模型，然后将我们的示例传递给它们：
 
 ```py
 from transformers import AutoTokenizer, TFAutoModelForTokenClassification
@@ -242,7 +240,7 @@ inputs = tokenizer(example, return_tensors="tf")
 outputs = model(**inputs)
 ```
 
-由于我们在此使用了 `TFAutoModelForTokenClassification` ，所以我们得到了输入序列中每个词元的一组 logits：
+由于我们在此使用了 `TFAutoModelForTokenClassification` ，所以我们得到了输入序列中每个 token 的一组 logits：
 
 ```py
 print(inputs["input_ids"].shape)
@@ -256,7 +254,7 @@ print(outputs.logits.shape)
 
 {/if}
 
-我们有一个包含 19 个词元序列的 batch 和有 9 个不同的标签类型，所以模型的输出形状为 1 x 19 x 9。像文本分类管道一样，我们使用 softmax 函数将这些 logits 转化为概率，并取 argmax 来得到预测（请注意，我们可以在 logits 上直接算取 argmax，因为 softmax 不会改变顺序）：
+我们有一个包含 19 个 token 序列的 batch 和有 9 个不同的标签类型，所以模型的输出形状为 1 x 19 x 9。像文本分类管道一样，我们使用 softmax 函数将这些 logits 转化为概率，并取 argmax 来得到预测（请注意，我们可以在 logits 上直接算取 argmax，因为 softmax 不会改变顺序）：
 
 {#if fw === 'pt'}
 
@@ -284,9 +282,7 @@ print(predictions)
 
 ```python out
 [0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 6, 6, 6, 0, 8, 0, 0]
-```
-
- `model.config.id2label` 属性包含索引到标签的映射，我们可以用它来将预测转化为标签：
+````model.config.id2label` 属性包含索引到标签的映射，我们可以用它来将预测转化为标签：
 
 ```py
 model.config.id2label
@@ -304,16 +300,16 @@ model.config.id2label
  8: 'I-LOC'}
 ```
 
-如前所述，这里有 9 个标签： `O` 是不在任何实体中的词元的标签（它代表“outside”），然后我们为每种类型的实体（杂项、人员、组织和位置）提供两个标签：标签 `B-XXX` 表示词元在实体 `XXX` 的开头，标签 `I-XXX` 表示词元在实体 `XXX` 内部。例如，在当前的例子，我们期望我们的模型将词元 `S` 分类为 `B-PER` （人物实体的开始），和将词元 `##yl` ， `##va` 和 `##in` 分类为 `I-PER` （人物实体的内部）
+如前所述，这里有 9 个标签： `O` 是不在任何实体中的 token 的标签（它代表“outside”），然后我们为每种类型的实体（杂项、人员、组织和位置）提供两个标签：标签 `B-XXX` 表示 token 在实体 `XXX` 的开头，标签 `I-XXX` 表示 token 在实体 `XXX` 内部。例如，在当前的例子，我们期望我们的模型将 token `S` 分类为 `B-PER` （人物实体的开始），和将 token `##yl` ， `##va` 和 `##in` 分类为 `I-PER` （人物实体的内部）
 
-你可能会觉得上面模型的输出是错误的，因为它给所有这四个词元都标上了 `I-PER` 标签，但这样理解并不完全正确。对于 `B-` 和 `I-` 标签，实际上有两种格式：IOB1 和 IOB2。我们介绍的是 IOB2 格式（如下图所示的粉色），而在 IOB1 格式（蓝色）中，以 `B-` 开头的标签只用于分隔同一类型的两个相邻实体。我们正在使用的模型在使用该格式的数据集上进行了微调，这就是为什么它将 `S` 词元标上了 `I-PER` 标签的原因。
+你可能会觉得上面模型的输出是错误的，因为它给所有这四个 token 都标上了 `I-PER` 标签，但这样理解并不完全正确。对于 `B-` 和 `I-` 标签，实际上有两种格式：IOB1 和 IOB2。我们介绍的是 IOB2 格式（如下图所示的粉色），而在 IOB1 格式（蓝色）中，以 `B-` 开头的标签只用于分隔同一类型的两个相邻实体。我们正在使用的模型在使用该格式的数据集上进行了微调，这就是为什么它将 `S` token 标上了 `I-PER` 标签的原因。
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/IOB_versions.svg" alt="IOB1 vs IOB2 format"/>
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/IOB_versions-dark.svg" alt="IOB1 vs IOB2 format"/>
 </div>
 
-有了这个映射字典，我们就可以几乎完全复现管道的结果 —— 我们只需要获取每个没有被分类为 O 的词元的得分和标签：
+有了这个映射字典，我们就可以几乎完全复现管道的结果 —— 我们只需要获取每个没有被分类为 O 的 token 的得分和标签：
 
 ```py
 results = []
@@ -352,7 +348,7 @@ inputs_with_offsets["offset_mapping"]
  (33, 35), (35, 40), (41, 45), (46, 48), (49, 57), (57, 58), (0, 0)]
 ```
 
-每个元组都是每个词元对应的文本范围，其中 `(0, 0)` 是为特殊词元保留的。我们之前看到索引 5 的词元是 `##yl` ，它所对应的偏移量是 `(12, 14)` 。如果我们截取我们例子中的对应片段：
+每个元组都是每个 token 对应的文本范围，其中 `(0, 0)` 是为特殊 token 保留的。我们之前看到索引 5 的 token 是 `##yl` ，它所对应的偏移量是 `(12, 14)` 。如果我们截取我们例子中的对应片段：
 
 
 ```py
@@ -405,9 +401,9 @@ print(results)
 
 ### 实体分组 [[实体分组]]
 
-使用偏移来确定每个实体的开始和结束键很方便，但这并不是它唯一的用法。当我们希望将实体分组在一起时，偏移将为我们省去很多复杂的代码。例如，如果我们想将 `Hu` 、 `##gging` 和 `Face` 词元分组在一起，我们可以制定特殊规则，比如说前两个应该在去除 `##` 的同时连在一起， `Face` 应该在不以 `##` 开头的情况下增加空格 —— 但这只适用于这种特定类型的分词器。当我们使用 SentencePiece 或 Byte-Pair-Encoding 分词器（在本章后面讨论）时就要重新写另外一套规则。
+使用偏移来确定每个实体的开始和结束键很方便，但这并不是它唯一的用法。当我们希望将实体分组在一起时，偏移将为我们省去很多复杂的代码。例如，如果我们想将 `Hu` 、 `##gging` 和 `Face` token 分组在一起，我们可以制定特殊规则，比如说前两个应该在去除 `##` 的同时连在一起， `Face` 应该在不以 `##` 开头的情况下增加空格 —— 但这只适用于这种特定类型的分词器。当我们使用 SentencePiece 或 Byte-Pair-Encoding 分词器（在本章后面讨论）时就要重新写另外一套规则。
 
-有了偏移量，就可以免去为特定分词器定制分组规则：我们只需要取原始文本中以第一个词元开始和最后一个词元结束的范围。因此，假如说我们有 `Hu` 、 `##gging` 和 `Face` 词元，我们只需要从字符 33（ `Hu` 的开始）截取到字符 45（ `Face` 的结束）：
+有了偏移量，就可以免去为特定分词器定制分组规则：我们只需要取原始文本中以第一个 token 开始和最后一个 token 结束的范围。因此，假如说我们有 `Hu` 、 `##gging` 和 `Face` token，我们只需要从字符 33（ `Hu` 的开始）截取到字符 45（ `Face` 的结束）：
 
 
 ```py
@@ -418,7 +414,7 @@ example[33:45]
 Hugging Face
 ```
 
-为了编写在对实体进行分组的同时对预测进行后处理的代码，我们将连续并标有 `I-XXX` 标签的实体聚合在一起（因此，当我们得到一个 `O` 类别、一个新类型的实体，亦或者是一个同类型实体的开始词元 `B-XXX` 时，我们应该停止聚合实体）
+为了编写处理预测结果并分组实体的代码，我们将对连续标记为 `I-XXX` 的实体进行分组，因为只有实体的第一个 token 可以被标记为 `B-XXX` 或 `I-XXX` ，因此，当我们遇到实体 `O` 、新类型的实体或 `B-XXX` 时，我们就可以停止聚合同一类型实体。
 
 ```py
 import numpy as np
@@ -437,7 +433,7 @@ while idx < len(predictions):
         label = label[2:]
         start, _ = offsets[idx]
 
-        # 获取所有标有 I 标签的词元
+        # 获取所有标有 I 标签的token
         all_scores = []
         while (
             idx < len(predictions)
@@ -447,7 +443,7 @@ while idx < len(predictions):
             _, end = offsets[idx]
             idx += 1
 
-        # 分数是该分组实体中所有词元分数的平均值
+        # 分数是该分组实体中所有token分数的平均值
         score = np.mean(all_scores).item()
         word = example[start:end]
         results.append(
@@ -472,5 +468,4 @@ print(results)
  {'entity_group': 'LOC', 'score': 0.99321055, 'word': 'Brooklyn', 'start': 49, 'end': 57}]
 ```
 
-另一个非常需要偏移量的任务领域是问答。我们将在下一部分深入探索这个 pipeline 同时也会让我们看到🤗 Transformers 库中 tokenizer 的最后一个特性：在我们将输入超过给定长度时，处理溢出的词元。`````````
-`````````
+另一个非常需要偏移量的任务领域是问答。我们将在下一部分深入探索这个 pipeline。同时我们也会看到🤗 Transformers 库中 tokenizer 的最后一个特性：在我们将输入超过给定长度时，处理溢出的 tokens。
