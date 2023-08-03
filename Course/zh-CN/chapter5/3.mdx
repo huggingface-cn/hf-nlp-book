@@ -1,4 +1,4 @@
-# 开始切割和整理数据 [[开始切割和整理数据]]
+# 分割和整理数据 [[分割和整理数据]]
 
 <CourseFloatingBanner chapter={5}
   classNames="absolute z-10 right-0 top-0"
@@ -7,11 +7,11 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter5/section3.ipynb"},
 ]} />
 
-大多数情况下，你处理的数据并不能直接用于训练模型。在本节中，我们将探索🤗 Datasets 提供的各种功能，用于清理你的数据集。
+大多数情况下，你处理的数据并不能直接用于训练模型。在本节中，我们将探索🤗 Datasets 提供的各种功能，用于清洗你的数据集。
 
 <Youtube id="tqfSFcPMgOI"/>
 
-## 切割和整理我们的数据 [[切割和整理我们的数据]]
+## 分割和整理我们的数据 [[分割和整理我们的数据]]
 
 与 Pandas 类似，🤗 Datasets 提供了多个函数来操作 `Dataset` 和 `DatasetDict` 对象。我们在 [第三章](/course/chapter3) 已经遇到了 `Dataset.map()` 方法，在本节中，我们将探索一些其他可用的函数。
 
@@ -58,7 +58,7 @@ drug_sample[:3]
 
 * `Unnamed: 0` 这列看起来很像每个患者的匿名 ID。
 * `condition` 列包含了大小写混合的标签。
-* 评论长短不一，混合有 Python 行分隔符 ( `\r\n` ) 以及 HTML 字符代码，如 `&\#039;` 。
+* 评论长短不一，混合有 Python 行分隔符 （ `\r\n` ） 以及 HTML 字符代码，如 `&\#039;` 。
   
 
 让我们看看我们如何使用 🤗 Datasets 来处理这些问题。为了验证 `Unnamed: 0` 列存储的是患者 ID 的猜想，我们可以使用 `Dataset.unique()` 函数来验证匿名 ID 的数量是否与分割后每个分组中的行数匹配：
@@ -109,7 +109,7 @@ drug_dataset.map(lowercase_condition)
 AttributeError: 'NoneType' object has no attribute 'lower'
 ```
 
-哦不，我们的 map 功能遇到了问题！从错误中我们可以推断出 `condition` 列存在 `None` , 不能转换为小写，因为它们不是字符串。让我们使用 `Dataset.filter()` 删除这些行 其工作方式类似于 `Dataset.map()` 。例如：
+哦不，我们的 map 功能遇到了问题！从错误中我们可以推断出 `condition` 列存在 `None` ，不能转换为小写，因为它们不是字符串。让我们使用 `Dataset.filter()` 删除这些行 其工作方式类似于 `Dataset.map()` 。例如：
 
 ```py
 def filter_nones(x):
@@ -148,13 +148,12 @@ lambda x : x * x
 16.0
 ```
 
-当你想定义小型、一次性使用的函数时，lambda 函数非常方便（有关它们的更多信息，我们建议阅读 Andre Burgaud 写的 [真正的Python教程](https://realpython.com/python-lambda/) ）。在🤗 Datasets 中，我们可以使用 lambda 函数来定义简单的映射和过滤操作，所以让我们使用这个技巧来消除我们数据集中的 `None` 条目：
+当你想定义小型、一次性使用的函数时，lambda 函数非常方便（有关它们的更多信息，我们建议阅读 Andre Burgaud 写的 [真正的Python教程](https://realpython.com/python-lambda/) ）。在🤗 Datasets 中，我们可以使用 lambda 函数来定义简单的映射和过滤操作，所以让我们使用这个技巧来删除我们数据集中的 `None` 条目：
 
 ```py
 drug_dataset = drug_dataset.filter(lambda x: x["condition"] is not None)
 ```
-
- `None` 条目删除之后，我们可以规范我们的 `condition` 列：
+`None` 条目删除之后，我们可以规范我们的 `condition` 列：
 
 ```py
 drug_dataset = drug_dataset.map(lowercase_condition)
@@ -219,7 +218,7 @@ drug_dataset["train"].sort("review_length")[:3]
 
 <Tip>
 
-🙋向数据集添加新列的另一种方法是使用函数 `Dataset.add_column()` ，在使用它时你可以通过 Python 列表或 NumPy 数组的方式提供数据，在不适合使用 `Dataset.map()`情况下可以很方便。
+🙋向数据集添加新列的另一种方法是使用函数 `Dataset.add_column()` ，在使用它时你可以通过 Python 列表或 NumPy 数组的方式提供数据，在不适合使用 `Dataset.map()` 情况下可以很方便。
 
 </Tip>
 
@@ -234,7 +233,7 @@ print(drug_dataset.num_rows)
 {'train': 138514, 'test': 46108}
 ```
 
-如你所见，这已经从我们的原始训练和测试集中删除了大约 15% 的评论。
+如你所见，这已经从我们的原始训练和测试集中删除了大约 15％ 的评论。
 
 <Tip>
 
@@ -264,10 +263,9 @@ drug_dataset = drug_dataset.map(lambda x: {"review": html.unescape(x["review"])}
 如你所见， `Dataset.map()` 方法对于处理数据非常有用，即使我们还没有完全了解它的所有功能！
 
 ## map() 方法的超级加速 [[map() 方法的超级加速]]
+`Dataset.map()` 方法有一个 `batched` 参数，如果设置为 `True` ，map 函数将会分批执行所需要进行的操作（批量大小是可配置的，但默认为 1,000）。例如，之前对所有 HTML 进行解码的 map 函数运行需要一些时间（你可以从进度条中看到所需的时间）。我们可以通过使用列表推导同时处理多个元素来加速。
 
- `Dataset.map()` 方法有一个 `batched` 参数，如果设置为 `True` , map 函数将会分批执行所需要进行的操作（批量大小是可配置的，但默认为 1,000）。例如，之前对所有 HTML 进行解码的 map 函数运行需要一些时间（你可以从进度条中看到所需的时间）。我们可以通过使用列表推导同时处理多个元素来加速。
-
-当你在使用 `Dataset.map()` 函数时设定 `batched=True` 。该函数会接收一个包含数据集字段的字典，字典的值是一个列表。例如，这是使用 `batched=True` 对所有 HTML 字符进行解码的方法 
+当你在使用 `Dataset.map()` 函数时设定 `batched=True` 。该函数需要接收一个包含数据集字段的字典，字典的值是一个列表。例如，这是使用 `batched=True` 对所有 HTML 字符进行解码的方法 
 
 ```python
 new_drug_dataset = drug_dataset.map(
@@ -275,9 +273,9 @@ new_drug_dataset = drug_dataset.map(
 )
 ```
 
-如果你在笔记本中运行此代码，你会看到此命令的执行速度比前一个命令快得多。这不是因为我们的评论已经是处理过的——如果你重新执行上一节的指令（没有 `batched=True` )，它将花费与之前相同的时间。这是因为列表推导式通常比在同一代码中用 `for` 循环执行相同的代码更快，并且我们还通过同时访问多个元素而不是一个一个来处理来提高处理的速度。
+如果你在笔记本中运行此代码，你会看到此命令的执行速度比前一个命令快得多。这不是因为我们的评论已经是处理过的——如果你重新执行上一节的指令（没有 `batched=True` ），它将花费与之前相同的时间。这是因为列表推导式通常比在同一代码中用 `for` 循环执行相同的代码更快，并且我们还通过同时访问多个元素而不是一个一个来处理来提高处理的速度。
 
-在 [第六章](/course/chapter6) 我们将遇到的“快速” tokenizer ，它可以快速对长文本列表进行tokenization。使用 `Dataset.map()` 搭配 `batched=True` 参数是加速的关键。例如，要使用快速 tokenizer 对所有药物评论tokenization，我们可以使用如下的函数：
+在 [第六章](/course/chapter6) 我们将遇到的“快速” tokenizer 它可以快速对长文本列表进行 tokenization。使用 `Dataset.map()` 搭配 `batched=True` 参数是加速的关键。例如，要使用快速 tokenizer 对所有药物评论 tokenization，我们可以使用如下的函数：
 
 ```python
 from transformers import AutoTokenizer
@@ -287,13 +285,13 @@ def tokenize_function(examples):
     return tokenizer(examples["review"], truncation=True)
 ```
 
-正如我们在 [第三章](/course/chapter3) 所看到的，我们原本就可以将一个或多个示例传递给 tokenizer ，因此在 `batched=True` 是一个非必须的选项。让我们借此机会比较不同选项的性能。在notebook中，你可以在你要测量的代码行之前添加 `%time` 来记录该行运行所消耗的时间：
+正如我们在 [第三章](/course/chapter3) 所看到的，我们原本就可以将一个或多个示例传递给 tokenizer 因此在 `batched=True` 是一个非必须的选项。让我们借此机会比较不同选项的性能。在 notebook 中，你可以在你要测量的代码行之前添加 `%time` 来记录该行运行所消耗的时间：
 
 ```python no-format
 %time tokenized_dataset = drug_dataset.map(tokenize_function, batched=True)
 ```
 
-你也可以将 `%%time` 放置在单元格开头来统计整个单元格的执行时间。在我们的硬件上，该指令显示 10.8 秒（这就是真正(Wall time)的执行时间）。
+你也可以将 `%%time` 放置在单元格开头来统计整个单元格的执行时间。在我们的硬件上，该指令显示 10.8 秒（这就是真正（Wall time）的执行时间）。
 
 <Tip>
 
@@ -303,16 +301,13 @@ def tokenize_function(examples):
 
 以下是我们在使用和不使用批处理时使用快速和慢速 tokenizer 获得的结果：
 
-Options         | Fast tokenizer | Slow tokenizer
-:--------------:|:--------------:|:-------------:
- `batched=True` | 10.8s          | 4min41s
- `batched=False` | 59.2s          | 5min3s
+选项         | 快速 tokenizer | 慢速 tokenizer
+:--------------:|:--------------:|:-------------:`batched=True` | 10.8s          | 4min41s`batched=False` | 59.2s          | 5min3s
 
-这意味着使用快速 tokenizer 配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的tokenization代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
+这意味着使用快速 tokenizer 配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的 tokenization 代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
 
-并行化也是快速 tokenizer 通过批处理实现近 6 倍加速的原因：单个tokenization操作是不能并行的，但是当你想同时对大量文本进行tokenization时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。
-
- `Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速 tokenizer 加速（尤其是当你使用的 tokenizer 没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
+并行化也是快速 tokenizer 通过批处理实现近 6 倍加速的原因：单个 tokenization 操作是不能并行的，但是当你想同时对大量文本进行 tokenization 时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。
+`Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速 tokenizer 加速（尤其是当你使用的 tokenizer 没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
 
 ```py
 slow_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased", use_fast=False)
@@ -327,10 +322,10 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 
 选项         | 快速 tokenizer  | 慢速 tokenizer 
 :--------------:|:--------------:|:-------------:
- `batched=True` | 10.8s          | 4min41s
- `batched=False` | 59.2s          | 5min3s
- `batched=True` , `num_proc=8` | 6.52s          | 41.3s
- `batched=False` , `num_proc=8` | 9.49s          | 45.2s
+`batched=True` | 10.8s          | 4min41s
+`batched=False` | 59.2s          | 5min3s
+`batched=True` , `num_proc=8` | 6.52s          | 41.3s
+`batched=False` , `num_proc=8` | 9.49s          | 45.2s
 
 这个结果对于慢速分词器来说是更加友好了，但快速分词器的性能也得到了显著提升。但是请注意，情况并非总是如此—对于 `num_proc` 的其他值，在我们的测试中，使用 `batched=True` 而不带有 `num_proc` 参数的选项处理起来更快。总的来说，我们并不推荐在快速 tokenizer 和 `batched=True` 的情况下使用 Python 的多进程处理。
 
@@ -348,7 +343,7 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 
 </Tip>
 
-让我们来看看它是如何实现的！在这里，我们将对我们的样本进行tokenization并将最大截断长度设置 128，但我们将要求 tokenizer 返回全部文本块，而不仅仅是第一个。这可以通过设置 `return_overflowing_tokens=True` 来实现：
+让我们来看看它是如何实现的！在这里，我们将对我们的样本进行 tokenization 并将最大截断长度设置为 128，但我们将要求 tokenizer 返回全部文本块，而不仅仅是第一个。这可以通过设置 `return_overflowing_tokens=True` 来实现：
 
 ```py
 def tokenize_and_split(examples):
@@ -381,7 +376,7 @@ tokenized_dataset = drug_dataset.map(tokenize_and_split, batched=True)
 ArrowInvalid: Column 1 named condition expected length 1463 but got length 1000
 ```
 
-不好了！这并没有成功！为什么呢？查看错误消息会给我们一个线索：列的长度不匹配，一列长度为 1,463，另一列长度为 1,000。1,000 行的"review"生成了 1,463 行的新特征，导致和原本的 1000 行的长度不匹配。
+不好了！这并没有成功！为什么呢？查看错误消息会给我们一个线索：列的长度不匹配，一列长度为 1,463，另一列长度为 1,000。1,000 行的“review”生成了 1,463 行的新特征，导致和原本的 1000 行的长度不匹配。
 
 问题出在我们试图混合两个长度不同的数据集： `drug_dataset` 列将有 1000 个样本，但是我们正在构建 `tokenized_dataset` 列将有 1,463 个样本（因为我们使用 `return_overflowing_tokens=True` 将长评论分词成了多个样本）。这对 `Dataset` 来说不可行，所以我们需要要么删除旧数据集的列，要么使它们与新数据集中的尺寸相同。我们可以使用 `remove_columns` 参数来实现前者：
 
@@ -442,7 +437,7 @@ DatasetDict({
 
 你现在已经了解了如何使用 🤗 Datasets 以各种方式用于预处理数据集。虽然🤗 Datasets 的处理功能会覆盖你大部分的模型训练需求，有时你可能需要切换到 Pandas 以使用更强大的功能，例如 `DataFrame.groupby()` 或用于可视化的高级 API。幸运的是，🤗 Datasets 设计宗旨就是与 Pandas、NumPy、PyTorch、TensorFlow 和 JAX 等库可以相互转换。让我们来看看这是如何实现的。
 
-## `🤗 Datasets 和 DataFrames 的相互转换 [[` 🤗 Datasets 和 DataFrames 的相互转换]]
+## 🤗 Datasets 和 DataFrames 的相互转换 [[ 🤗 Datasets 和 DataFrames 的相互转换]]
 
 <Youtube id="tfcY1067A5Q"/>
 
@@ -592,7 +587,7 @@ Dataset({
 
 <Tip>
 
-✏️**试试看！ **计算每种药物的平均评分并将结果存储在一个新的 Dataset中。
+✏️**试试看！**计算每种药物的平均评分并将结果存储在一个新的 Dataset 中。
 
 </Tip>
 
@@ -610,9 +605,9 @@ drug_dataset.reset_format()
 
 ```py
 drug_dataset_clean = drug_dataset["train"].train_test_split(train_size=0.8, seed=42)
-# Rename the default "test" split to "validation"
+# 将默认的 "test" 部分重命名为"validation"
 drug_dataset_clean["validation"] = drug_dataset_clean.pop("test")
-# Add the "test" set to our `DatasetDict`
+# 将 "test" 集添加到我们的`DatasetDict`中
 drug_dataset_clean["test"] = drug_dataset["test"]
 drug_dataset_clean
 ```
@@ -675,7 +670,7 @@ drug-reviews/
     └── state.json
 ```
 
-其中，我们可以看到，每个部分都有 dataset.arrow 表，以及保存元数据的 dataset_info.json 和 state.json 。你可以将 Arrow 格式视为一个优化的列和行的精美表格，它针对构建处理和传输大型数据集的高性能应用程序进行了优化。
+其中，我们可以看到，每个部分都有 dataset.arrow 表，以及保存元数据的 dataset_info.json 和 state.json。你可以将 Arrow 格式视为一个优化的列和行的精美表格，它针对构建处理和传输大型数据集的高性能应用程序进行了优化。
 
 保存数据集后，我们可以使用 `load_from_disk()` 功能从磁盘读取数据：
 
@@ -720,7 +715,7 @@ for split, dataset in drug_dataset_clean.items():
 {"patient_id":141780,"drugName":"Escitalopram","condition":"depression","review":"\"I seemed to experience the regular side effects of LEXAPRO, insomnia, low sex drive, sleepiness during the day. I am taking it at night because my doctor said if it made me tired to take it at night. I assumed it would and started out taking it at night. Strange dreams, some pleasant. I was diagnosed with fibromyalgia. Seems to be helping with the pain. Have had anxiety and depression in my family, and have tried quite a few other medications that haven't worked. Only have been on it for two weeks but feel more positive in my mind, want to accomplish more in my life. Hopefully the side effects will dwindle away, worth it to stick with it from hearing others responses. Great medication.\"","rating":9.0,"date":"May 29, 2011","usefulCount":10,"review_length":125}
 ```
 
-然后我们可以使用 [第二节](/course/chapter5/2) 中的技巧，按如下所示载入 JSON 文件
+然后我们可以使用 [第二节](/course/chapter5/2) 中的技巧，按如下所示加载 JSON 文件
 
 ```py
 data_files = {
@@ -733,7 +728,7 @@ drug_dataset_reloaded = load_dataset("json", data_files=data_files)
 
 至此，我们对使用🤗 Datasets 进行数据整理的探索就此结束！现在我们有了一个清洗过的数据集，以下是你可以尝试的一些想法：
 
-1. 使用 [第3章](/course/chapter3) 的技术来训练一个分类器，它能够基于药品评价预测患者的病情。
-2. 使用 [第一章](/course/chapter1) 中的 `summarization` 管道生成评论摘要。
+1. 使用 [第三章](/course/chapter3) 的技术来训练一个分类器，它能够基于药品评价预测患者的病情。
+2. 使用 [第一章](/course/chapter1) 中的 `summarization` 管道生成评论的摘要。
 
 接下来，我们将看看 🤗 Datasets 如何使你能够在不撑爆笔记本电脑内存的情况下处理庞大的数据集！

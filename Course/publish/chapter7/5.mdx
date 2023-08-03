@@ -250,7 +250,7 @@ inputs
 {'input_ids': [336, 259, 28387, 11807, 287, 62893, 295, 12507, 1], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1]}
 ```
 
-在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在第3章的第一次微调实验中遇到过。让我们使用词元分析器的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的词元分析器：
+在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在第三章的第一次微调实验中遇到过。让我们使用词元分析器的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的词元分析器：
 
 ```python
 tokenizer.convert_ids_to_tokens(inputs.input_ids)
@@ -260,7 +260,7 @@ tokenizer.convert_ids_to_tokens(inputs.input_ids)
 ['▁I', '▁', 'loved', '▁reading', '▁the', '▁Hung', 'er', '▁Games', '</s>']
 ```
 
-特殊的 Unicode 字符 `▁` 和序列结束词元 `</s>` 表明我们正在使用基于第6章中讨论的 Unigram 分段算法的 SentencePiece 词元分析器。Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 忽略口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
+特殊的 Unicode 字符 `▁` 和序列结束词元 `</s>` 表明我们正在使用基于第六章中讨论的 Unigram 分段算法的 SentencePiece 词元分析器。Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 忽略口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
 
 为了对我们的语料库词元化，我们必须处理与摘要相似的微妙之处：因为我们的标签也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。Transformers 中的分词器提供了一个绝妙的 `text_target` 参数，允许你将标签与输入并行词元化。以下是如何为 mT5 处理输入和目标的示例：
 

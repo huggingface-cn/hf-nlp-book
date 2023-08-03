@@ -158,7 +158,7 @@ next(iter(pubmed_dataset_streamed))
  'text': 'Epidemiology of hypoxaemia in children with acute lower respiratory infection.\nTo determine the prevalence of hypoxaemia in children aged under 5 years suffering acute lower respiratory infections (ALRI), the risk factors for hypoxaemia in children under 5 years of age with ALRI, and the association of hypoxaemia with an increased risk of dying in children of the same age ...'}
 ```
 
-如果你需要在训练期间对流式数据集中的元素tokenization，可以使用 `IterableDataset.map()` 进行在线处理，而不需要等待数据集全部加载完毕。该过程与我们在 [第三章](/course/chapter3) 中对数据集tokenization的过程完全相同，唯一的区别是输出是逐个返回的：
+如果你需要在训练期间对流式数据集中的元素tokenize，可以使用 `IterableDataset.map()` 进行在线处理，而不需要等待数据集全部加载完毕。该过程与我们在 [第三章](/course/chapter3) 中对数据集tokenize的过程完全相同，唯一的区别是输出是逐个返回的：
 
 ```py
 from transformers import AutoTokenizer
@@ -174,7 +174,7 @@ next(iter(tokenized_dataset))
 
 <Tip>
 
-💡 为了加速流式的tokenization，你可以传递 `batched=True` ，就像我们在上一节看到的那样。它会批量处理示例；默认的批大小是 1000，可以通过 `batch_size` 参数指定批量大小。
+💡 为了加速流式的tokenize，你可以传递 `batched=True` ，就像我们在上一节看到的那样。它会批量处理示例；默认的批大小是 1000，可以通过 `batch_size` 参数指定批量大小。
 
 </Tip>
 
@@ -190,7 +190,7 @@ next(iter(shuffled_dataset))
  'text': 'Randomized study of dose or schedule modification of granulocyte colony-stimulating factor in platinum-based chemotherapy for elderly patients with lung cancer ...'}
 ```
 
-在这个例子中，我们从缓冲区的前 10,000 个示例中随机选择了一个示例。一旦访问了一个示例，它在缓冲区中的位置就会被语料库中的下一个示例填充 (即，上述案例中的第 10,001 个示例)。你还可以使用 `IterableDataset.take()` 和 `IterableDataset.skip()` 函数从流式数据集中选择元素，它的作用类似于 `Dataset.select()` 。例如，要选择 PubMed Abstracts 数据集的前 5 个示例，我们可以执行以下操作：
+在这个例子中，我们从缓冲区的前 10,000 个示例中随机选择了一个示例。一旦访问了一个示例，它在缓冲区中的位置就会被语料库中的下一个示例填充 (即，上述案例中的第 10,001 个示例)。你还可以使用 `IterableDataset.take()` 和 `IterableDataset.skip()` 函数从流式数据集中选择元素，它的作用类似于 `Dataset.select()` 。例如，要选择 PubMed Abstracts 数据集的前 5 个示例，我们可以执行以下代码：
 
 ```py
 dataset_head = pubmed_dataset_streamed.take(5)

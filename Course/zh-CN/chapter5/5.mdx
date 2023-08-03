@@ -7,9 +7,9 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter5/section5.ipynb"},
 ]} />
 
-有时，不存在合适的数据集适用于你构建 NLP 应用，因此你需要自己创建。在本节中，我们将向你展示如何创建一个由 [GitHub issues](https://github.com/features/issues/) 组成的的语料库，这些 issues 通常用于跟踪 GitHub 存储库中的错误或功能。该语料库可用于各种目的，包括：
-* 探索关闭未解决的 issue 或拉取请求需要多长时间
-* 训练一个*多标签分类器*可以根据 issue 的描述为问题标上元数据标签（例如，“bug”、“enhancement(增强功能)”或“question”）
+有时，不存在现有的合适的数据集适用于你构建 NLP 应用，因此你需要自己创建。在本节中，我们将向你展示如何创建一个由 [GitHub issues](https://github.com/features/issues/) 组成的的语料库，这些 issues 通常用于跟踪 GitHub 仓库中的错误或功能。该语料库可用于各种目的，包括：
+* 探索关闭未解决的 issue 或 pull 请求需要多长时间
+* 训练一个`多标签分类器（multilabel classifier）`可以根据 issue 的描述为issue标上元数据标签（例如，“bug”、“enhancement(增强功能)”或“question”）
 * 创建语义搜索引擎以查找与用户查询匹配的 issue
 
 在这里，我们将关注如何创建语料库，在下一节中，我们将探索语义搜索。原汤化原食，我们将使用与一个流行的开源项目关联的 GitHub issue：🤗 Datasets！接下来让我们看看如何获取数据并探索这些 issue 中包含的信息。
@@ -110,14 +110,14 @@ response.json()
   'performed_via_github_app': None}]
 ```
 
-哇，好大量的信息！我们可以看到有用的字段，我们可以看到诸如 `title` 、 `body` 和 `number` 等描述问题的有用字段，以及关于创建 issue 的 GitHub 用户的信息。
+哇，好大量的信息！我们可以看到有用的字段，我们可以看到诸如 `title` 、 `body` 和 `number` 等描述issue的有用字段，以及关于创建 issue 的 GitHub 用户的信息。
 
 <Tip>
 
 ✏️ **试试看！**打开上面 JSON 中的一些 URL，以了解每个 GitHub issue 中 url 所链接的信息类型。
 </Tip>
 
-如 GitHub [文档](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting) 中所述，未经身份验证的请求限制为每小时 60 个请求。虽然你可以增加 `per_page` 查询参数以减少你发出的请求次数，但你仍会在任何有几千个以上 issue 的仓库上触发速率限制。因此，你应该按照 GitHub 的 [说明](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) ，创建一个*个人访问令牌*这样你就可以将速率限制提高到每小时 5,000 个请求。获得令牌后，你可以将其放在请求标头中：
+如 GitHub [文档](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting) 中所述，未经身份验证的请求限制为每小时 60 个请求。虽然你可以增加 `per_page` 查询参数以减少你发出的请求次数，但你仍会在任何有几千个以上 issue 的仓库上触发速率限制。因此，你应该按照 GitHub 的 [说明](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) ，创建一个`个人访问令牌（personal access token）`这样你就可以将速率限制提高到每小时 5,000 个请求。获得令牌后，你可以将其放在请求标头中：
 
 ```py
 GITHUB_TOKEN = xxx  #  将你的GitHub令牌复制到此处
@@ -130,7 +130,7 @@ headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 </Tip>
 
-现在我们有了访问令牌，让我们创建一个可以从 GitHub 存储库下载所有 issue 的函数：
+现在我们有了访问令牌，让我们创建一个可以从 GitHub 仓库下载所有 issue 的函数：
 
 ```py
 import time
@@ -152,19 +152,19 @@ def fetch_issues(
 
     batch = []
     all_issues = []
-    per_page = 100  # Number of issues to return per page
+    per_page = 100  ## 每页返回的 issue 的数量
     num_pages = math.ceil(num_issues / per_page)
     base_url = "https://api.github.com/repos"
 
     for page in tqdm(range(num_pages)):
-        # Query with state=all to get both open and closed issues
+        # 使用 state=all 进行查询来获取 open 和 closed 的issue
         query = f"issues?page={page}&per_page={per_page}&state=all"
         issues = requests.get(f"{base_url}/{owner}/{repo}/{query}", headers=headers)
         batch.extend(issues.json())
 
         if len(batch) > rate_limit and len(all_issues) < num_issues:
             all_issues.extend(batch)
-            batch = []  # Flush batch for next time period
+            batch = []  # 重置batch
             print(f"Reached GitHub rate limit. Sleeping for one hour ...")
             time.sleep(60 * 60 + 1)
 
@@ -176,7 +176,7 @@ def fetch_issues(
     )
 ```
 
-现在我们可以调用 `fetch_issues()` 它将以批次下载所有问题，以避免超过 GitHub 每小时请求次数的限制；结果将存储在 repository_name-issues.jsonl 文件，其中每一行都是一个 JSON 对象，代表一个 issue。让我们使用这个函数从 🤗 Datasets 中抓取所有 issue：
+现在我们可以调用 `fetch_issues()` 它将按批次下载所有issue，以避免超过 GitHub 每小时请求次数的限制；结果将存储在 repository_name-issues.jsonl 文件，其中每一行都是一个 JSON 对象，代表一个 issue。让我们使用这个函数从 🤗 Datasets 中抓取所有 issue：
 
 ```py
 # 取决于你的网络连接，这可能需要几分钟的时间来运行...
@@ -197,7 +197,7 @@ Dataset({
 })
 ```
 
-太好了，我们已经从头开始创建了我们的第一个数据集！但是为什么会有几千个 issue，而🤗 Datasets 存储库中的 [Issues 选项卡](https://github.com/huggingface/datasets/issues) 总共却只显示了大约 1,000 个 issue🤔？如 GitHub [文档](https://docs.github.com/en/rest/reference/issues#list-issues-assigned-to-the-authenticated-user) 中所述，那是因为我们下载了所有的拉取请求：
+太好了，我们已经从头开始创建了我们的第一个数据集！但是为什么会有几千个 issue，而🤗 Datasets 仓库中的 [Issues 选项卡](https://github.com/huggingface/datasets/issues) 总共却只显示了大约 1,000 个 issue🤔？如 GitHub [文档](https://docs.github.com/en/rest/reference/issues#list-issues-assigned-to-the-authenticated-user) 中所述，那是因为我们下载了所有的 pull 请求：
 
 >Git Hub 的 REST API v3 认为每个 pull 请求都是一个 issue，但并不是每个 issue 都是一个 pull 请求。因此，“Issues”节点可能同时返回了 issue 和 pull 请求。你可以通过 pull_request 的 key 来辨别 pull 请求。请注意，从“Issues”节点返回的 pull 请求的 id 将是一个 issue id。
 
@@ -205,12 +205,12 @@ Dataset({
 
 ## 清洗数据 [[清洗数据]]
 
-上面的 GitHub 文档告诉我们， `pull_request` 列可用于区分 issue 和拉取请求。让我们随机挑选一些样本，看看有什么不同。我们将使用在 [第三节](/course/chapter5/3) , 学习的方法，使用 `Dataset.shuffle()` 和 `Dataset.select()` 抽取一个随机样本，然后将 `html_url` 和 `pull_request` 列使用 zip 函数组合起来，以便我们可以比较各种 URL：
+上面的 GitHub 文档告诉我们， `pull_request` 列可用于区分 issue 和 pull 请求。让我们随机挑选一些样本，看看有什么不同。我们将使用在 [第三节](/course/chapter5/3) , 学习的方法，使用 `Dataset.shuffle()` 和 `Dataset.select()` 抽取一个随机样本，然后将 `html_url` 和 `pull_request` 列使用 zip 函数组合起来，以便我们可以比较各种 URL：
 
 ```py
 sample = issues_dataset.shuffle(seed=666).select(range(3))
 
-# 打印出 URL 和拉取请求
+# 打印出 URL 和 pull 请求
 for url, pr in zip(sample["html_url"], sample["pull_request"]):
     print(f">> URL: {url}")
     print(f">> Pull request: {pr}\n")
@@ -241,7 +241,7 @@ issues_dataset = issues_dataset.map(
 
 </Tip>
 
-尽管我们可以通过删除或重命名某些列来进一步清理数据集，但在此阶段尽可能保持数据集“原始”状态通常是一个很好的做法，以便它可以在多个不同的项目中轻松使用。在我们将数据集推送到 Hugging Face Hub 之前，让我们再添加一些缺少的数据：与每个 issue 和拉取请求相关的评论。我们接下来将添加它们——你猜对了——我们将依然使用 GitHub REST API！
+尽管我们可以通过删除或重命名某些列来进一步清理数据集，但在此阶段尽可能保持数据集“原始”状态通常是一个很好的做法，以便它可以在多个不同的项目中轻松使用。在我们将数据集推送到 Hugging Face Hub 之前，让我们再添加一些缺少的数据：与每个 issue 和 pull 请求相关的评论。我们接下来将添加它们——你猜对了——我们将依然使用 GitHub REST API！
 
 ## 扩充数据集 [[扩充数据集]]
 
@@ -330,7 +330,7 @@ from huggingface_hub import notebook_login
 
 notebook_login()
 ```
-这将创建一个小部件，你可以在其中输入你的用户名和密码，API 令牌将保存在~/.huggingface/token 中。如果你在终端中运行代码，则可以改为通过命令行登录：
+这将创建一个小部件，你可以在其中输入你的用户名和密码，API 令牌将保存在`~/.huggingface/token` 中。如果你在终端中运行代码，则可以改为使用命令行登录：
 
 ```bash
 huggingface-cli login
@@ -366,9 +366,9 @@ Dataset({
 
 ## 创建数据集卡片 [[创建数据集卡片]]
 
-有据可查的数据集更有可能对其他人（包括你未来的自己！）有用，因为它们提供了上下文，使用户能够决定数据集是否与他们的任务相关，并评估任何潜在的偏见或与使用相关的风险。
+有据可查的数据集更有可能对其他人（包括你未来的自己！）有用，因为它们提供了数据集相关的信息，使用户能够决定数据集是否与他们的任务相关，并评估任何潜在的偏见或与使用相关的风险。
 
-在 Hugging Face Hub 上，此信息存储在每个数据集存储库的自述文件文件。在创建此文件之前，你应该采取两个主要步骤：
+在 Hugging Face Hub 上，此信息存储在每个数据集仓库的自述文件文件。在创建此文件之前，你应该采取两个主要步骤：
 
 1. 使用 [`datasets-tagging`应用程序](https://huggingface.co/datasets/tagging/) 创建 YAML 格式的元数据标签。这些标签用于 Hugging Face Hub 上的各种搜索功能，并确保你的数据集可以很容易地被社区成员找到。由于我们已经在这里创建了一个自定义数据集，所以你需要克隆数据集标签 `datasets-tagging` 仓库并在本地运行应用程序。它的界面是这样的：
 
@@ -376,7 +376,7 @@ Dataset({
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter5/datasets-tagger.png" alt="The+-|--?76?--|-+interface." width="80%"/>
 </div>
 
-2．阅读 [🤗 Datasets 指南](https://github.com/huggingface/datasets/blob/master/templates/README_guide.md) 关于创建完善的数据集卡片的指南，并将其作为模板使用。
+2．阅读 [🤗 Datasets 指南](https://github.com/huggingface/datasets/blob/master/templates/README_guide.md) 中关于创建完善的数据集卡片的指南，并将其作为模板使用。
 
 你可以直接在 Hub 上创建 README.md 文件，你可以在 `lewtun/github-issues` 数据集仓库中找到一个模板数据集卡片。下面显示了填写好的数据集卡片的截图。
 
@@ -394,6 +394,6 @@ Dataset({
 
 <Tip>
 
-✏️ **试试看！**按照我们在本节中采取的步骤为你最喜欢的开源库创建一个 GitHub issue 数据集（当然是除了 🤗 Datasets）。额外进阶任务：微调多标签分类器以预测在 `labels` 字段中出现的标签。
+✏️ **试试看！**按照我们在本节中采取的步骤为你最喜欢的开源库创建一个 GitHub issue 数据集（当然是除了 🤗 Datasets）。进阶的挑战：微调多标签分类器以预测在 `labels` 字段中出现的标签。
 </Tip>
 

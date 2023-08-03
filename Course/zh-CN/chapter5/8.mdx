@@ -7,7 +7,7 @@
     classNames="absolute z-10 right-0 top-0"
 />
 
-本章涵盖了很多方面！如果你没有掌握所有细节，不用担心；接下来的章节将帮助你了解🤗 Datasets 内在运作机制。
+本章涵盖了很多方面！如果你没有掌握所有细节，不用担心；接下来的章节将继续帮助你了解🤗 Datasets 内在运作机制。
 
 不过，在继续下一章之前，让我们测试一下你在本章学到的内容。
 
@@ -45,11 +45,11 @@ dataset = load_dataset("glue", "mrpc", split="train")
 	choices={[
 		{
 			text: " `dataset.sample (50)` ",
-			explain: "不正确——没有 `Dataset.sample ()` 方法。"
+			explain: "不正确 —— 没有 `Dataset.sample()` 方法。"
 		},
 		{
 			text: " `dataset.shuffle().select(range(50))` ",
-			explain: "正确！正如你在这一章中看到的，你首先打乱了数据集，然后从中选择样本。",
+			explain: "正确！正如你在这一章中所学到的，你首先打乱了数据集，然后从中选择样本。",
 			correct: true
 		},
 		{
@@ -138,7 +138,7 @@ dataset[0]
 			correct: true
 		},
 		{
-			text: "数据集 `allocine` 没有分割 `train` 部分。",
+			text: "数据集 `allocine` 没有 `train` 部分。",
 			explain: "这是不正确的—— 查看 Hub 上的 [`allocine`数据卡片](https://huggingface.co/datasets/allocine) , 可以看到它有那几部分"
 		}
 	]}
@@ -159,7 +159,7 @@ dataset[0]
 		},
 		{
 			text: "它提高了社区中其他人使用我的数据集的可能性。",
-			explain: "正确！一个写得好的数据集卡通常会导致你的宝贵数据集的使用率更高。它还有什么好处呢？",
+			explain: "正确！一个写得好的数据集卡通常会促使你的数据集的使用率更高。它还有什么好处呢？",
 			correct: true
 		},
 	]}
@@ -171,11 +171,11 @@ dataset[0]
 	choices={[
 		{
 			text: "一种在查询中的单词和语料库中的文档之间精确匹配的方法",
-			explain: "这是不正确的——这种类型的搜索被称为“词汇搜索”，这是你在传统搜索引擎中通常看到的。"
+			explain: "这是不正确的——这种类型的搜索被称为“词汇搜索（lexical search）”，这是你在传统搜索引擎中通常看到的。"
 		},
 		{
 			text: "一种通过理解查询的上下文含义来搜索匹配文档的方法",
-			explain: "正确！语义搜索使用嵌入向量来表示查询和文档，并使用相似度度量来衡量它们之间的相似成都。你还会怎么描述它呢？",
+			explain: "正确！语义搜索使用嵌入向量来表示查询和文档，并使用相似度度量来衡量它们之间的相似程度。你还会怎么描述它呢？",
 			correct: true
 		},
 		{

@@ -252,7 +252,7 @@ for row in sample:
 
 因此，我们将像往常一样首先对我们的语料库 tokenization，但是不在我们的 tokenizer 中设置 `truncation=True` 选项。我们还将获取可用的单词 ID （（如果我们使用快速 tokenizer 它们是可用的，如 [第六章](/course/chapter6/3) 中所述），因为我们稍后将需要它们来进行全字屏蔽。我们将把它包装在一个简单的函数中，当我们在做的时候，我们将删除 `text` 和 `label` 列，因为我们不再需要它们：
 
-所以我们首先像往常一样对语料库进行分词，但是在分词器中_不_设置 `truncation=True` 选项。如果词 ID 可用（如果我们使用的是快速分词器，如 [第6章](https://chat.openai.com/course/chapter6/3) 所述，它们就会可用），我们也会抓取它们，因为我们稍后需要用它们进行全词遮罩。我们将这一部分包装成一个简单的函数，顺便我们还将删除不再需要的 `text` 和 `label` 列：
+所以我们首先像往常一样对语料库进行分词，但是在分词器中_不_设置 `truncation=True` 选项。如果词 ID 可用（如果我们使用的是快速分词器，如 [第六章](https://chat.openai.com/course/chapter6/3) 所述，它们就会可用），我们也会抓取它们，因为我们稍后需要用它们进行全词遮罩。我们将这一部分包装成一个简单的函数，顺便我们还将删除不再需要的 `text` 和 `label` 列：
 
 ```python
 def tokenize_function(examples):
@@ -828,7 +828,7 @@ trainer.push_to_hub()
 
 ## 使用 🤗 Accelerate 微调 DistilBERT [[使用 🤗 Accelerate 微调 DistilBERT]]
 
-正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与 [第3章](https://chat.openai.com/course/chapter3) 中的文本分类示例非常相似。事实上，唯一的微妙之处是使用了一个特殊的数据整理器，我们已经在本节的早些时候讨论过这个问题了！
+正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与 [第三章](https://chat.openai.com/course/chapter3) 中的文本分类示例非常相似。事实上，唯一的微妙之处是使用了一个特殊的数据整理器，我们已经在本节的早些时候讨论过这个问题了！
 
 然而，我们注意到 `DataCollatorForLanguageModeling` 在每次评估时也会应用随机遮罩，所以我们在每次训练运行时都会看到困惑度分数的波动。消除这种随机性的一种方法是在整个测试集上一次性_应用_遮罩，然后在评估过程中使用 🤗 Transformers 的默认数据整理器来收集批次。要理解这是如何工作的，让我们实现一个简单的函数，该函数在批次上应用遮罩，这与我们首次遇到 `DataCollatorForLanguageModeling` 的情况类似：
 

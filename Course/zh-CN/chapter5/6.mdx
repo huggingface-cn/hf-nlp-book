@@ -28,7 +28,7 @@
 
 ## 使用文本嵌入进行语义搜索 [[使用文本嵌入进行语义搜索]]
 
-正如我们在 [第一章](/course/chapter1) ，学习的，基于 Transformer 的语言模型会将文本中的每个词元转换为嵌入向量。事实证明，我们可以 "池化" 个别嵌入以创建整个句子、段落或（在某些情况下）文档的向量表示。然后，通过计算每个嵌入之间的点积相似度（或其他一些相似度度量）并返回相似度最大的文档，这些嵌入可用于在语料库中找到相似的文档。
+正如我们在 [第一章](/course/chapter1) ，学习的，基于 Transformer 的语言模型会将文本中的每个 token 转换为嵌入向量。事实证明，我们可以 "池化（pool）" 嵌入向量以创建整个句子、段落或（在某些情况下）文档的向量表示。然后，通过计算每个嵌入之间的点积相似度（或其他一些相似度度量）并返回相似度最大的文档，这些嵌入可用于在语料库中找到相似的文档。
 
 在本节中，我们将使用文本嵌入向量来开发语义搜索引擎。与基于将查询中的关键字的传统方法相比，这些搜索引擎具有多种优势。
 
@@ -56,7 +56,7 @@ Dataset({
 })
 ```
 
-在此，我们在 load_dataset()中指定了默认的 train（训练集）部分，因此它返回一个 Dataset 而不是 DatasetDict。首要任务是排除掉拉取请求，因为这些请求往往很少用于回答提出的 issue，会为我们的搜索引擎引入噪音。正如我们现在熟悉的那样，我们可以使用 Dataset.filter()函数来排除数据集中的这些行。当我们这样做的时候，让我们也筛选掉没有评论的行，因为这些行没有为用户提问提供回答：
+在此，我们在 `load_dataset()`中指定了默认的 `train（训练集）`部分，因此它返回一个 `Dataset` 而不是 `DatasetDict`。首要任务是排除掉拉取请求，因为这些请求往往很少用于回答提出的 issue，会为我们的搜索引擎引入噪音。正如我们现在熟悉的那样，我们可以使用 `Dataset.filter()`函数来排除数据集中的这些行。当我们这样做的时候，让我们也筛选掉没有评论的行，因为这些行没有为用户提问提供回答：
 
 ```py
 issues_dataset = issues_dataset.filter(
@@ -89,7 +89,7 @@ Dataset({
 })
 ```
 
-为了创建我们的文本嵌入数据集，我们将用 issue 的标题和正文来扩充每条评论，因为这些字段通常包含有用的上下文信息。因为我们的 `comments` 列当前是每个 issue 的评论列表，我们需要“重新组合”列，使得每一行都是由一个 `(html_url, title, body, comment)` 元组组成。在 Pandas 中，我们可以使用 [DataFrame.explode() 函数](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.explode.html) ，完成这个操作 它为类似列表的列中的每个元素创建一个新行，同时复制所有其他列值。让我们首先切换到 Pandas 的 `DataFrame` 格式：
+为了创建我们的文本嵌入数据集，我们将用 issue 的标题和正文来扩充每条评论，因为这些字段通常包含有用的上下文信息。因为我们的 `comments` 列当前是每个 issue 的评论列表，我们需要“重新组合”列，使得每一行都是由一个 `(html_url, title, body, comment)` 元组组成。在 Pandas 中，我们可以使用 [DataFrame.explode() 函数](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.explode.html) 完成这个操作 它为类似列表的列中的每个元素创建一个新行，同时复制所有其他列值。让我们首先切换到 Pandas 的 `DataFrame` 格式：
 
 ```py
 issues_dataset.set_format("pandas")
@@ -109,7 +109,7 @@ df["comments"][0].tolist()
  'I can access https://raw.githubusercontent.com/huggingface/datasets/1.7.0/datasets/glue/glue.py without problem...']
 ```
 
-我们希望使用 `explode` 将这些评论中的每一条都展开成为一行。让我们看看是否可以做到：
+我们希望使用 `explode()` 将这些评论中的每一条都展开成为一行。让我们看看是否可以做到：
 
 ```py
 comments_df = df.explode("comments", ignore_index=True)
@@ -158,7 +158,7 @@ comments_df.head(4)
   </tbody>
 </table>
 
-非常好，我们可以看到行已经被复制了， `comments` 列里存放着单独的评论！现在我们已经完成了 Pandas 要完成的部分功能，我们可以通过加载内存中的 `DataFrame` 快速切换回 `Dataset` ：
+非常好，我们可以看到其他三列已经被复制了， `comments` 列里存放着单独的评论！现在我们已经完成了 Pandas 要完成的部分功能，我们可以通过加载内存中的 `DataFrame` 快速切换回 `Dataset` ：
 
 ```py
 from datasets import Dataset
@@ -225,7 +225,7 @@ comments_dataset = comments_dataset.map(concatenate_text)
 
 ## 创建文本嵌入 [[创建文本嵌入]]
 
-我们在 [第二章](/course/chapter2) 学过，我们可以通过使用 `AutoModel` 类来完成文本嵌入。我们需要做的就是选择一个合适的 Checkpoint 来加载模型。幸运的是，有一个名为 `sentence-transformers` 的库专门用于创建文本嵌入。如库中 [文档](https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search) , 所述的，我们这次要实现的是非对称语义搜索（asymmetric semantic search），因为我们有一个简短的查询，我们希望在比如 issue 评论等更长的文档中找到其答案。通过查看 [模型概览表](https://www.sbert.net/docs/pretrained_models.html#model-overview) 我们可以发现 `multi-qa-mpnet-base-dot-v1`  Checkpoint 在语义搜索方面具有最佳性能，因此我们将在我们的应用程序中使用它。我们还将使用相同的 Checkpoint 加载 tokenizer ：
+我们在 [第二章](/course/chapter2) 学过，我们可以通过使用 `AutoModel` 类来完成文本嵌入。我们需要做的就是选择一个合适的 Checkpoint 来加载模型。幸运的是，有一个名为 `sentence-transformers` 的库专门用于创建文本嵌入。如库中的 [文档](https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search) 所述的，我们这次要实现的是非对称语义搜索（asymmetric semantic search），因为我们有一个简短的查询，我们希望在比如 issue 评论等更长的文档中找到其答案。通过查看 [模型概览表](https://www.sbert.net/docs/pretrained_models.html#model-overview) 我们可以发现 `multi-qa-mpnet-base-dot-v1`  Checkpoint 在语义搜索方面具有最佳性能，因此我们将在我们的应用程序中使用它。我们还将使用相同的 Checkpoint 加载了对应的 tokenizer ：
 
 {#if fw === 'pt'}
 
@@ -260,14 +260,14 @@ model = TFAutoModel.from_pretrained(model_ckpt, from_pt=True)
 
 {/if}
 
-根据我们之前的想法，我们希望将我们的 GitHub 问题库中的每一条记录转化为一个单一的向量，所以我们需要以某种方式"池化"或平均我们的词元嵌入。一种流行的方法是在我们模型的输出上执行 CLS 池化，我们只收集 `[CLS]` 词元的的最后一个隐藏状态。以下函数实现了这个功能：
+根据我们之前的想法，我们希望将我们的 GitHub 问题库中的每一条记录转化为一个单一的向量，所以我们需要以某种方式"池化（pool）"或平均我们的词嵌入向量。一种流行的方法是在我们模型的输出上执行 `CLS 池化`，我们只需要收集 `[CLS]` token 的的最后一个隐藏状态。以下函数实现了这个功能：
 
 ```py
 def cls_pooling(model_output):
     return model_output.last_hidden_state[:, 0]
 ```
 
-接下来，我们将创建一个辅助函数，它将对一组文档进行tokenization，将张量放在 GPU 上，将它们喂给模型，最后对输出使用 CLS 池化：
+接下来，我们将创建一个辅助函数，它将对一组文档进行 tokenize，将张量放在 GPU 上，将它们喂给模型，最后对输出进行 CLS 池化：
 {#if fw === 'pt'}
 
 ```py
@@ -280,7 +280,7 @@ def get_embeddings(text_list):
     return cls_pooling(model_output)
 ```
 
-我们可以将第一个文本条目喂给它并检查输出的形状来测试这个函数是否工作：
+我们可以将第一个文本条目喂给它并检查输出的形状来测试这个函数是否正常工作：
 
 ```py
 embedding = get_embeddings(comments_dataset["text"][0])
@@ -311,7 +311,7 @@ def get_embeddings(text_list):
     return cls_pooling(model_output)
 ```
 
-我们可以将第一个文本条目喂给它并检查输出的形状来测试这个函数是否工作：
+我们可以将第一个文本条目喂给它并检查输出的形状来测试这个函数是否正常工作：
 
 ```py
 embedding = get_embeddings(comments_dataset["text"][0])
@@ -509,7 +509,7 @@ URL: https://github.com/huggingface/datasets/issues/824
 """
 ```
 
-不错！我们的第2个结果似乎与查询匹配。
+不错！我们的输出的第2个结果似乎与查询匹配。
 
 <Tip>
 
