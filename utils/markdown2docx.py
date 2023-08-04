@@ -1,6 +1,6 @@
 import os
 import subprocess
-chapter='第七章 Tokenizers库'
+chapter='第六章 Datasets库'
 # Specify the source and destination folders
 source_folder = f'Course\publish/{chapter}'
 destination_folder = 'Course\docx_output'

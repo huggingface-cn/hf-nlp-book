@@ -152,8 +152,9 @@ lambda x : x * x
 
 ```py
 drug_dataset = drug_dataset.filter(lambda x: x["condition"] is not None)
-```
-`None` 条目删除之后，我们可以规范我们的 `condition` 列：
+``` 
+
+`None` 条目删除之后,我们可以规范我们的 `condition` 列:
 
 ```py
 drug_dataset = drug_dataset.map(lowercase_condition)
@@ -237,7 +238,7 @@ print(drug_dataset.num_rows)
 
 <Tip>
 
-✏️ **试试看！**使用 Dataset.sort() 函数查看单词数最多的评论。你可以参阅 [文档](https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.sort) 了解如何按照评论的长度降序排序。
+✏️ **试试看！**使用 `Dataset.sort()` 函数查看单词数最多的评论。你可以参阅 [文档](https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.sort) 了解如何按照评论的长度降序排序。
 
 </Tip>
 
@@ -262,7 +263,8 @@ drug_dataset = drug_dataset.map(lambda x: {"review": html.unescape(x["review"])}
 
 如你所见， `Dataset.map()` 方法对于处理数据非常有用，即使我们还没有完全了解它的所有功能！
 
-## map() 方法的超级加速 [[map() 方法的超级加速]]
+## `map()` 方法的超级加速 [[`map()` 方法的超级加速]]
+
 `Dataset.map()` 方法有一个 `batched` 参数，如果设置为 `True` ，map 函数将会分批执行所需要进行的操作（批量大小是可配置的，但默认为 1,000）。例如，之前对所有 HTML 进行解码的 map 函数运行需要一些时间（你可以从进度条中看到所需的时间）。我们可以通过使用列表推导同时处理多个元素来加速。
 
 当你在使用 `Dataset.map()` 函数时设定 `batched=True` 。该函数需要接收一个包含数据集字段的字典，字典的值是一个列表。例如，这是使用 `batched=True` 对所有 HTML 字符进行解码的方法 
@@ -302,12 +304,13 @@ def tokenize_function(examples):
 以下是我们在使用和不使用批处理时使用快速和慢速 tokenizer 获得的结果：
 
 选项         | 快速 tokenizer | 慢速 tokenizer
-:--------------:|:--------------:|:-------------:`batched=True` | 10.8s          | 4min41s`batched=False` | 59.2s          | 5min3s
+:--------------:|:--------------:|:-------------:
+`batched=True` | 10.8s          | 4min41s 
+`batched=False` | 59.2s          | 5min3s
 
 这意味着使用快速 tokenizer 配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的 tokenization 代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
 
-并行化也是快速 tokenizer 通过批处理实现近 6 倍加速的原因：单个 tokenization 操作是不能并行的，但是当你想同时对大量文本进行 tokenization 时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。
-`Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速 tokenizer 加速（尤其是当你使用的 tokenizer 没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
+并行化也是快速 tokenizer 通过批处理实现近 6 倍加速的原因：单个 tokenization 操作是不能并行的，但是当你想同时对大量文本进行 tokenization 时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。 `Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速 tokenizer 加速（尤其是当你使用的 tokenizer 没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
 
 ```py
 slow_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased", use_fast=False)
@@ -321,9 +324,9 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 你可以对处理进行一些计时的试验，以确定最佳进程数；在我们的例子中，8 似乎产生了最好的速度增益。以下是我们在有无多进程处理的情况下，得到的结果：
 
 选项         | 快速 tokenizer  | 慢速 tokenizer 
-:--------------:|:--------------:|:-------------:
+:--------------:|:--------------:|:-------------: 
 `batched=True` | 10.8s          | 4min41s
-`batched=False` | 59.2s          | 5min3s
+`batched=False` | 59.2s          | 5min3s 
 `batched=True` , `num_proc=8` | 6.52s          | 41.3s
 `batched=False` , `num_proc=8` | 9.49s          | 45.2s
 
@@ -331,7 +334,7 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 
 <Tip>
 
-通常来说，使用 num_proc 以加快处理速度通常是一个好主意，只要你使用的函数本身没有进行某种类型的多进程处理。
+通常来说，使用 `num_proc` 以加快处理速度通常是一个好主意，只要你使用的函数本身没有进行某种类型的多进程处理。
 
 </Tip>
 
@@ -670,7 +673,7 @@ drug-reviews/
     └── state.json
 ```
 
-其中，我们可以看到，每个部分都有 dataset.arrow 表，以及保存元数据的 dataset_info.json 和 state.json。你可以将 Arrow 格式视为一个优化的列和行的精美表格，它针对构建处理和传输大型数据集的高性能应用程序进行了优化。
+其中，我们可以看到，每个部分都有 `dataset.arrow` 表，以及保存元数据的 `dataset_info.json` 和 `state.json` 。你可以将 Arrow 格式视为一个优化的列和行的精美表格，它针对构建处理和传输大型数据集的高性能应用程序进行了优化。
 
 保存数据集后，我们可以使用 `load_from_disk()` 功能从磁盘读取数据：
 

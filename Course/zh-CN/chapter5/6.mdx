@@ -22,13 +22,13 @@
 
 {/if}
 
-在 [第5小节](/course/chapter5/5) , 们创建了一个来自 🤗 Datasets 仓库的 GitHub issues 和评论的数据集。在本节，我们将使用这些信息构建一个搜索引擎，帮助我们找到关于该库的最紧迫的 issue 的答案！
+在 [第5小节](/course/chapter5/5) ，们创建了一个来自 🤗 Datasets 仓库的 GitHub issues 和评论的数据集。在本节，我们将使用这些信息构建一个搜索引擎，帮助我们找到关于该库的最紧迫的 issue 的答案！
 
 <Youtube id="OATCgQtNX2o"/>
 
 ## 使用文本嵌入进行语义搜索 [[使用文本嵌入进行语义搜索]]
 
-正如我们在 [第一章](/course/chapter1) ，学习的，基于 Transformer 的语言模型会将文本中的每个 token 转换为嵌入向量。事实证明，我们可以 "池化（pool）" 嵌入向量以创建整个句子、段落或（在某些情况下）文档的向量表示。然后，通过计算每个嵌入之间的点积相似度（或其他一些相似度度量）并返回相似度最大的文档，这些嵌入可用于在语料库中找到相似的文档。
+正如我们在 [第一章](/course/chapter1) ，学习的，基于 Transformer 的语言模型会将文本中的每个 token 转换为嵌入向量。事实证明，我们可以 “池化（pool）” 嵌入向量以创建整个句子、段落或（在某些情况下）文档的向量表示。然后，通过计算每个嵌入之间的点积相似度（或其他一些相似度度量）并返回相似度最大的文档，这些嵌入可用于在语料库中找到相似的文档。
 
 在本节中，我们将使用文本嵌入向量来开发语义搜索引擎。与基于将查询中的关键字的传统方法相比，这些搜索引擎具有多种优势。
 
@@ -56,7 +56,7 @@ Dataset({
 })
 ```
 
-在此，我们在 `load_dataset()`中指定了默认的 `train（训练集）`部分，因此它返回一个 `Dataset` 而不是 `DatasetDict`。首要任务是排除掉拉取请求，因为这些请求往往很少用于回答提出的 issue，会为我们的搜索引擎引入噪音。正如我们现在熟悉的那样，我们可以使用 `Dataset.filter()`函数来排除数据集中的这些行。当我们这样做的时候，让我们也筛选掉没有评论的行，因为这些行没有为用户提问提供回答：
+在此，我们在 `load_dataset()` 中指定了默认的 `train（训练集）` 部分，因此它返回一个 `Dataset` 而不是 `DatasetDict` 。首要任务是排除掉拉取请求，因为这些请求往往很少用于回答提出的 issue，会为我们的搜索引擎引入噪音。正如我们现在熟悉的那样，我们可以使用 `Dataset.filter()` 函数来排除数据集中的这些行。当我们这样做的时候，让我们也筛选掉没有评论的行，因为这些行没有为用户提问提供回答：
 
 ```py
 issues_dataset = issues_dataset.filter(
@@ -72,7 +72,7 @@ Dataset({
 })
 ```
 
-我们可以看到，我们的数据集中有很多列，其中大部分在构建我们的搜索引擎都不会使用。从搜索的角度来看，信息量最大的列是 `title` , `body` ，和 `comments` ，而 `html_url` 为我们提供了一个回到原 issue 的链接。让我们使用 `Dataset.remove_columns()` 删除其余的列：
+我们可以看到，我们的数据集中有很多列，其中大部分在构建我们的搜索引擎都不会使用。从搜索的角度来看，信息量最大的列是 `title` ， `body` ，和 `comments` ，而 `html_url` 为我们提供了一个回到原 issue 的链接。让我们使用 `Dataset.remove_columns()` 删除其余的列：
 
 ```py
 columns = issues_dataset.column_names
@@ -103,9 +103,9 @@ df["comments"][0].tolist()
 ```
 
 ```python out
-['the bug code locate in ：\r\n    if data_args.task_name is not None:\r\n        # Downloading and loading a dataset from the hub.\r\n        datasets = load_dataset("glue", data_args.task_name, cache_dir=model_args.cache_dir)',
+['the bug code locate in :\r\n    if data_args.task_name is not None:\r\n        # Downloading and loading a dataset from the hub.\r\n        datasets = load_dataset("glue", data_args.task_name, cache_dir=model_args.cache_dir)',
  'Hi @jinec,\r\n\r\nFrom time to time we get this kind of `ConnectionError` coming from the github.com website: https://raw.githubusercontent.com\r\n\r\nNormally, it should work if you wait a little and then retry.\r\n\r\nCould you please confirm if the problem persists?',
- 'cannot connect，even by Web browser，please check that  there is some  problems。',
+ 'cannot connect,even by Web browser,please check that  there is some  problems。',
  'I can access https://raw.githubusercontent.com/huggingface/datasets/1.7.0/datasets/glue/glue.py without problem...']
 ```
 
@@ -225,7 +225,7 @@ comments_dataset = comments_dataset.map(concatenate_text)
 
 ## 创建文本嵌入 [[创建文本嵌入]]
 
-我们在 [第二章](/course/chapter2) 学过，我们可以通过使用 `AutoModel` 类来完成文本嵌入。我们需要做的就是选择一个合适的 Checkpoint 来加载模型。幸运的是，有一个名为 `sentence-transformers` 的库专门用于创建文本嵌入。如库中的 [文档](https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search) 所述的，我们这次要实现的是非对称语义搜索（asymmetric semantic search），因为我们有一个简短的查询，我们希望在比如 issue 评论等更长的文档中找到其答案。通过查看 [模型概览表](https://www.sbert.net/docs/pretrained_models.html#model-overview) 我们可以发现 `multi-qa-mpnet-base-dot-v1`  Checkpoint 在语义搜索方面具有最佳性能，因此我们将在我们的应用程序中使用它。我们还将使用相同的 Checkpoint 加载了对应的 tokenizer ：
+我们在 [第二章](/course/chapter2) 学过，我们可以通过使用 `AutoModel` 类来完成文本嵌入。我们需要做的就是选择一个合适的 Checkpoint 来加载模型。幸运的是，有一个名为 `sentence-transformers` 的库专门用于创建文本嵌入。如库中的 [文档](https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search) 所述的，我们这次要实现的是非对称语义搜索（asymmetric semantic search），因为我们有一个简短的查询，我们希望在比如 issue 评论等更长的文档中找到其答案。通过查看 [模型概览表](https://www.sbert.net/docs/pretrained_models.html#model-overview) 我们可以发现 `multi-qa-mpnet-base-dot-v1` Checkpoint 在语义搜索方面具有最佳性能，因此我们将在我们的应用程序中使用它。我们还将使用相同的 Checkpoint 加载了对应的 tokenizer ：
 
 {#if fw === 'pt'}
 
@@ -256,11 +256,11 @@ tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 model = TFAutoModel.from_pretrained(model_ckpt, from_pt=True)
 ```
 
-请注意，我们在调用 `from_pretrained()` 方法的时候添加了 `from_pt=True` 参数。这是因为 `multi-qa-mpnet-base-dot-v1`  Checkpoint 只有 PyTorch 权重，因此设置 `from_pt=True` 会自动将它们转换为 TensorFlow 格式。如你所见，在🤗 Transformers 中切换框架非常简单！
+请注意，我们在调用 `from_pretrained()` 方法的时候添加了 `from_pt=True` 参数。这是因为 `multi-qa-mpnet-base-dot-v1` Checkpoint 只有 PyTorch 权重，因此设置 `from_pt=True` 会自动将它们转换为 TensorFlow 格式。如你所见，在🤗 Transformers 中切换框架非常简单！
 
 {/if}
 
-根据我们之前的想法，我们希望将我们的 GitHub 问题库中的每一条记录转化为一个单一的向量，所以我们需要以某种方式"池化（pool）"或平均我们的词嵌入向量。一种流行的方法是在我们模型的输出上执行 `CLS 池化`，我们只需要收集 `[CLS]` token 的的最后一个隐藏状态。以下函数实现了这个功能：
+根据我们之前的想法，我们希望将我们的 GitHub 问题库中的每一条记录转化为一个单一的向量，所以我们需要以某种方式“池化（pool）”或平均我们的词嵌入向量。一种流行的方法是在我们模型的输出上执行 `CLS 池化` ，我们只需要收集 `[CLS]` token 的的最后一个隐藏状态。以下函数实现了这个功能：
 
 ```py
 def cls_pooling(model_output):
@@ -381,7 +381,7 @@ scores, samples = embeddings_dataset.get_nearest_examples(
 )
 ```
 
- `Dataset.get_nearest_examples()` 函数返回一个元组，包括评分（评价查询和文档之间的相似程度）和对应的样本（这里是 5 个最佳匹配）。让我们把这些收集到一个 `pandas.DataFrame` ，这样我们就可以轻松地对它们进行排序：
+`Dataset.get_nearest_examples()` 函数返回一个元组，包括评分（评价查询和文档之间的相似程度）和对应的样本（这里是 5 个最佳匹配）。让我们把这些收集到一个 `pandas.DataFrame` ，这样我们就可以轻松地对它们进行排序：
 
 ```py
 import pandas as pd
@@ -509,7 +509,7 @@ URL: https://github.com/huggingface/datasets/issues/824
 """
 ```
 
-不错！我们的输出的第2个结果似乎与查询匹配。
+不错！我们的输出的第 2 个结果似乎与查询匹配。
 
 <Tip>
 

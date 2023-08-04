@@ -18,17 +18,22 @@ def check(text, ignore='',format='json', fn='anonymous',file_dir=None,format_out
     '''
     ignore_dict = {}
     # 1. 删除代码块
-    md_text =re.findall(r'```.*?(.*?)```',  text, flags=re.S)
-    text=re.compile(r"```.*?(.*?)```",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
+    md_text =re.findall(r'\n```.*?(.*?)\n```\n',  text, flags=re.S)
+    text=re.compile(r"\n```.*?(.*?)\n```\n",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
     for code in md_text:
         text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
-        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'```{strQ2B(code)}```'
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'\n```{strQ2B(code)}\n```\n'
     # 删除公式
+    md_text =re.findall(r'<table.*?>[\s\S]*<\/table>',  text, flags=re.S)
+    text=re.compile(r"\<table.*?>[\s\S]*<\/table>",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
+    for code in md_text:
+        text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{(code)}'
     md_text =re.findall(r'\$\$.*?\$\$',  text, flags=re.S)
     text=re.compile(r"\$\$.*?\$\$",flags=re.I|re.S).sub('＋－｜－－ｎ－－｜－＋',text)
     for code in md_text:
         text=text.replace('＋－｜－－ｎ－－｜－＋',f'＋－｜－－{len(ignore_dict)}－－｜－＋',1)
-        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{strQ2B(code)}'
+        ignore_dict[f'＋－｜－－{len(ignore_dict)}－－｜－＋']=f'{(code)}'
     # 删除章节标记
     md_text = re.findall(r'\[\[.*?\]\]',  text)
     text=re.compile(r"\[\[.*?\]\]").sub('＋－｜－－ｎ－－｜－＋',text)

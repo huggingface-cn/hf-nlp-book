@@ -1,0 +1,224 @@
+
+## 6.6 章末总结及测试
+
+这是对 Datasets 库的一次完整的探索——祝贺你走到这一步！凭借从本章中获得的知识，你应该能够：
+
+- 从任何地方加载数据集，无论是 Hugging Face Hub、你的笔记本电脑还是你公司的远程服务器。
+- 混合使用 `Dataset.map()` 和 `Dataset.filter()` 函数来整理数据。
+- 使用 `Dataset.set_format()` 在 Pandas 和 NumPy 等数据格式之间快速切换。
+- 创建你自己的数据集并将其推送到 Hugging Face Hub。
+- 使用 Transformer 模型为你的文档创建文本嵌入，并使用 FAISS 构建语义搜索引擎。
+
+在第八章，我们将把所有这些用于深入研究 Transformer 模型擅长的核心 NLP 任务。不过，在跳到下一步之前，先用一次快速的小测验来检验你对 Datasets 的了解！
+
+### 章末测试 
+
+####  1.Datasets 中的 `load_dataset ()` 函数允许你从下列哪个位置加载数据集？
+
+1. 在本地，例如在你的笔记本电脑上
+2. Hugging Face Hub
+3. 远程服务器
+
+####  2．假设你按照以下方式加载了一个 GLUE 任务：
+
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("glue", "mrpc", split="train")
+```
+
+以下哪个命令可以从 `dataset` 中生成 50 个元素的随机样本？
+1.  `dataset.sample (50)` 
+2.  `dataset.shuffle().select(range(50))` 
+3.  `dataset.select(range(50)).shuffle()` 
+
+####  3．假设你有一个关于家庭宠物的数据集 `pets_dataset` ，它有一个 `name` 列表示每个宠物的名字。以下哪种方法可以筛选出所有名字以 "L" 开头的宠物数据？
+
+1.  `pets_dataset.filter(lambda x: x ['name'].startswith ('L'))` 
+2.  `pets_dataset.filter(lambda x ['name'].startswith ('L'))` 
+3. 创建一个类似于 `def filter_names (x) : return x['name'].startswith ('L')` 的函数，然后运行 `pets_dataset.filter(filter_names)` 。
+
+####  4．什么是内存映射？
+
+1. CPU 与 GPU RAM 之间的映射
+2. RAM 和文件系统存储之间的映射
+3. Datasets 缓存中两个文件之间的映射
+
+####  5．下列哪一项是内存映射的主要好处？
+
+1. 访问内存映射文件比从磁盘读取或写入磁盘更快。
+2. 应用程序可以访问一个非常大的文件中的数据段，而不必首先将整个文件读入 RAM。
+3. 它消耗更少的能量，所以你的电池持续时间更长。
+
+####  6．为什么下面的代码是错误的？
+
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("allocine", streaming=True, split="train")
+dataset[0]
+```
+1. 它试图对一个太大而无法放入 RAM 的数据集进行流式处理。
+2. 它尝试访问 `IterableDataset` 。
+3. 数据集 `allocine` 没有 `train` 部分。
+
+####  7．创建数据集卡片的主要好处是什么？
+
+1. 它提供了关于数据集的预期用途和支持的任务的信息，以便社区中的其他人可以对使用它做出明智的决定。
+2. 它有助于引起人们对语料库中存在的偏见的关注。
+3. 它提高了社区中其他人使用我的数据集的可能性。
+
+####  8．什么是语义搜索？
+
+1. 一种在查询中的单词和语料库中的文档之间精确匹配的方法
+2. 一种通过理解查询的上下文含义来搜索匹配文档的方法
+3. 一种提高搜索准确性的方法
+
+####  9．对于非对称语义搜索，通常有：
+
+1. 一个简短的查询和一个较长的段落回答查询
+2. 相同长度的查询和段落
+3. 一个较长的查询和一个较短的段落来回答查询
+
+####  10．我可以使用Datasets 来加载用于其他领域（如语音处理）的数据吗？
+
+1. 不能
+2. 能
+
+### 解析
+
+####  1.Datasets 中的 `load_dataset ()` 函数允许你从下列哪个位置加载数据集？
+
+正确选项: 1. 在本地，例如在你的笔记本电脑上
+
+正确选项: 2. Hugging Face Hub
+
+正确选项: 3. 远程服务器
+
+1. 在本地，例如在你的笔记本电脑上    
+解析: 正确！你可以将本地文件的路径传递给 `load_dataset()` 函数的 `data_files` 参数来加载本地数据集。
+2. Hugging Face Hub    
+解析: 正确！你可以通过提供数据集 ID 来加载 Hub 上的数据集，例如 `load_dataset('emotion')` 。
+3. 远程服务器    
+解析: 正确！你可以将 URL 传递给 `load_dataset()` 函数的 `data_files` 参数来加载远程文件。
+
+####  2．假设你按照以下方式加载了一个 GLUE 任务：
+
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("glue", "mrpc", split="train")
+```
+
+以下哪个命令可以从 `dataset` 中生成 50 个元素的随机样本？
+正确选项: 2.  `dataset.shuffle().select(range(50))` 
+
+1.  `dataset.sample (50)`     
+解析: 不正确 —— 没有 `Dataset.sample()` 方法。
+2.  `dataset.shuffle().select(range(50))`     
+解析: 正确！正如你在这一章中所学到的，你首先打乱了数据集，然后从中选择样本。
+3.  `dataset.select(range(50)).shuffle()`     
+解析: 这是不正确的——尽管代码会运行，但它只会选取数据集的前 50 个元素然后打乱它们。
+
+####  3．假设你有一个关于家庭宠物的数据集 `pets_dataset` ，它有一个 `name` 列表示每个宠物的名字。以下哪种方法可以筛选出所有名字以 "L" 开头的宠物数据？
+
+正确选项: 1.  `pets_dataset.filter(lambda x: x ['name'].startswith ('L'))` 
+
+正确选项: 3. 创建一个类似于 `def filter_names (x) : return x['name'].startswith ('L')` 的函数，然后运行 `pets_dataset.filter(filter_names)` 。
+
+1.  `pets_dataset.filter(lambda x: x ['name'].startswith ('L'))`     
+解析: 正确！使用 Python 的 lambda 函数来快速过滤是一个好主意。你能想出另一种解决方案吗？
+2.  `pets_dataset.filter(lambda x ['name'].startswith ('L'))`     
+解析: 这是不正确的——lambda 函数通常的格式为： `lambda *arguments*:*expression*`
+3. 创建一个类似于 `def filter_names (x) : return x['name'].startswith ('L')` 的函数，然后运行 `pets_dataset.filter(filter_names)` 。    
+解析: 正确！就像使用 `Dataset.map ()` 一样，你可以将函数传递给 `Dataset.filter ()` 。当你有一些不适合 lambda 函数的复杂逻辑时，这很有用。其他解决方案中还有哪一个可行？
+
+####  4．什么是内存映射？
+
+正确选项: 2. RAM 和文件系统存储之间的映射
+
+1. CPU 与 GPU RAM 之间的映射    
+解析: 不是这样的——请再试一次！
+2. RAM 和文件系统存储之间的映射    
+解析: 正确！Datasets 将每个数据集视为一个内存映射文件。这使得Datasets 库访问和操作数据集的元素时，无需将其完全加载到内存中。
+3. Datasets 缓存中两个文件之间的映射    
+解析: 这是不正确的——请再试一次！
+
+####  5．下列哪一项是内存映射的主要好处？
+
+正确选项: 1. 访问内存映射文件比从磁盘读取或写入磁盘更快。
+
+正确选项: 2. 应用程序可以访问一个非常大的文件中的数据段，而不必首先将整个文件读入 RAM。
+
+1. 访问内存映射文件比从磁盘读取或写入磁盘更快。    
+解析: 正确！这使得 Datasets 非常快。但这并不是唯一的好处。
+2. 应用程序可以访问一个非常大的文件中的数据段，而不必首先将整个文件读入 RAM。    
+解析: 正确！——这允许Datasets 在你的笔记本电脑上加载数 GB 的数据集，而不会让你的 CPU 崩溃。内存映射还提供了什么其他优势？
+3. 它消耗更少的能量，所以你的电池持续时间更长。    
+解析: 这是不正确的——请再试一次！
+
+####  6．为什么下面的代码是错误的？
+
+```python
+from datasets import load_dataset
+
+dataset = load_dataset("allocine", streaming=True, split="train")
+dataset[0]
+```
+正确选项: 2. 它尝试访问 `IterableDataset` 。
+
+1. 它试图对一个太大而无法放入 RAM 的数据集进行流式处理。    
+解析: 这是不正确的—— 流式数据集是动态解压的，你可以用非常小的 RAM 处理 TB 量级的数据集！
+2. 它尝试访问 `IterableDataset` 。    
+解析: 正确！ `IterableDataset` 是一个生成器，而不是一个容器，因此你应该使用 `next(iter(dataset))` 来访问它的元素。
+3. 数据集 `allocine` 没有 `train` 部分。    
+解析: 这是不正确的—— 查看 Hub 上的 [`allocine`数据卡片](https://huggingface.co/datasets/allocine)(https://huggingface.co/datasets/allocine)
+
+####  7．创建数据集卡片的主要好处是什么？
+
+正确选项: 1. 它提供了关于数据集的预期用途和支持的任务的信息，以便社区中的其他人可以对使用它做出明智的决定。
+
+正确选项: 2. 它有助于引起人们对语料库中存在的偏见的关注。
+
+正确选项: 3. 它提高了社区中其他人使用我的数据集的可能性。
+
+1. 它提供了关于数据集的预期用途和支持的任务的信息，以便社区中的其他人可以对使用它做出明智的决定。    
+解析: 正确！未记录的数据集可用于训练可能无法反映数据集创建者意图的模型，或者如果对违反隐私或许可限制的数据进行训练，则可能会产生法律状态模糊的模型。不过，这并不是唯一的好处！
+2. 它有助于引起人们对语料库中存在的偏见的关注。    
+解析: 正确！几乎所有数据集都存在某种形式的偏见，这可能会产生负面的后果。了解它们有助于模型构建者了解如何解决固有的偏见。数据集卡还有什么帮助？
+3. 它提高了社区中其他人使用我的数据集的可能性。    
+解析: 正确！一个写得好的数据集卡通常会促使你的数据集的使用率更高。它还有什么好处呢？
+
+####  8．什么是语义搜索？
+
+正确选项: 2. 一种通过理解查询的上下文含义来搜索匹配文档的方法
+
+正确选项: 3. 一种提高搜索准确性的方法
+
+1. 一种在查询中的单词和语料库中的文档之间精确匹配的方法    
+解析: 这是不正确的——这种类型的搜索被称为“词汇搜索（lexical search）”，这是你在传统搜索引擎中通常看到的。
+2. 一种通过理解查询的上下文含义来搜索匹配文档的方法    
+解析: 正确！语义搜索使用嵌入向量来表示查询和文档，并使用相似度度量来衡量它们之间的相似程度。你还会怎么描述它呢？
+3. 一种提高搜索准确性的方法    
+解析: 正确！语义搜索引擎能够比关键字匹配更好地捕获查询意图，并且通常能够以更高的精度检索文档。但这不是唯一正确的答案——语义搜索还提供了哪些功能？
+
+####  9．对于非对称语义搜索，通常有：
+
+正确选项: 1. 一个简短的查询和一个较长的段落回答查询
+
+1. 一个简短的查询和一个较长的段落回答查询    
+解析: 正确！
+2. 相同长度的查询和段落    
+解析: 这实际上是一个对称语义搜索的例子——请再试一次！
+3. 一个较长的查询和一个较短的段落来回答查询    
+解析: 这是错误的—— 再试一次！
+
+####  10．我可以使用Datasets 来加载用于其他领域（如语音处理）的数据吗？
+
+正确选项: 2. 能
+
+1. 不能    
+解析: 这是不正确的 -- Datasets 目前支持表格数据、音频和计算机视觉。你可以在 Hub 上查看计算机视觉的 [MNIST]( https://huggingface.co/datasets/allocine )( https://huggingface.co/datasets/allocine ) 例子。
+2. 能    
+解析: 正确！你可以查看Transformers 库中关于语音和视觉的发展，看看Datasets 是如何应用于这些领域中的。
+
