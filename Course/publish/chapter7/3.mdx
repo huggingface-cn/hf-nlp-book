@@ -647,7 +647,7 @@ tf_eval_dataset = model.prepare_tf_dataset(
 
 接下来，我们设置我们的训练超参数并编译我们的模型。我们使用Transformers 库的 `create_optimizer()` 函数，它提供了一个带有线性学习率衰减的 `AdamW` 优化器。我们还使用模型内置的损失，这是在 `compile()` 的参数中没有指定损失时的默认设置，并将训练精度设为 `"mixed_float16"` 。注意，如果你使用的是 Colab GPU 或者其他不支持加速的 float16 的 GPU，你可能应该注释掉这一行。
 
-另外，我们设置了一个 `PushToHubCallback` ，它将在每个 epoch 后将模型保存到 Hub。你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，要将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) ，我们添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。默认情况下，使用的仓库将在你的账户中，并以你设置的输出目录命名，所以在我们的示例中，它将是 `"lewtun/distilbert-finetuned-imdb"` 。
+另外，我们设置了一个 `PushToHubCallback` ，它将在每个 epoch 后将模型保存到 Hub。你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，要将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) ，我们添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。默认情况下，使用的仓库将保存在你的账户之内，并以你设置的输出目录命名，所以在我们的例子中，仓库的地址是 `"lewtun/distilbert-finetuned-imdb"` 。
 
 ```python
 from transformers import create_optimizer
@@ -1028,7 +1028,7 @@ for pred in preds:
 
 
 
-这标志着我们第一次训练语言模型的实验的结束。在第6节中，你将学习如何从头开始训练一个自动回归模型，比如 GPT-2；如果你想看看如何预训练你自己的 Transformer 模型，就赶快去那里看看吧！
+这标志着我们第一次训练语言模型的实验的结束。在第 6 节中，你将学习如何从头开始训练一个自动回归模型，比如 GPT-2；如果你想看看如何预训练你自己的 Transformer 模型，就赶快去那里看看吧！
 
 <div custom-style="Tip-green">
 

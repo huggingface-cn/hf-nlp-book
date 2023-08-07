@@ -874,7 +874,7 @@ from transformers import create_optimizer
 from transformers.keras_callbacks import PushToHubCallback
 import tensorflow as tf
 
-# 训练步骤的数量是数据集中的样本数量除以批次大小，然后乘以总的训练周期数。
+# 训练步骤的数量是数据集中的样本数量除以 batch 大小，然后乘以总的训练周期数。
 # 注意，这里的 tf_train_dataset 是一个batch的 tf.data.Dataset，
 # 而不是原始的 Hugging Face 数据集，所以它的 len() 已经是 num_samples // batch_size。
 num_train_epochs = 3

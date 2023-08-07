@@ -1,6 +1,6 @@
 <FrameworkSwitchCourse {fw} />
 
-# 词元（Token）分类 [[词元（Token）分类]]
+# Token 分类 [[Token 分类]]
 
 {#if fw === 'pt'}
 
@@ -22,15 +22,14 @@
 
 {/if}
 
-我们将首先探讨的应用是词元（Token）分类。这个通用任务涵盖了所有可以表述为“给句子中的词或字贴上标签”的问题，例如：
+我们将首先探讨的应用是 Token 分类。这个通用任务涵盖了所有可以表述为“给句子中的词或字贴上标签”的问题，例如：
 
 - **实体命名识别 （NER）**：找出句子中的实体（如人物、地点或组织）。这可以通过为每个实体或“无实体”指定一个类别的标签。
 - **词性标注 （POS）**：将句子中的每个单词标记为对应于特定的词性（如名词、动词、形容词等）。
-- **分块（chunking）**：找到属于同一实体的词元。这个任务（可结合 POS 或 NER）可以任何将一块词元作为制定一个标签（通常是 B -），另一个标签（通常 I -）表示词元是否是同一块，和第三个标签（通常是 O）表示词元不属于任何块。也就是标出句子中的短语块，例如名词短语（NP），动词短语（VP）等。
-
+- **分块（chunking）**：找出属于同一实体的 tokens 。这个任务（可以与词性标注或命名实体识别结合）可以被描述为将位于块开头的 token 赋予一个标签（通常是 “`B-`” （Begin）），将位于块内的 tokens 赋予另一个标签（通常是 “`I-`”（inner）），将不属于任何块的 tokens 赋予第三个标签（通常是 “`O`” （outer））。
 <Youtube id="wVHdVlPScxA"/>
 
-当然，还有很多其他类型的词元分类问题；这些只是几个有代表性的例子。在本节中，我们将在 NER 任务上微调模型 （BERT），然后该模型将能够计算如下预测：
+当然，还有很多其他类型的 token 分类问题；这些只是几个有代表性的例子。在本节中，我们将在 NER 任务上微调模型 （BERT），然后该模型将能够计算如下预测：
 
 <iframe src="https://course-demos-bert-finetuned-ner.hf.space" frameBorder="0" height="350" title="Gradio app" class="block dark:hidden container p-0 flex-grow space-iframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"></iframe>
 
@@ -43,11 +42,11 @@
 
 ## 准备数据 [[准备数据]]
 
-首先，我们需要一个适合词元分类的数据集。在本节中，我们将使用 [CoNLL-2003 数据集](https://huggingface.co/datasets/conll2003) ，该数据集包含了来自路透社的新闻故事。
+首先，我们需要一个适合 token 分类的数据集。在本节中，我们将使用 [CoNLL-2003 数据集](https://huggingface.co/datasets/conll2003) ，该数据集包含了来自路透社的新闻故事。
 
 <Tip>
 
-💡 只要你的数据集由带有相应标签的分词文本组成，你就能够将这里描述的数据处理过程应用到你自己的数据集。如果需要复习如何在 `Dataset` 中加载自定义数据，请参阅 [第五章](/course/chapter5) 。
+💡 只要你的数据集由带有相应标签的分词文本组成，你就能够将这里描述的数据处理过程应用到你自己的数据集。如果需要复习如何在 `Dataset` 中加载自定义数据集，请复习 [第五章](/course/chapter5) 。
 
 </Tip>
 
@@ -61,7 +60,7 @@ from datasets import load_dataset
 raw_datasets = load_dataset("conll2003")
 ```
 
-这将下载并缓存数据集，就像和我们在 [第三章](/course/chapter3) 加载 GLUE MRPC 数据集一样。检查这个对象可以让我们看到存在哪些列，以及训练集、验证集和测试集之间是如何分割的：
+这将下载并缓存数据集，就像和我们在 [第三章](/course/chapter3) 加载 GLUE MRPC 数据集一样。查看这个对象可以让我们看到存在哪些列，以及训练集、验证集和测试集之间是如何分割的：
 
 ```py
 raw_datasets
@@ -84,7 +83,7 @@ DatasetDict({
 })
 ```
 
-看到数据集包含了我们之前提到的三项任务的标签：命名实体识别（NER）、词性标注（POS）以及分块（chunking）。这个数据集与其他数据集的一个显著区别在于，输入文本并非以句子或文档的形式呈现，而是以单词列表的形式（最后一列被称为 `tokens` ，但它含有的是单词，也就是说，这些预先分词的输入仍需要经过分词器进行子词分词处理）。
+看到数据集包含了我们之前提到的三项任务的标签：命名实体识别（NER）、词性标注（POS）以及分块（chunking）。这个数据集与其他数据集的一个显著区别在于，输入文本并非以句子或文档的形式呈现，而是以单词列表的形式（最后一列被称为 `tokens` ，不过`tokens`列保存的还是单词，也就是说，这些预先分词的输入仍需要经过 tokenizer 进行子词分词处理）。
 
 我们来看看训练集的第一个元素：
 
@@ -96,7 +95,7 @@ raw_datasets["train"][0]["tokens"]
 ['EU', 'rejects', 'German', 'call', 'to', 'boycott', 'British', 'lamb', '.']
 ```
 
-由于我们要进行命名实体识别，我们将查看 NER 标签：
+由于我们要进行命名实体识别，让我们查看一下 NER 标签：
 
 ```py
 raw_datasets["train"][0]["ner_tags"]
@@ -117,7 +116,7 @@ ner_feature
 Sequence(feature=ClassLabel(num_classes=9, names=['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC'], names_file=None, id=None), length=-1, id=None)
 ```
 
-因此，这一列包含的元素是 `ClassLabels` 的序列。序列元素的类型在 `ner_feature` 的 `feature` 中，我们可以通过查看该 `feature` 的 `names` 属性来访问名称列表：
+因此，这一列包含的元素是 `ClassLabels` 的序列。序列元素的类型在 `ner_feature` 的 `feature` 中，我们可以通过查看该 `feature` 的 `names` 属性来访问标签名称的列表：
 
 ```py
 label_names = ner_feature.feature.names
@@ -136,7 +135,7 @@ label_names
 - `B-LOC` / `I-LOC` 指的是是这个词对应于地名实体的开头/内部。
 - `B-MISC` / `I-MISC` 表示该词对应于一个杂项实体的开头/内部。
 
-现在解码我们之前看到的标签，我们得到的是这样：
+现在解码我们之前看到的标签，我们得到以下的输出：
 
 ```python
 words = raw_datasets["train"][0]["tokens"]
@@ -158,18 +157,18 @@ print(line2)
 'B-ORG O       B-MISC O    O  O       B-MISC  O    O'
 ```
 
-我们还可以查看训练集中索引为 4 的元素，它是一个混合 `B-` 和 `I-` 标签的例子：
+我们还可以查看训练集中索引为 4 的元素，它是一个同时包含 `B-` 和 `I-` 标签的例子：
 
 ```python out
 'Germany \'s representative to the European Union \'s veterinary committee Werner Zwingmann said on Wednesday consumers should buy sheepmeat from countries other than Britain until the scientific advice was clearer .'
 'B-LOC   O  O              O  O   B-ORG    I-ORG O  O          O         B-PER  I-PER     O    O  O         O         O      O   O         O    O         O     O    B-LOC   O     O   O          O      O   O       O'
 ```
 
-正如我们所看到的，跨越两个单词的实体，如“European Union”和“Werner Zwingmann”，模型为第一个单词标注为了 B-标签，为第二个单词标记为了 I-标签。
+正如我们在上面的输出中所看到的，跨越两个单词的实体，如“European Union”和“Werner Zwingmann”，模型把第一个单词标注为了 B- 标签，为第二个单词标记为了 I- 标签。
 
 <Tip>
 
-✏️ **轮到你了！** 使用词性标注 （POS）或分块（chunking）识别同一个句子。
+✏️ **轮到你了！** 使用词性标注 （POS）或分块（chunking）识别同一个句子，查看输出的结果。
 
 </Tip>
 
@@ -177,7 +176,7 @@ print(line2)
 
 <Youtube id="iY2AZYdZAr0"/>
 
-像往常一样，我们的文本需要转换为 Token ID，然后模型才能理解它们。正如我们在 [第六章](/course/chapter6/) 所学的那样。不过在词元分类任务中，一个很大的区别是我们有 pre-tokenized 的输入。幸运的是，tokenizer API 可以很容易地处理这个问题；我们只需要通过一个特殊的标志告诉 tokenizer。
+像往常一样，我们的文本需要转换为 Token ID，然后模型才能理解它们。正如我们在 [第六章](/course/chapter6/) 所学的那样。不过在 tokens 分类任务中，一个很大的区别是我们有 pre-tokenized 的输入。幸运的是，tokenizer API 可以很容易地处理这个问题；我们只需要通过一个特殊的标志告诉 tokenizer。
 
 首先，让我们创建 `tokenizer` 对象。如前所述，我们将使用 BERT 预训练模型，因此我们将从下载并缓存关联的 tokenizer 开始：
 
@@ -188,7 +187,7 @@ model_checkpoint = "bert-base-cased"
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-你可以更换把 `model_checkpoint` 更换为 [Hub](https://huggingface.co/models) 上任何你喜欢的其他型号，或使用你本地保存的预训练模型和 tokenizer 唯一的限制是 tokenizer 需要由 🤗 Tokenizers 库支持，有一个“快速”版本可用。你可以在 [这张大表](https://huggingface.co/transformers/#supported-frameworks) 上看到所有带有快速版本的架构，或者检查你可以通过查看它 `is_fast` 属性来检测正在使用的 `tokenizer` 对象是否由 🤗 Tokenizers 支持：
+你可以更换把 `model_checkpoint` 更换为 [Hub](https://huggingface.co/models) 上任何你喜欢的其他型号，或使用你本地保存的预训练模型和 tokenizer。唯一的限制是 tokenizer 需要由 🤗 Tokenizers 库支持，并且有一个“快速”版本可用。你可以在 [这张大表](https://huggingface.co/transformers/#supported-frameworks) 上看到所有带有快速版本的架构，或者检查你可以通过查看它 `is_fast` 属性来检测正在使用的 `tokenizer` 对象是否由 🤗 Tokenizers 支持：
 
 ```py
 tokenizer.is_fast
@@ -198,7 +197,7 @@ tokenizer.is_fast
 True
 ```
 
-要对预先标记的输入进行 tokenization，我们可以像往常一样使用我们的 `tokenizer` ，只需额外添加 `is_split_into_words=True` ：
+我们可以像往常一样使用我们的 `tokenizer` 对预先分词的输入进行子词分词，只需额外添加 `is_split_into_words=True` ：
 
 ```py
 inputs = tokenizer(raw_datasets["train"][0]["tokens"], is_split_into_words=True)
@@ -212,7 +211,7 @@ inputs.tokens()
 如我们所见，tokenizer 添加了模型使用的特殊 tokens（在开始的 `[CLS]` ，在结束的 `[SEP]` ），并且大部分单词保持不变。然而，单词 `lamb` 被分词为两个子词， `la` 和 `##mb` 。这导致了输入和标签之间的不匹配：标签列表只有 9 个元素，而我们的输入现在有 12 个 tokens。解决特殊 tokens 的问题很容易（我们知道它们在开始和结束的位置），但我们还需要确保我们将所有的标签与正确的词对齐。
 
 
-幸运的是，由于我们使用的是快速分词器，因此我们可以访问🤗 Tokenizers 超能力，这意味着我们可以轻松地将每个令牌映射到其相应的单词（如 [第六章](/course/chapter6/3) 所学）：
+幸运的是，由于我们使用的是快速 tokens ，因此我们可以使用🤗 Tokenizers 超能力，这意味着我们可以轻松地将每个 token映射到其相应的单词（如 [第六章](/course/chapter6/3) 中所学）：
 
 ```py
 inputs.word_ids()
@@ -222,7 +221,7 @@ inputs.word_ids()
 [None, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, None]
 ```
 
-只需要一点点工作，我们就可以扩展我们的标签列表以匹配 tokens。我们将添加的第一条规则是，特殊 tokens 的标签是 `-100` 。这是因为默认情况下， `-100` 会被我们的损失函数（交叉熵）忽略。然后，每个 token 得到的标签与其所在的词的开始的 token 相同，因为它们是同一实体的一部分。对于词内部但不在开始位置的 tokens，我们将 `B-` 替换为 `I-` （因为该 token 不是实体的开始）：
+只需要一点点工作，我们就可以扩展我们的标签列表来匹配 tokens。我们将添加的第一条规则是，特殊 tokens 的标签是 `-100` 。这是因为默认情况下， `-100` 会被我们的损失函数（交叉熵）忽略。然后，每个 token 得到的标签与其所在的词的开始的 token 相同，因为它们是同一实体的一部分。因此对于词内部但不在开始位置的 tokens，我们将 `B-` 替换为 `I-` （因为该 token 不是实体的开始）：
 
 ```python
 def align_labels_with_tokens(labels, word_ids):
@@ -238,7 +237,7 @@ def align_labels_with_tokens(labels, word_ids):
             # 特殊的token
             new_labels.append(-100)
         else:
-            # 与前一个词元类型相同的单词
+            # 与前一个 tokens 类型相同的单词
             label = labels[word_id]
             # 如果标签是 B-XXX 我们将其更改为 I-XXX
             if label % 2 == 1:
@@ -262,7 +261,7 @@ print(align_labels_with_tokens(labels, word_ids))
 [-100, 3, 0, 7, 0, 0, 0, 7, 0, 0, 0, -100]
 ```
 
-正如我们所看到的，我们的函数为开头和结尾的两个特殊词元添加了 `-100` ，并为切分成两个词元的单词添加了一个新的 `0` 。
+正如我们所看到的，我们的函数为开头和结尾的两个特殊 tokens 添加了 `-100` ，并为切分成两个 tokens 的单词添加了一个新的 `0` 。
 
 <Tip>
 
@@ -270,7 +269,7 @@ print(align_labels_with_tokens(labels, word_ids))
 
 </Tip>
 
-为了预处理我们的整个数据集，我们需要对所有输入进行 tokenization，并在所有标签上应用 `align_labels_with_tokens()` 函数。为了充分利用我们快速 tokenizer 的速度，最好是同时对大量文本 tokenization，所以我们将编写一个处理一组示例的函数，并使用带有 `batched=True` 选项的 `Dataset.map()` 方法。与我们之前的示例唯一不同的是，当 tokenizer 的输入是文本列表（或示例中单词的列表的列表）时， `word_ids()` 函数需要获取我们示例中单词 ID 的索引，所以我们也添加了这个功能：
+为了预处理我们的整个数据集，我们需要对所有输入进行 tokenize，并在所有标签上应用 `align_labels_with_tokens()` 函数。为了充分利用我们快速 tokenizer 的速度，最好是同时对大量文本 tokenize，所以我们将编写一个处理一组示例的函数，并使用带有 `batched=True` 选项的 `Dataset.map()` 方法。与我们之前的示例唯一不同的是，当 tokenizer 的输入是文本列表（或示例中单词的列表的列表）时， `word_ids()` 函数需要获取我们示例中单词 ID 的索引，所以我们也添加了这个功能：
 
 ```py
 def tokenize_and_align_labels(examples):
@@ -305,19 +304,19 @@ tokenized_datasets = raw_datasets.map(
 
 ## 使用 Trainer API 微调模型 [[使用 Trainer API 微调模型]]
 
-使用 `Trainer` 的实际代码会和以前一样，唯一的变化是数据如何整理成批次以及度量计算函数的变化。
+使用 `Trainer` 的实际代码会和以前一样，唯一的变化是数据如何整理成 batch 以及评估计算函数的变化。
 
 {:else}
 
 ## 使用 Keras 微调模型 [[使用 Keras 微调模型]]
 
-使用 Keras 的实际代码将与之前非常相似；唯一的变化是数据如何整理成批次以及度量计算函数的变化。
+使用 Keras 的实际代码将与之前非常相似；唯一的变化是数据如何整理成 batch 以及评估计算函数的变化。
 
 {/if}
 
 ### 整理数据 [[整理数据]]
 
-我们不能像 [第三章](/course/chapter3) 那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（inputs ID、注意掩码和词元类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
+我们不能像 [第三章](/course/chapter3) 那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（inputs ID、注意掩码和 tokens 类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
 
 这些可以由 [`DataCollatorForTokenClassification`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification) 实现。它是一个带有填充功能的数据整理器，使用时只需要传入用于预处理输入的 `tokenizer` ：
 
@@ -371,7 +370,7 @@ for i in range(2):
 
 {:else}
 
-我们的数据整理器已准备就绪！现在让我们使用 `to_tf_dataset()` 方法创建一个 `tf.data.Dataset` 。你还可以使用 `model.prepare_tf_dataset()` 来使用更少的模板代码来完成此操作——你将在本章的其他部分中看到这一点。
+我们的数据整理器已准备就绪！现在让我们使用 `to_tf_dataset()` 方法创建一个 `tf.data.Dataset` 。你还可以使用 `model.prepare_tf_dataset()` 来使用更少的模板代码来完成此操作——你将在本章的其他小节中看到这一点。
 ```py
 tf_train_dataset = tokenized_datasets["train"].to_tf_dataset(
     columns=["attention_mask", "input_ids", "labels", "token_type_ids"],
@@ -451,17 +450,18 @@ notebook_login()
 huggingface-cli login
 ```
 
-登录后，我们可以准备编译我们模型所需要的所有配置。🤗 Transformers 提供了一个便捷的 `create_optimizer()` 函数，它将给你一个带有适当的权重衰减和学习率衰减设置的 `AdamW` 优化器，与内置的 `Adam` 优化器相似，这两个优化技巧都将提高模型的性能：
+登录后，我们可以准备编译我们模型所需要的所有配置。🤗 Transformers 提供了一个便捷的 `create_optimizer()` 函数，它将给你一个带有适当的权重衰减和学习率衰减设置的 `AdamW` 优化器，与内置的 `Adam` 优化器相似，不过这两个优化技巧都将提高模型的性能：
 
 ```python
 from transformers import create_optimizer
 import tensorflow as tf
 
-# 在混合精度float16中进行训练
+# 在混合精度 float16 中进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
-# 训练步数是数据集中的样本数量,除以批次大小,然后乘以总的epoch数。注意这里的tf_train_dataset是batch的tf.data.Dataset,
-# 而不是原始的Hugging Face Dataset,所以len()求取它的长度已经是 num_samples // batch_size。
+# 训练步数是数据集中的样本数量，除以 batch 大小，然后乘以总的 epoch 数。
+# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset，
+# 而不是原始的 Hugging Face Dataset ，所以 len() 求取它的长度已经是 num_samples // batch_size。
 num_epochs = 3
 num_train_steps = len(tf_train_dataset) * num_epochs
 
@@ -491,7 +491,7 @@ model.fit(
 )
 ```
 
-你可以使用 `hub_model_id` 参数指定你想要推送的仓库的全名（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将在你的账户之内，并以你设置的输出目录命名，例如 `"cool_huggingface_user/bert-finetuned-ner"` 。
+你可以使用 `hub_model_id` 参数指定你想要推送的仓库的全名（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将保存在你的账户之内，并以你设置的输出目录命名，例如 `"cool_huggingface_user/bert-finetuned-ner"` 。
 
 <Tip>
 
@@ -501,7 +501,7 @@ model.fit(
 
 请注意，在训练过程中每次保存模型时（这里是每个 epooch），它都会在后台上传到 Hub。这样，如有必要，你将能够在另一台机器上继续你的训练。
 
-到此阶段，你可以在模型 Hub 上使用推理小部件来测试你的模型并与你的朋友分享。你已经成功地在一个词元分类任务上微调了一个模型——恭喜你！但我们的模型真的好吗？我们应该找出一些指标来对模型进评估。
+到此阶段，你可以在模型 Hub 上使用推理小部件来测试你的模型并与你的朋友分享。你已经成功地在一个 tokens 分类任务上微调了一个模型——恭喜你！但我们的模型真的好吗？我们应该找出一些指标来对模型进评估。
 
 {/if}
 
@@ -581,7 +581,7 @@ def compute_metrics(eval_preds):
     logits, labels = eval_preds
     predictions = np.argmax(logits, axis=-1)
 
-    # 删除忽略的索引(特殊词元)并转换为标签
+    # 删除忽略的索引(特殊 tokens )并转换为标签
     true_labels = [[label_names[l] for l in label if l != -100] for label in labels]
     true_predictions = [
         [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
@@ -602,7 +602,7 @@ def compute_metrics(eval_preds):
 
 它返回了大量的信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。现在，让我们看看如果我们尝试使用我们实际的模型预测来计算一些真实的分数会发生什么。
 
-TensorFlow 不喜欢把我们的预测拼接在一起，因为这样会导致序列长度不统一。这意味着我们不能仅仅直接使用 `model.predict()` —— 但这并不能阻止我们。我们将逐批获取一些预测并在进行的过程中将它们拼接成一个大的列表，删除表示 masking/padding 的 `-100` 词元，然后在最后的列表上计算度量值：
+TensorFlow 不喜欢把我们的预测拼接在一起，因为这样会导致序列长度不统一。这意味着我们不能仅仅直接使用 `model.predict()` —— 但这并不能阻止我们。我们将逐批获取一些预测并在进行的过程中将它们拼接成一个大的列表，删除表示 masking/padding 的 `-100`  tokens ，然后在最后的列表上计算度量值：
 
 ```py
 import numpy as np
@@ -710,7 +710,7 @@ args = TrainingArguments(
 )
 ```
 
-你已经对大多数内容有所了解了：我们设置了一些超参数（如学习率、训练的轮数和权重衰减），并指定 `push_to_hub=True` ，以表示我们希望在每个训练轮次结束时保存并评估模型，并希望将结果上传到模型中心。注意，你可以通过 `hub_model_id` 参数指定你想推送的仓库的名称（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们在 `TrainingArguments` 中添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将位于你的账户中，并以你设置的输出目录命名，所以在我们的例子中，它将是 `"sgugger/bert-finetuned-ner"` 。
+你已经对大多数内容有所了解了：我们设置了一些超参数（如学习率、训练的轮数和权重衰减），并指定 `push_to_hub=True` ，以表示我们希望在每个训练轮次结束时保存并评估模型，并希望将结果上传到模型中心。注意，你可以通过 `hub_model_id` 参数指定你想推送的仓库的名称（特别是，如果你需要推送给某个组织，就必须使用这个参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们在 `TrainingArguments` 中添加了 `hub_model_id="huggingface-course/bert-finetuned-ner"` 。默认情况下，使用的仓库将保存在你的账户之内，并以你设置的输出目录命名，所以在我们的例子中，仓库的地址是 `"sgugger/bert-finetuned-ner"` 。
 
 <Tip>
 
@@ -749,7 +749,7 @@ trainer.push_to_hub(commit_message="Training complete")
 'https://huggingface.co/sgugger/bert-finetuned-ner/commit/26ab21e5b1568f9afeccdaed2d8715f571d786ed'
 ```
 
-同时 `Trainer` 还创建并上传了一张包含所有评估结果的模型卡。到此阶段，你可以在模型 Hub 上使用推理小部件来测试你的模型并与你的朋友分享。你已经成功地在一个词元分类任务上微调了一个模型——恭喜你！
+同时 `Trainer` 还创建并上传了一张包含所有评估结果的模型卡。到此阶段，你可以在模型 Hub 上使用推理小部件来测试你的模型并与你的朋友分享。你已经成功地在一个 tokens 分类任务上微调了一个模型——恭喜你！
 
 如果你想更深入地了解训练循环，我们现在将向你展示如何使用 🤗 Accelerate 做同样的事情。
 
@@ -758,7 +758,8 @@ trainer.push_to_hub(commit_message="Training complete")
 现在我们来看看完整的训练循环，这样你就可以轻松地定制你需要的部分。它与我们在 [第三章](/course/chapter3/4) 中所做的内容很相似，但对评估部分有一些改动。
 
 ### 做好训练前的准备 [[做好训练前的准备]]
-首先我们需要为我们的数据集构建 `DataLoader` 。我们将我们的 `data_collator` 输入 `collate_fn` 参数并打乱训练集，但不打乱验证集：
+
+首先我们需要为我们的数据集构建 `DataLoader` 。我们将 `data_collator` 输入 `collate_fn` 参数并打乱训练集，但不打乱验证集：
 
 ```py
 from torch.utils.data import DataLoader
@@ -851,14 +852,14 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 ### 训练循环 [[训练循环]]
 
-我们现在准备编写完整的训练循环。为了简化其评估部分，我们定义了一个 `postprocess()` 函数，该函数接收预测和标签，并将它们转换为字符串列表，也就是我们的 `metric` （评估函数）对象需要的输入格式。
+我们现在准备编写完整的训练循环。为了简化其评估部分，我们定义了一个 `postprocess()` 函数，该函数接收模型的预测和标签，并将它们转换为字符串列表，也就是我们的 `metric` （评估函数）对象需要的输入格式。
 
 ```py
 def postprocess(predictions, labels):
     predictions = predictions.detach().cpu().clone().numpy()
     labels = labels.detach().cpu().clone().numpy()
 
-    # 删除忽略的索引(特殊词元)并转换为标签
+    # 删除忽略的索引(特殊 tokens )并转换为标签
     true_labels = [[label_names[l] for l in label if l != -100] for label in labels]
     true_predictions = [
         [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
@@ -869,8 +870,8 @@ def postprocess(predictions, labels):
 
 然后我们可以编写训练循环。在定义一个进度条来跟踪训练的进行后，循环分为三个部分：
 
-- 训练本身，这是经典的迭代过程，即在 `train_dataloader` 上进行迭代，向前传递模型，然后反向传递和优化参数
-- 评估，在获取模型在一个 batch 上的输出之后，这里有一个需要注意的地方：由于两个进程可能已将输入和标签填充到不同的形状，我们需要使用 `accelerator.pad_across_processes()` 使预测和标签在调用 `gather()` 方法之前具有相同的形状。如果我们不这样做，评估将会出错或无限期挂起。然后我们将结果发送到 `metric.add_batch()` ，并在评估循环结束时调用 `metric.compute()` 。
+- 训练本身，这是经典的迭代过程，即在 `train_dataloader` 上进行迭代，在模型上前向传播，然后反向传递和优化参数
+- 评估，在获取模型在一个 batch 上的输出之后，这里有一个需要注意的地方：由于两个进程可能已将输入和标签填充到不同的形状，我们需要使用 `accelerator.pad_across_processes()` 使预测和标签在调用 `gather()` 方法之前具有相同的形状。如果我们不这样做，评估循环将会出错或无限期挂起。然后我们将结果发送到 `metric.add_batch()` ，并在评估循环结束时调用 `metric.compute()` 。
 - 保存和上传，首先保存模型和 tokenizer 然后调用 `repo.push_to_hub()` 。注意，我们使用参数 `blocking=False` 来告诉 🤗 Hub 库在一个异步进程中推送。这样，在训练时，这个指令在后台将模型和 tokenizer 推送到 hub。
 
 以下是完整的训练循环代码：
@@ -903,8 +904,7 @@ for epoch in range(num_train_epochs):
         predictions = outputs.logits.argmax(dim=-1)
         labels = batch["labels"]
 
-        # Necessary to pad predictions and labels for being gathered
-        # 为了gatheredd对预测和标签进行填充
+        # 填充模型的预测和标签后才能调用 gathere()
         predictions = accelerator.pad_across_processes(predictions, dim=1, pad_index=-100)
         labels = accelerator.pad_across_processes(labels, dim=1, pad_index=-100)
 
@@ -942,10 +942,9 @@ unwrapped_model = accelerator.unwrap_model(model)
 unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
 ```
 
-第一行是不言自明的：它告诉所有的进程等待，直到所有的进程都处于那个阶段再继续（阻塞）。这是为了确保在保存之前，我们在每个进程中都有相同的模型。然后获取 `unwrapped_model` ，它就是我们定义的基本模型。 `accelerator.prepare()` 方法会为了在分布式训练中工作而改变模型，所以它不再有 `save_pretraining()` 方法； `accelerator.unwrap_model()` 方法将撤销对模型的更改。最后，我们调用 `save_pretraining()` ，并制定 `accelerator.save()` 作为 `save_function` 而不是 `torch.save()` 。
+第一行是不言自明的：它告诉所有的进程等待，直到所有的进程都处于那个阶段再继续（阻塞）。这是为了确保在保存之前，我们在每个进程中都有相同的模型。然后获取 `unwrapped_model` ，它就是我们定义的基本模型。 `accelerator.prepare()` 方法会为了在分布式训练中工作而对模型进行了一些修改，所以它不再有 `save_pretraining()` 方法； 使用`accelerator.unwrap_model()` 方法可以撤销对模型的更改。最后，我们调用 `save_pretraining()` ，并指定 `accelerator.save()` 作为 `save_function` 而不是 `torch.save()` 。
 
 完成这些操作后，你应该拥有一个与 `Trainer` 训练出的模型结果相当类似的模型。你可以在 [huggingface-course/bert-finetuned-ner-accelerate](https://huggingface.co/huggingface-course/bert-finetuned-ner-accelerate) 查看我们使用这些代码训练的模型。如果你想在训练循环中测试任何调整，你可以直接通过编辑上面显示的代码来实现它们！
-
 
 {/if}
 

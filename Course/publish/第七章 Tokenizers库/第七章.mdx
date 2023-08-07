@@ -2766,7 +2766,7 @@ tokenizer.save("tokenizer.json")
 new_tokenizer = Tokenizer.from_file("tokenizer.json")
 ```
 
-要在Transformers 中使用这个 tokenizer 我们需要将它封装在一个 `PreTrainedTokenizerFast` 类中。我们可以使用通用类（PreTrainedTokenizerFast），或者，如果我们的 tokenizer 对应于一个现有的模型，则可以使用该类（例如这里的 `BertTokenizerFast` ）。如果你使用这个课程来构建一个全新的 tokenizer 并且没有一个现有的模型可以使用，则必须需要使用通类。
+要在Transformers 中使用这个 tokenizer 我们需要将它封装在一个 `PreTrainedTokenizerFast` 类中。我们可以使用通用类（PreTrainedTokenizerFast），或者，如果我们的 tokenizer 对应于一个现有的模型，则可以使用该类（例如这里的 `BertTokenizerFast` ）。如果你使用这个课程来构建一个全新的 tokenizer 并且没有一个现有的模型可以使用，就必须需要使用通类。
 
 要将构建的 tokenizer 封装在 `PreTrainedTokenizerFast` 类中，我们可以将我们构建的 tokenizer 作为 `tokenizer_object` 传入，或者将我们保存的 tokenizer 文件作为 `tokenizer_file` 传入。要记住的关键一点是，我们需要手动设置所有的特殊 tokens 因为这个类不能从 `tokenizer` 对象推断出哪个符号是掩码符号， `[CLS]` 符号等：
 
