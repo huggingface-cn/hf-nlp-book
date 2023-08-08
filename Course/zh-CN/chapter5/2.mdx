@@ -124,9 +124,11 @@ DatasetDict({
 })
 ```
 
-这正是我们想要的。现在，我们可以应用各种预处理技术来清洗数据、tokenize 评论等等。
+这正是我们想要的。现在，我们可以使用各种预处理技术来清洗数据、tokenize 评论等等。
 
-<Tip> `load_dataset()` 函数的 `data_files` 参数非常灵活：可以是单个文件路径、文件路径列表或者是标签映射到文件路径的字典。你还可以根据 Unix shell 的规则，对符合指定模式的文件进行通配（例如，你可以通过设置 `data_files="*.JSON"` 匹配目录中所有的 JSON 文件）。有关更多详细信息，请参阅 [🤗Datasets 文档](https://huggingface.co/docs/datasets/v2.12.0/en/loading#local-and-remote-files) 。
+<Tip> 
+
+`load_dataset()` 函数的 `data_files` 参数非常灵活：可以是单个文件路径、文件路径列表或者是标签映射到文件路径的字典。你还可以根据 Unix shell 的规则，对符合指定模式的文件进行通配（例如，你可以通过设置 `data_files="*.JSON"` 匹配目录中所有的 JSON 文件）。有关更多详细信息，请参阅 [🤗Datasets 文档](https://huggingface.co/docs/datasets/v2.12.0/en/loading#local-and-remote-files) 。
 
 </Tip>
 

@@ -24,9 +24,9 @@
 
 对于许多涉及 Transformer 模型的 NLP 程序，你可以简单地从 Hugging Face Hub 中获取一个预训练的模型，然后直接在你的数据上对其进行微调，以完成手头的任务。只要用于预训练的语料库与用于微调的语料库没有太大区别，迁移学习通常会产生很好的结果。
 
-但是，在某些情况下，你需要先微调数据上的语言模型，然后再训练特定于任务的 head。例如，如果你的数据集包含法律合同或科学文章，像 BERT 这样的普通 Transformer 模型通常会将你语料库中的特定领域词视为稀有 tokens ，结果性能可能不尽如人意。通过在特定领域内数据上微调语言模型，你可以提高许多下游任务的性能，这意味着你通常只需执行一次此步骤！
+但是，在某些情况下，你需要先微调数据上的语言模型，然后再训练特定于任务的 head。例如，如果你的数据集包含法律合同或科学文章，像 BERT 这样的普通 Transformer 模型通常会将你语料库中的特定领域词视为稀有 tokens 结果性能可能不尽如人意。通过在特定领域内数据上微调语言模型，你可以提高许多下游任务的性能，这意味着你通常只需执行一次此步骤！
 
-这种在特定领域内数据上微调预训练语言模型的过程通常称为 `领域适应（domain adaptation）`。它于 2018 年由 [ULMFiT](https://arxiv.org/abs/1801.06146) 推广，这是使迁移学习真正适用于 NLP 的首批神经架构之一 （基于 LSTM）。下图显示了使用 ULMFiT 进行领域自适应的示例；在本节中，我们将做类似的事情，但使用的是 Transformer 而不是 LSTM！
+这种在特定领域内数据上微调预训练语言模型的过程通常称为 `领域适应（domain adaptation）` 。它于 2018 年由 [ULMFiT](https://arxiv.org/abs/1801.06146) 推广，这是使迁移学习真正适用于 NLP 的首批神经架构之一 （基于 LSTM）。下图显示了使用 ULMFiT 进行领域自适应的示例；在本节中，我们将做类似的事情，但使用的是 Transformer 而不是 LSTM！
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/ulmfit.svg" alt="ULMFiT."/>
@@ -129,7 +129,7 @@ DistilBERT 大约有 6700 万个参数，大约是 BERT base 模型的二分之�
 text = "This is a great [MASK]."
 ```
 
-作为人类，我们可以想象 `[MASK]`  token 有很多可能性，例如 “day”、“ride” 或者 “painting”。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的 tokenizer 来处理模型的输入，所以让我们也从 Hub 下载它：
+作为人类，我们可以想象 `[MASK]` token 有很多可能性，例如 “day”、“ride” 或者 “painting”。对于预训练模型，预测取决于模型所训练的语料库，因为它会学习获取数据中存在的统计模式。与 BERT 一样，DistilBERT 在 [English Wikipedia](https://huggingface.co/datasets/wikipedia) 和 [BookCorpus](https://huggingface.co/datasets/bookcorpus) 数据集上进行预训练，所以我们期望对 `[MASK]` 的预测能够反映这些领域。为了预测 `[MASK]` ，我们需要 DistilBERT 的 tokenizer 来处理模型的输入，所以让我们也从 Hub 下载它：
 
 ```python
 from transformers import AutoTokenizer
@@ -146,10 +146,10 @@ import torch
 
 inputs = tokenizer(text, return_tensors="pt")
 token_logits = model(**inputs).logits
-# 找到[MASK]的位置并提取其logits
+# 找到 [MASK] 的位置并提取其 logits
 mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
 mask_token_logits = token_logits[0, mask_token_index, :]
-# 选择具有最高logits的[MASK]候选词
+# 选择具有最高 logits 的 [MASK] 候选词
 top_5_tokens = torch.topk(mask_token_logits, 5, dim=1).indices[0].tolist()
 
 for token in top_5_tokens:
@@ -164,11 +164,11 @@ import tensorflow as tf
 
 inputs = tokenizer(text, return_tensors="np")
 token_logits = model(**inputs).logits
-# 找到[MASK]的位置并提取其logitss
+# 找到 [MASK] 的位置并提取其 logits
 mask_token_index = np.argwhere(inputs["input_ids"] == tokenizer.mask_token_id)[0, 1]
 mask_token_logits = token_logits[0, mask_token_index, :]
-# 选择具有最高logits的[MASK]候选词
-# 在argsort前对数组取负,以得到最大的而不是最小的logits
+# 选择具有最高 logits 的 [MASK] 候选词
+# 通过在 argsort 前对数组取负,来得到最大的 logits
 top_5_tokens = np.argsort(-mask_token_logits)[:5].tolist()
 
 for token in top_5_tokens:
@@ -253,7 +253,7 @@ for row in sample:
 
 对于自回归和掩码语言建模，常见的预处理步骤是将所有的示例连接起来，然后将整个语料库切割为等大小的块。这与我们通常的做法有很大的不同，我们通常只是对单个的示例进行 tokenize。为什么要将所有的示例连接在一起呢？原因是如果单个示例太长，可能会被截断，这会导致我们失去可能对语言建模任务有用的信息！
 
-因此，我们首先像往常一样对语料库进行 tokenize 处理，但是不在 tokenizer 中设置truncation=True选项。如果我们有可以使用快速 tokenizer（如[第六章](/course/chapter6/3)中所述），我们还将获取单词的ID，因为后面我们需要用到它们来进行整词掩码。我们将把这个过程封装在一个简单的函数中，并删除text和label列，因为我们不再需要它们。
+因此，我们首先像往常一样对语料库进行 tokenize 处理，但是不在 tokenizer 中设置 `truncation=True` 选项。如果我们有可以使用快速 tokenizer（如 [第六章](/course/chapter6/3) 中所述），我们还将获取单词的 ID，因为后面我们需要用到它们来进行整词掩码。我们将把这个过程封装在一个简单的函数中，并删除 text 和 label 列，因为我们不再需要它们。
 
 ```python
 def tokenize_function(examples):
@@ -299,11 +299,11 @@ tokenizer.model_max_length
 512
 ```
 
-该值来自于与 Checkpoint 相关联的 `tokenizer_config.json` 文件；在我们的例子中，我们可以看到上下文大小是 512 个 tokens ，就像 BERT 一样。
+该值来自于与 checkpoint 相关联的 `tokenizer_config.json` 文件；在我们的例子中，我们可以看到上下文大小是 512 个 tokens 就像 BERT 一样。
 
 <Tip>
 
-✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096) ，它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。选择一个 Checkpoint ，实例化 tokenizer ，并验证 `model_max_length` 是否与模型卡上引用的内容一致。
+✏️ **试试看！** 一些 Transformer 模型，例如 [BigBird](https://huggingface.co/google/bigbird-roberta-base) 和 [Longformer](hf.co/allenai/longformer-base-4096) ，它们具有比 BERT 和其他早期 Transformer 模型更长的上下文长度。选择一个 checkpoint 实例化 tokenizer 并验证 `model_max_length` 是否与模型卡上引用的内容一致。
 
 </Tip>
 
@@ -315,7 +315,7 @@ chunk_size = 128
 
 <Tip warning={true}>
 
-注意，在实际应用场景中，使用小的块尺寸可能会有不利的影响，所以你应该选择一个与你将要应用你的模型的用例相匹配的大小。
+注意，在实际应用场景中，使用小的块尺寸可能会有不利的影响，所以你应该选择一个与你将要使用模型的用例相匹配的大小。
 
 </Tip>
 
@@ -397,7 +397,7 @@ def group_texts(examples):
     return result
 ```
 
-注意，在 `group_texts()` 的最后一步，我们创建了一个新的 `labels` 列，它是通过复制 `input_ids` 列形成的。这是因为在掩码语言模型中，目标是预测输入批中随机掩码的 token ，通过创建 `labels` 列，我们保存了让我们的语言模型从中学习 `[Mask]` 的答案。
+注意，在 `group_texts()` 的最后一步，我们创建了一个新的 `labels` 列，它是通过复制 `input_ids` 列形成的。这是因为在掩码语言模型中，目标是预测输入批中随机掩码的 token 通过创建 `labels` 列，我们保存了让我们的语言模型从中学习 `[Mask]` 的答案。
 
 现在，让我们使用我们强大的 `Dataset.map()` 函数将 `group_texts()` 应用到我们的已分词数据集上：
 
@@ -423,7 +423,7 @@ DatasetDict({
 })
 ```
 
-通过对文本进行分组和块分析，我们得到的例子比原来的训练集和测试集的25000个例子要多得多。这是因为我们现在有了涉及跨越原始语料库中多个例子的连续标记的例子。你可以通过在其中一个块中查找特殊的`[SEP]`和`[CLS]` tokens 来清晰地看到这一点：
+通过对文本进行分组和块分析，我们得到的例子比原来的训练集和测试集的 25000 个例子要多得多。这是因为我们现在有了涉及跨越原始语料库中多个例子的连续标记的例子。你可以通过在其中一个块中查找特殊的 `[SEP]` 和 `[CLS]` tokens 来清晰地看到这一点：
 
 ```python
 tokenizer.decode(lm_datasets["train"][1]["input_ids"])
@@ -443,11 +443,11 @@ tokenizer.decode(lm_datasets["train"][1]["labels"])
 ".... at.......... high. a classic line : inspector : i'm here to sack one of your teachers. student : welcome to bromwell high. i expect that many adults of my age think that bromwell high is far fetched. what a pity that it isn't! [SEP] [CLS] homelessness ( or houselessness as george carlin stated ) has been an issue for years but never a plan to help those on the street that were once considered human who did everything from going to school, work, or vote for the matter. most people think of the homeless"
 ```
 
-正如我们上面的`group_texts()`函数所预期的那样，这看起来与解码的`input_ids`完全相同 —— 但是要怎么样才能让我们的的模型可以学习到一些东西呢？我们缺少一个关键的步骤：在输入中随机插入`[MASK]` token！让我们看看如何在微调期间使用特殊的数据收集器来实时完成这个步骤。
+正如我们上面的 `group_texts()` 函数所预期的那样，这看起来与解码的 `input_ids` 完全相同 —— 但是要怎么样才能让我们的的模型可以学习到一些东西呢？我们缺少一个关键的步骤：在输入中随机插入 `[MASK]` token！让我们看看如何在微调期间使用特殊的数据收集器来实时完成这个步骤。
 
 ## 使用 `Trainer` API 微调 DistilBERT [[使用 `Trainer` API 微调 DistilBERT]]
 
-微调掩码语言模型几乎与微调序列分类模型相同，就像我们在 [第三章](/course/chapter3) 所做的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些 tokens 。幸运的是，🤗 Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将 tokenizer 和一个 `mlm_probability` 参数（指定掩盖 tokens 的比例）传递给它。我们将选择 15％，这是 BERT 所使用的数量，也是文献中常见的选择：
+微调掩码语言模型几乎与微调序列分类模型相同，就像我们在 [第三章](/course/chapter3) 所做的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些 tokens 幸运的是，🤗 Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将 tokenizer 和一个 `mlm_probability` 参数（指定掩盖 tokens 的比例）传递给它。我们将选择 15％，这是 BERT 所使用的数量，也是文献中常见的选择：
 
 ```python
 from transformers import DataCollatorForLanguageModeling
@@ -455,7 +455,7 @@ from transformers import DataCollatorForLanguageModeling
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 ```
 
-为了了解随机掩码的工作原理，让我们把一些例子输入到数据整理器。由于数据整理器期望接收一个字典列表，其中每个字典表示一段连续文本的块，所以我们首先遍历数据集，然后将批量的数据输入到整理器。在这个数据整理器中，我们删除了“word_ids”键，因为它不需要这个键。
+为了了解随机掩码的工作原理，让我们把一些例子输入到数据整理器。由于数据整理器期望接收一个字典列表，其中每个字典表示一段连续文本的块，所以我们首先遍历数据集，然后将批量的数据输入到整理器。在这个数据整理器中，我们删除了 `word_ids` 这个键，因为它不需要这个键。
 
 ```python
 samples = [lm_datasets["train"][i] for i in range(2)]
@@ -472,7 +472,7 @@ for chunk in data_collator(samples)["input_ids"]:
 '>>> .... at.. [MASK]... [MASK]... high. a classic line plucked inspector : i\'[MASK] here to [MASK] one of your [MASK]. student : welcome to bromwell [MASK]. i expect that many adults of my age think that [MASK]mwell [MASK] is [MASK] fetched. what a pity that it isn\'t! [SEP] [CLS] [MASK]ness ( or [MASK]lessness as george 宇in stated )公 been an issue for years but never [MASK] plan to help those on the street that were once considered human [MASK] did everything from going to school, [MASK], [MASK] vote for the matter. most people think [MASK] the homeless'
 ```
 
-很棒，成功了！我们可以看到， `[MASK]`  tokens 已随机插入我们文本中的不同位置。这些将是我们的模型在训练期间必须预测的 tokens  —— 数据整理器的美妙之处在于，它会在每个 batch 中随机插入 `[MASK]` ！
+很棒，成功了！我们可以看到， `[MASK]` tokens 已随机插入我们文本中的不同位置。这些将是我们的模型在训练期间必须预测的 tokens  —— 数据整理器的美妙之处在于，它会在每个 batch 中随机插入 `[MASK]` ！
 
 <Tip>
 
@@ -486,7 +486,7 @@ for chunk in data_collator(samples)["input_ids"]:
 
 {/if}
 
-在为掩码语言建模训练模型时，可以使用的一种技术是一次遮蔽整个单词，而不仅仅是单个的 tokens 。这种方法称为 `全词屏蔽（whole word masking）`。如果我们想使用全词屏蔽（whole word masking），我们需要自己构建一个数据整理器。数据整理器只是一个函数，它接受一个样本列表并将它们转换为一个 batch，所以现在让我们这样做吧！我们将使用先前计算的单词 ID，构建一个单词索引和相应 token 之间的映射，然后随机决定遮蔽哪些单词，并使用这种方法对输入进行遮蔽。请注意，除了与掩码对应的标签外，所有其他的标签均为 `-100` 。
+在为掩码语言建模训练模型时，可以使用的一种技术是一次遮蔽整个单词，而不仅仅是单个的 tokens 这种方法称为 `全词屏蔽（whole word masking）` 。如果我们想使用全词屏蔽（whole word masking），我们需要自己构建一个数据整理器。数据整理器只是一个函数，它接受一个样本列表并将它们转换为一个 batch，所以现在让我们这样做吧！我们将使用先前计算的单词 ID，构建一个单词索引和相应 token 之间的映射，然后随机决定遮蔽哪些单词，并使用这种方法对输入进行遮蔽。请注意，除了与掩码对应的标签外，所有其他的标签均为 `-100` 。
 
 {#if fw === 'pt'}
 
@@ -590,7 +590,7 @@ for chunk in batch["input_ids"]:
 
 <Tip>
 
-✏️ **试试看！** 多次运行上面的代码片段，亲眼看看随机遮蔽的效果！也可以将 `tokenizer.decode()` 方法替换为 `tokenizer.convert_ids_to_tokens()`，可以观察到给定单词的 tokens 总是被一起遮蔽。
+✏️ **试试看！** 多次运行上面的代码片段，亲眼看看随机遮蔽的效果！也可以将 `tokenizer.decode()` 方法替换为 `tokenizer.convert_ids_to_tokens()` ，可以观察到给定单词的 tokens 总是被一起遮蔽。
 
 </Tip>
 
@@ -637,7 +637,7 @@ huggingface-cli login
 
 {#if fw === 'tf'}
 
-登录后，我们可以创建我们的“tf.data”数据集。为此，我们将使用 `prepare_tf_dataset()` 方法，该方法会使用我们的模型自动推断哪些列应进入数据集。如果你想准确控制要使用的列，可以改用 `Dataset.to_tf_dataset()` 方法。为了简单起见，我们在这里只使用标准数据整理器，但你也可以尝试全词屏蔽（whole word masking）整理器，并作为一个练习比较结果：
+登录后，我们可以创建我们的 `tf.data` 数据集。为此，我们将使用 `prepare_tf_dataset()` 方法，该方法会使用我们的模型自动推断哪些列应进入数据集。如果你想准确控制要使用的列，可以改用 `Dataset.to_tf_dataset()` 方法。为了简单起见，我们在这里只使用标准数据整理器，但你也可以尝试全词屏蔽（whole word masking）整理器，并作为一个练习比较结果：
 
 ```python
 tf_train_dataset = model.prepare_tf_dataset(
@@ -682,7 +682,7 @@ callback = PushToHubCallback(
 )
 ```
 
-我们现在已经准备好运行 `model.fit()` 了 —— 但在此之前，让我们先简单地看看 `困惑度（perplexity）`，它是一种常用的评估语言模型性能的指标。
+我们现在已经准备好运行 `model.fit()` 了 —— 但在此之前，让我们先简单地看看 `困惑度（perplexity）` ，它是一种常用的评估语言模型性能的指标。
 
 {:else}
 
@@ -729,7 +729,7 @@ trainer = Trainer(
 )
 ```
 
-我们现在准备运行 `trainer.train()` —— 但在此之前让我们简要地看一下 `困惑度（perplexity）`，这是评估语言模型性能的常用指标。
+我们现在准备运行 `trainer.train()` —— 但在此之前让我们简要地看一下 `困惑度（perplexity）` ，这是评估语言模型性能的常用指标。
 
 {/if}
 
@@ -809,7 +809,7 @@ print(f"Perplexity: {math.exp(eval_loss):.2f}")
 
 {#if fw === 'pt'}
 
-一旦训练完成，我们可以将带有训练信息的模型卡片推送到 Hub（Checkpoint在训练过程中就已经保存了）：
+一旦训练完成，我们可以将带有训练信息的模型卡片推送到 Hub（checkpoint 在训练过程中就已经保存了）：
 
 ```python
 trainer.push_to_hub()
@@ -830,7 +830,7 @@ trainer.push_to_hub()
 ## 使用 🤗 Accelerate 微调 DistilBERT [[使用 🤗 Accelerate 微调 DistilBERT]]
 
 正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与 [第三章](https://chat.openai.com/course/chapter3) 中的文本分类示例非常相似。事实上，唯一的不同之处是使用了一个特殊的数据整理器，我们已经在本节的前面讨论过这个问题了！
-然而，我们注意到 `DataCollatorForLanguageModeling`在每次评估时也会进行随机遮罩，因此我们在每次训练运行中都会看到困惑度得分有些波动。消除这种随机性的一种方法是在整个测试集上`仅进行一次`遮罩，然后在评估过程中使用🤗 Transformers中的默认数据整理器来收集 batch。为了了解其工作原理，让我们实现一个简单的函数，类似于我们第一次使用`DataCollatorForLanguageModeling`时进行遮罩的方式：
+然而，我们注意到 `DataCollatorForLanguageModeling` 在每次评估时也会进行随机遮罩，因此我们在每次训练运行中都会看到困惑度得分有些波动。消除这种随机性的一种方法是在整个测试集上 `仅进行一次` 遮罩，然后在评估过程中使用🤗 Transformers 中的默认数据整理器来收集 batch。为了了解其工作原理，让我们实现一个简单的函数，类似于我们第一次使用 `DataCollatorForLanguageModeling` 时进行遮罩的方式：
 
 ```python
 def insert_random_mask(batch):
@@ -858,7 +858,7 @@ eval_dataset = eval_dataset.rename_columns(
 )
 ```
 
-然后我们可以像往常一样设置 DataLoader，但我们将使用🤗 Transformers 中的 `default_data_collator`：
+然后我们可以像往常一样设置 DataLoader，但我们将使用🤗 Transformers 中的 `default_data_collator` ：
 
 ```python
 from torch.utils.data import DataLoader
@@ -1032,7 +1032,7 @@ for pred in preds:
 '>>> this is a great character.'
 ```
 
-Nice！ —— 我们的模型显然已经调整了它的权重来预测与电影更密切相关的词！
+Nice！—— 我们的模型显然已经调整了它的权重来预测与电影更密切相关的词！
 
 <Youtube id="0Oxphw4Q9fo"/>
 
@@ -1040,5 +1040,5 @@ Nice！ —— 我们的模型显然已经调整了它的权重来预测与电�
 
 <Tip>
 
-✏️ **试试看！** 为了量化领域适应的好处，分别使用预训练和微调的 DistilBERT checkpoint 和IMDb 标签来微调一个分类器，并对比一下这个两个 checkpoint 的差异。如果你需要复习文本分类的知识，请查看 [第三章](/course/chapter3) 。
+✏️ **试试看！** 为了量化领域适应的好处，分别使用预训练和微调的 DistilBERT checkpoint 和 IMDb 标签来微调一个分类器，并对比一下这个两个 checkpoint 的差异。如果你需要复习文本分类的知识，请查看 [第三章](/course/chapter3) 。
 </Tip>

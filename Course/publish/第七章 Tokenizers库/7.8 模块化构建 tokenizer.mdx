@@ -38,6 +38,7 @@ def get_training_corpus():
     for i in range(0, len(dataset), 1000):
         yield dataset[i : i + 1000]["text"]
 ```
+
 `get_training_corpus()` 函数是一个生成器，每次调用的时候将产生 1,000 个文本，我们将用它来训练 tokenizer 
 
 Tokenizers 也可以直接在文本文件上进行训练。以下是我们生成一个包含 WikiText-2 所有文本的代码，这样我们就可以在本地离线使用：

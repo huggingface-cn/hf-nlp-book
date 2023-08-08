@@ -19,7 +19,7 @@ Unigram 算法常用于 SentencePiece 中，该切分算法被 AlBERT，T5，mBA
 
 ## Unigram 训练 [[Unigram 训练]]
 
-与BPE 和 WordPiece 相比，Unigram 的工作方式正好相反：它从一个大词汇库开始，然后逐步删除词汇，直到达到目标词汇库大小。构建基础词汇库有多种方法：例如，我们可以选取预切分词汇中最常见的子串，或者在具有大词汇量的初始语料库上应用 BPE。
+与BPE 和 WordPiece 相比，Unigram 的工作方式正好相反：它从一个大词汇库开始，然后逐步删除词汇，直到达到目标词汇库大小。构建基础词汇库有多种方法：例如，我们可以选取预切分词汇中最常见的子串，或者在具有大词汇量的初始语料库上进行 BPE 得到一个初始词库。
 
 在训练的每一步，Unigram 算法都会在给定当前词汇的情况下计算语料库的损失。然后，对于词汇表中的每个符号，算法计算如果删除该符号，整体损失会增加多少，并寻找增加最少的符号。这些符号对语料库的整体损失影响较小，因此从某种意义上说，它们“相对不必要”并且是移除的最佳候选者。
 
@@ -364,7 +364,7 @@ while len(model) > 100:
     model = {token: -log(freq / total_sum) for token, freq in token_freqs.items()}
 ```
 
-然后，要对某些文本进行 tokenization，我们只需应用预分词然后使用我们的 `encode_word()` 函数：
+然后，要对某些文本进行 tokenization，我们只需进行预分词然后使用我们的 `encode_word()` 函数：
 
 ```python
 def tokenize(text, model):

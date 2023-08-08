@@ -62,7 +62,7 @@ DatasetDict({
 })
 ```
 
-如你所见，对于每种语言，都有 200,000 条评论`train`的数据集，以及5,000条评论用于`validation`和`test` 的数据集。我们感兴趣的评论信息包含在`review_body`和`review_title`列中。让我们通过创建一个简单的函数来从训练集中随机抽取一些样本，该函数使用我们在 [第五章](/course/chapter5) 学到过：
+如你所见，对于每种语言，都有 200,000 条评论 `train` 的数据集，以及 5,000 条评论用于 `validation` 和 `test` 的数据集。我们感兴趣的评论信息包含在 `review_body` 和 `review_title` 列中。让我们通过创建一个简单的函数来从训练集中随机抽取一些样本，该函数使用我们在 [第五章](/course/chapter5) 学到过：
 
 ```python
 def show_samples(dataset, num_samples=3, seed=42):
@@ -91,12 +91,12 @@ show_samples(english_dataset)
 
 </Tip>
 
-此示例显示了人们通常在网上找到的评论的多样性，从积极的到消极的（以及介于两者之间的所有内容！）。尽管带有"meh"标题的示例的信息量不大，但其他标题看起来像是对评论本身的不错的总结。在单个 GPU 上训练所有 400,000 条评论的摘要模型将花费太长时间，因此我们将专注于为单个产品领域生成摘要。为了了解我们可以选择哪些领域，让我们将`english_dataset`转换为`pandas.DataFrame`，并计算每个产品类别的评论数量：
+此示例显示了人们通常在网上找到的评论的多样性，从积极的到消极的（以及介于两者之间的所有内容！）。尽管带有“meh”标题的示例的信息量不大，但其他标题看起来像是对评论本身的不错的总结。在单个 GPU 上训练所有 400,000 条评论的摘要模型将花费太长时间，因此我们将专注于为单个产品领域生成摘要。为了了解我们可以选择哪些领域，让我们将 `english_dataset` 转换为 `pandas.DataFrame` ，并计算每个产品类别的评论数量：
 
 ```python
 english_dataset.set_format("pandas")
 english_df = english_dataset["train"][:]
-# 显示前20个产品的数量
+# 显示前 20 个产品的数量
 english_df["product_category"].value_counts()[:20]
 ```
 
@@ -124,7 +124,7 @@ book                       3756
 Name: product_category, dtype: int64
 ```
 
-在英语数据集中，最受欢迎的产品是家居用品、服装和无线电子产品。不过，为了带有亚马逊的特色，让我们专注于总结书籍的评论——毕竟，这是亚马逊这家公司成立的基础！我们可以看到两个符合要求的产品类别（ `book`和`digital_ebook_purchase` ），所以让我们用这两个产品类别过滤两种语言的数据集。正如我们在 [第五章](/course/chapter5) 学到的，`Dataset.filter()` 函数可以让我们非常有效地对数据集进行切片，所以我们可以定义一个简单的函数来进行此操作：
+在英语数据集中，最受欢迎的产品是家居用品、服装和无线电子产品。不过，为了带有亚马逊的特色，让我们专注于总结书籍的评论——毕竟，这是亚马逊这家公司成立的基础！我们可以看到两个符合要求的产品类别（ `book` 和 `digital_ebook_purchase` ），所以让我们用这两个产品类别过滤两种语言的数据集。正如我们在 [第五章](/course/chapter5) 学到的， `Dataset.filter()` 函数可以让我们非常有效地对数据集进行切片，所以我们可以定义一个简单的函数来进行此操作：
 
 ```python
 def filter_books(example):
@@ -134,7 +134,7 @@ def filter_books(example):
     )
 ```
 
-当我们使用这个函数对`english_dataset`和`spanish_dataset`过滤后，结果将只包含涉及书籍类别的那些行。在使用过滤器之前，让我们将`english_dataset`的格式从`"pandas"`切换回`"arrow"`：
+当我们使用这个函数对 `english_dataset` 和 `spanish_dataset` 过滤后，结果将只包含涉及书籍类别的那些行。在使用过滤器之前，让我们将 `english_dataset` 的格式从 `"pandas"` 切换回 `"arrow"` ：
 
 ```python
 english_dataset.reset_format()
@@ -159,7 +159,7 @@ show_samples(english_books)
 '>> Review: Nearly all the tips useful and. I consider myself an intermediate to advanced user of OneNote. I would highly recommend.'
 ```
 
-好的，我们可以看到评论并不是严格意义上的书籍，可能是指日历和 OneNote 等电子应用程序等内容。尽管如此，该领域似乎适合训练摘要模型。在我们查看适合此任务的各种模型之前，我们还有最后一点数据准备要做：将英文和西班牙文评论作为单个`DatasetDict`对象组合起来。🤗 Datasets提供了一个方便的`concatenate_datasets()`函数，它（名如其实）将把两个`Dataset`对象堆叠在一起。因此，为了创建我们的双语数据集，我们将遍历数据集的每个部分，并打乱结果以确保我们的模型不会过度拟合单一语言：
+好的，我们可以看到评论并不是严格意义上的书籍，可能是指日历和 OneNote 等电子应用程序等内容。尽管如此，该领域似乎适合训练摘要模型。在我们查看适合此任务的各种模型之前，我们还有最后一点数据准备要做：将英文和西班牙文评论作为单个 `DatasetDict` 对象组合起来。🤗 Datasets 提供了一个方便的 `concatenate_datasets()` 函数，它（名如其实）将把两个 `Dataset` 对象堆叠在一起。因此，为了创建我们的双语数据集，我们将遍历数据集的每个部分，并打乱结果以确保我们的模型不会过度拟合单一语言：
 
 ```python
 from datasets import concatenate_datasets, DatasetDict
@@ -194,7 +194,7 @@ show_samples(books_dataset)
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/review-lengths-dark.svg" alt="Word count distributions for the review titles and texts."/>
 </div>
 
-为了解决这个问题，我们将过滤掉标题非常短的示例，以便我们的模型可以生成更有效的摘要。由于我们正在处理英文和西班牙文文本，因此我们可以使用粗略的启发式方法在空白处拆分标题，然后用我们强大的`Dataset.filter()`方法如下：
+为了解决这个问题，我们将过滤掉标题非常短的示例，以便我们的模型可以生成更有效的摘要。由于我们正在处理英文和西班牙文文本，因此我们可以使用粗略的启发式方法在空白处拆分标题，然后用我们强大的 `Dataset.filter()` 方法如下：
 
 ```python
 books_dataset = books_dataset.filter(lambda x: len(x["review_title"].split()) > 2)
@@ -210,14 +210,14 @@ books_dataset = books_dataset.filter(lambda x: len(x["review_title"].split()) > 
 | :---------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-----------: |
 | [GPT-2](https://huggingface.co/gpt2-xl) | 虽然训练为自回归语言模型，但你可以通过在输入文本末尾附加“TL;DR”来使 GPT-2 生成摘要。|      ❌       |
 | [PEGASUS](https://huggingface.co/google/pegasus-large) | 在预训练时的目标是来预测多句子文本中的屏蔽句子。这个预训练目标比普通语言建模更接近文本摘要，并且在流行的基准测试中得分很高。|      ❌       |
-| [T5](https://huggingface.co/t5-base) | 通用的 Transformer 架构，所有任务都以文本到文本的框架进行描述；例如，模型文本摘要的输入格式是 `summarize: ARTICLE` 。 |      ❌       |
-| [mT5](https://huggingface.co/google/mt5-base) | T5 的多语言版本，在多语言 Common Crawl 语料库 (mC4) 上进行预训练，涵盖了 101 种语言。 |      ✅       |
+| [T5](https://huggingface.co/t5-base) | 通用的 Transformer 架构，所有任务都以文本到文本的框架进行描述；例如，模型文本摘要的输入格式是 `summarize: ARTICLE` 。|      ❌       |
+| [mT5](https://huggingface.co/google/mt5-base) | T5 的多语言版本，在多语言 Common Crawl 语料库 （mC4） 上进行预训练，涵盖了 101 种语言。|      ✅       |
 | [BART](https://huggingface.co/facebook/bart-base) | 一种新颖的 Transformer 架构，其中包含经过训练的编码器和解码器堆栈，以重建被破坏的输入，结合了 BERT 和 GPT-2 的预训练方案。|      ❌       |
 | [mBART-50](https://huggingface.co/facebook/mbart-large-50) | BART 的多语言版本，预训练了 50 种语言。|      ✅       |
 
 从此表中可以看出，大多数用于摘要的 Transformer 模型（以及大多数 NLP 任务）都是单语的。如果你的任务所使用的语言是“有大量语料库”（如英语或德语）的语言，这很好。但对于世界各地正在使用的数千种其他语言，则不然。幸运的是，有一类多语言 Transformer 模型，如 mT5 和 mBART，可以解决问题。这些模型是使用语言建模进行预训练的，但有一点不同：它们不是在一种语言的语料库上训练，而是同时在 50 多种语言的文本上进行联合训练！
 
-我们将使用 mT5，这是一种基于 T5 的有趣架构，在文本到文本框架中进行了预训练。在 T5 中，每个NLP任务都是以提示前缀（如`summarize:`）的形式定义的，这使模型使生成的文本适应提示。如下图所示，这让 T5 变得非常通用，因为你可以用一个模型解决很多任务！
+我们将使用 mT5，这是一种基于 T5 的有趣架构，在文本到文本框架中进行了预训练。在 T5 中，每个 NLP 任务都是以提示前缀（如 `summarize:` ）的形式定义的，这使模型使生成的文本适应提示。如下图所示，这让 T5 变得非常通用，因为你可以用一个模型解决很多任务！
 
 
 <div class="flex justify-center">
@@ -229,7 +229,7 @@ mT5 不使用前缀，但具有 T5 的大部分功能，并且具有多语言的
 
 <Tip>
 
-✏️ **试试看！** 完成本节后，可以尝试比较一下mT5和用相同技术微调过的mBART的性能。附加的挑战：只在英文评论上微调T5。因为T5有一个特殊的前缀提示，你需要在下面的预处理步骤中将 `summarize:` 添加到输入例子前。
+✏️ **试试看！** 完成本节后，可以尝试比较一下 mT5 和用相同技术微调过的 mBART 的性能。附加的挑战：只在英文评论上微调 T5。因为 T5 有一个特殊的前缀提示，你需要在下面的预处理步骤中将 `summarize:` 添加到输入例子前。
 
 </Tip>
 
@@ -237,7 +237,7 @@ mT5 不使用前缀，但具有 T5 的大部分功能，并且具有多语言的
 
 <Youtube id="1m7BerpSq8A"/>
 
-我们接下来的任务是对我们的评论及其标题进行 tokenize 和 encode 。通常，我们首先加载与预训练模型 checkpoint 相关的 tokenizer 。我们将使用 `mt5-small` 作为我们的 checkpoint ，这样我们就可以在合理的时间消耗内对模型进行微调：
+我们接下来的任务是对我们的评论及其标题进行 tokenize 和 encode 通常，我们首先加载与预训练模型 checkpoint 相关的 tokenizer 我们将使用 `mt5-small` 作为我们的 checkpoint 这样我们就可以在合理的时间消耗内对模型进行微调：
 
 ```python
 from transformers import AutoTokenizer
@@ -252,7 +252,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
 </Tip>
 
-让我们在一个小例子上测试 mT5  tokenizer ：
+让我们在一个小例子上测试 mT5  tokenizer 
 
 ```python
 inputs = tokenizer("I loved reading the Hunger Games!")
@@ -263,7 +263,7 @@ inputs
 {'input_ids': [336, 259, 28387, 11807, 287, 62893, 295, 12507, 1], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1]}
 ```
 
-在这里我们可以看到熟悉的`input_ids`和`attention_mask`，我们在[第3章](https://chat.openai.com/course/chapter3)的第一次微调实验中遇到过。让我们使用 tokenizer 的`convert_ids_to_tokens()`函数解码这些输入ID，看看我们正在处理的是什么类型的 tokenizer ：
+在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在 [第3章](https://chat.openai.com/course/chapter3) 的第一次微调实验中遇到过。让我们使用 tokenizer 的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的 tokenizer 
 
 ```python
 tokenizer.convert_ids_to_tokens(inputs.input_ids)
@@ -273,9 +273,9 @@ tokenizer.convert_ids_to_tokens(inputs.input_ids)
 ['▁I', '▁', 'loved', '▁reading', '▁the', '▁Hung', 'er', '▁Games', '</s>']
 ```
 
-特殊的Unicode字符`▁`和序列结束 token `</s>`表明我们正在使用基于[第6章](https://chat.openai.com/course/chapter6)中讨论的Unigram 子词分词算法的SentencePiece tokenizer 。Unigram对于多语言语料库特别有用，因为它让SentencePiece 不必关注口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
+特殊的 Unicode 字符 `▁` 和序列结束 token `</s>` 表明我们正在使用基于 [第6章](https://chat.openai.com/course/chapter6) 中讨论的 Unigram 子词分词算法的 SentencePiece tokenizer Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 不必关注口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
 
-为了对我们的语料库 tokenize ，我们需要处理与摘要相关的一个细微问题：因为我们的目标文本也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。🤗 Transformers 中的 tokenizer 提供了一个绝妙的 `text_target` 参数，允许你将目标文本与输入并行 tokenize 。以下是如何为 mT5 处理输入和目标文本的示例：
+为了对我们的语料库 tokenize 我们需要处理与摘要相关的一个细微问题：因为我们的目标文本也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。🤗 Transformers 中的 tokenizer 提供了一个绝妙的 `text_target` 参数，允许你将目标文本与输入并行 tokenize 以下是如何为 mT5 处理输入和目标文本的示例：
 
 ```python
 max_input_length = 512
@@ -294,9 +294,9 @@ def preprocess_function(examples):
     return model_inputs
 ```
 
-让我们逐步解析这段代码，理解发生了什么。我们首先定义了`max_input_length`和`max_target_length`的值，这些值设定了我们的评论和标题的最大长度。由于评论主体通常比标题大得多，我们相应地调整了这些值。
+让我们逐步解析这段代码，理解发生了什么。我们首先定义了 `max_input_length` 和 `max_target_length` 的值，这些值设定了我们的评论和标题的最大长度。由于评论主体通常比标题大得多，我们相应地调整了这些值。
 
-使用`preprocess_function()`，我们可以使用我们在这门课程中广泛使用的方便的`Dataset.map()`函数，轻松地对整个语料库 tokenize ：
+使用 `preprocess_function()` ，我们可以使用我们在这门课程中广泛使用的方便的 `Dataset.map()` 函数，轻松地对整个语料库 tokenize 
 
 ```python
 tokenized_datasets = books_dataset.map(preprocess_function, batched=True)
@@ -306,7 +306,7 @@ tokenized_datasets = books_dataset.map(preprocess_function, batched=True)
 
 <Tip>
 
-💡 你可能已经注意到我们在上面的 `Dataset.map()` 函数中使用了 `batched=True` 。这将以1000（默认值）的批次编码例子，并让你可以利用 🤗 Transformers 中快速 tokenizer 的多线程功能。在可能的情况下，尝试使用 `batched=True` 来加速你的预处理！
+💡 你可能已经注意到我们在上面的 `Dataset.map()` 函数中使用了 `batched=True` 。这将以 1000（默认值）的批次编码例子，并让你可以利用 🤗 Transformers 中快速 tokenizer 的多线程功能。在可能的情况下，尝试使用 `batched=True` 来加速你的预处理！
 
 </Tip>
 
@@ -326,11 +326,11 @@ reference_summary = "I loved reading the Hunger Games"
 
 <Tip>
 
-🙋 如果这是你第一次听说精确度(Precision)和召回率(Recall)，请不要担心——我们将一起通过一些清晰的示例来理解它们。这些指标通常在分类任务中遇到，所以如果你想了解在分类任务中精确度(Precision)和召回率(Recall)是如何定义的，我们建议你查看`scikit-learn`的[指南](https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html)。
+🙋 如果这是你第一次听说精确度（Precision）和召回率（Recall），请不要担心——我们将一起通过一些清晰的示例来理解它们。这些指标通常在分类任务中遇到，所以如果你想了解在分类任务中精确度（Precision）和召回率（Recall）是如何定义的，我们建议你查看 `scikit-learn` 的 [指南](https://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html) 。
 
 </Tip>
 
-对于ROUGE，召回率衡量的是参考摘要中被生成摘要捕获的内容量。如果我们只是比较单词，召回率可以按照以下公式计算：
+对于 ROUGE，召回率衡量的是参考摘要中被生成摘要捕获的内容量。如果我们只是比较单词，召回率可以按照以下公式计算：
 
 $$ \mathrm{召回率} = \frac{\mathrm{重叠词的数量}}{\mathrm{参考摘要中的总词数}} $$
 
@@ -338,7 +338,7 @@ $$ \mathrm{召回率} = \frac{\mathrm{重叠词的数量}}{\mathrm{参考摘要�
 
 $$ \mathrm{精确度} = \frac{\mathrm{重叠词的数量}}{\mathrm{生成摘要中的总词数}} $$
 
-我们的详细摘要使用这种计算方法会得到 6/10 = 0.6 的精确度，这比我们较短的摘要获得的 6/7 = 0.86 的精确度要差得多。在实践中，通常计算精度和召回率，然后得到F1得分（精确度和召回率的调和平均数）。我们可以很容易地在🤗 Datasets 中通过安装`rouge_score`包来实现这一点：
+我们的详细摘要使用这种计算方法会得到 6/10 = 0.6 的精确度，这比我们较短的摘要获得的 6/7 = 0.86 的精确度要差得多。在实践中，通常计算精度和召回率，然后得到 F1 得分（精确度和召回率的调和平均数）。我们可以很容易地在🤗 Datasets 中通过安装 `rouge_score` 包来实现这一点：
 
 ```py
 !pip install rouge_score
@@ -352,7 +352,7 @@ import evaluate
 rouge_score = evaluate.load("rouge")
 ```
 
-接着我们可以使用`rouge_score.compute()`函数来一次性计算所有的指标：
+接着我们可以使用 `rouge_score.compute()` 函数来一次性计算所有的指标：
 
 ```python
 scores = rouge_score.compute(
@@ -368,8 +368,8 @@ scores
  'rougeLsum': AggregateScore(low=Score(precision=0.86, recall=1.0, fmeasure=0.92), mid=Score(precision=0.86, recall=1.0, fmeasure=0.92), high=Score(precision=0.86, recall=1.0, fmeasure=0.92))}
 ```
 
-哇，这个输出中包含了很多信息——它们都代表什么意思呢？首先，🤗 Datasets 实际上计算了精度、召回率和 F1 分数的置信区间；也些就是你在这里看到的`low`、`mid`和`high`属性。此外，🤗 Datasets 还计算了基于在比较生成摘要和参考摘要时的采用不同文本粒度的各种ROUGE得分。`rouge1`测量的是生成摘要和参考摘要中单个单词的重叠程度。
-为了验证这一点，让我们提取出我们得分的`mid`值：
+哇，这个输出中包含了很多信息——它们都代表什么意思呢？首先，🤗 Datasets 实际上计算了精度、召回率和 F1 分数的置信区间；也些就是你在这里看到的 `low` 、 `mid` 和 `high` 属性。此外，🤗 Datasets 还计算了基于在比较生成摘要和参考摘要时的采用不同文本粒度的各种 ROUGE 得分。 `rouge1` 测量的是生成摘要和参考摘要中单个单词的重叠程度。
+为了验证这一点，让我们提取出我们得分的 `mid` 值：
 
 ```python
 scores["rouge1"].mid
@@ -378,11 +378,11 @@ scores["rouge1"].mid
 ```python out
 Score(precision=0.86, recall=1.0, fmeasure=0.92)
 ```
-太好了，精确度和召回率的数字都对上了！那么其他的ROUGE得分是怎么回事呢？`rouge2`度量了二元词组（考虑单词对的重叠）之间的重叠，而`rougeL`和`rougeLsum`通过寻找生成的摘要和参考摘要中最长的公共子串来度量单词的最长匹配序列。`rougeLsum`中的"sum"指的是该指标是在整个摘要上计算的，而`rougeL`是指在各个句子上计算的平均值。
+太好了，精确度和召回率的数字都对上了！那么其他的 ROUGE 得分是怎么回事呢？ `rouge2` 度量了二元词组（考虑单词对的重叠）之间的重叠，而 `rougeL` 和 `rougeLsum` 通过寻找生成的摘要和参考摘要中最长的公共子串来度量单词的最长匹配序列。 `rougeLsum` 中的“sum”指的是该指标是在整个摘要上计算的，而 `rougeL` 是指在各个句子上计算的平均值。
 
 <Tip>
 
-✏️ **试试看！** 创建你自己的生成摘要和参考摘要的例子，看看得出的ROUGE分数是否与基于精确度和召回率公式的手动计算一致。附加的挑战：将文本切分为二元词组，并与`rouge2`指标的精确度和召回率进行对比。
+✏️ **试试看！** 创建你自己的生成摘要和参考摘要的例子，看看得出的 ROUGE 分数是否与基于精确度和召回率公式的手动计算一致。附加的挑战：将文本切分为二元词组，并与 `rouge2` 指标的精确度和召回率进行对比。
 
 </Tip>
 
@@ -390,7 +390,7 @@ Score(precision=0.86, recall=1.0, fmeasure=0.92)
 
 ### 创建强大的 baseline [[创建强大的 baseline]]
 
-对于文本摘要，一个常见的基线是简单地取文章的前三句话，通常称为 `lead-3` 基线。我们可以使用句号(英文使用．)来跟踪句子边界，但这在"U.S." or "U.N."之类的首字母缩略词上会失败。所以我们将使用 `nltk` 库，它包含一个更好的算法来处理这些情况。你可以使用以下方式安装该包：
+对于文本摘要，一个常见的基线是简单地取文章的前三句话，通常称为 `lead-3` 基线。我们可以使用句号（英文使用．）来跟踪句子边界，但这在“U.S.” or “U.N.”之类的首字母缩略词上会失败。所以我们将使用 `nltk` 库，它包含一个更好的算法来处理这些情况。你可以使用以下方式安装该包：
 
 ```python
 !pip install nltk
@@ -450,7 +450,7 @@ rouge_dict
 
 ## 使用 `Trainer` API 微调 mT5  [[使用 `Trainer` API 微调 mT5]]
 
-微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从 `mt5-small`  checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 AutoModelForSeq2SeqLM 类加载模型，该类会自动下载并缓存模型权重：
+微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从 `mt5-small` checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 AutoModelForSeq2SeqLM 类加载模型，该类会自动下载并缓存模型权重：
 
 ```python
 from transformers import AutoModelForSeq2SeqLM
@@ -462,7 +462,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 
 ## 使用 `Keras` API 微调 mT5  [[使用 `Keras` API 微调 mT5]]
 
-微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从 `mt5-small`  checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 `TFAutoModelForSeq2SeqLM` 类加载模型，该类会自动下载并缓存模型权重：
+微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从 `mt5-small` checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 `TFAutoModelForSeq2SeqLM` 类加载模型，该类会自动下载并缓存模型权重：
 
 ```python
 from transformers import TFAutoModelForSeq2SeqLM
@@ -474,7 +474,7 @@ model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 
 <Tip>
 
-💡 如果你想知道为什么在下游任务中没有看到任何关于微调模型的警告，那是因为对于序列到序列的任务，我们保留了网络的所有权重。与此相比，在[第三章](https://chat.openai.com/course/chapter3)中的文本分类模型中，我们用一个随机初始化的网络替换了预训练模型的头部。
+💡 如果你想知道为什么在下游任务中没有看到任何关于微调模型的警告，那是因为对于序列到序列的任务，我们保留了网络的所有权重。与此相比，在 [第三章](https://chat.openai.com/course/chapter3) 中的文本分类模型中，我们用一个随机初始化的网络替换了预训练模型的头部。
 
 </Tip>
 
@@ -501,7 +501,7 @@ from transformers import Seq2SeqTrainingArguments
 
 batch_size = 8
 num_train_epochs = 8
-# 每个训练周期都显示训练损失
+# 每个训练周期都输出训练损失
 logging_steps = len(tokenized_datasets["train"]) // batch_size
 model_name = model_checkpoint.split("/")[-1]
 
@@ -520,11 +520,10 @@ args = Seq2SeqTrainingArguments(
 )
 ```
 
-在这里，`predict_with_generate`参数已经被设置为 True ，表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在 [第一章](/course/chapter1) 种所讨论的那样，解码器通过逐个预测单词来执行推理，这是由模型的`generate()`方法实现的。设置`predict_with_generate=True`告诉`Seq2SeqTrainer`在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了`save_total_limit`选项，训练期间最多只保存 3 个 checkpoint 的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。
+在这里， `predict_with_generate` 参数已经被设置为 True 表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在 [第一章](/course/chapter1) 种所讨论的那样，解码器通过逐个预测单词来执行推理，这是由模型的 `generate()` 方法实现的。设置 `predict_with_generate=True` 告诉 `Seq2SeqTrainer` 在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了 `save_total_limit` 选项，训练期间最多只保存 3 个 checkpoint 的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。
+`push_to_hub=True` 参数将允许我们在训练后将模型推送到 Hub；你可以在由 `output_dir` 定义的位置下的用户配置文件中找到对应的仓库。请注意，你可以使用 `hub_model_id` 参数指定要推送到的仓库的名称（特别是当你想要推送到组织时，就必须使用此参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们在 `Seq2SeqTrainingArguments` 中添加了 `hub_model_id="huggingface-course/mt5-finetuned-amazon-en-es"` 。
 
-`push_to_hub=True` 参数将允许我们在训练后将模型推送到 Hub；你可以在由`output_dir`定义的位置下的用户配置文件中找到对应的仓库。请注意，你可以使用 `hub_model_id` 参数指定要推送到的仓库的名称（特别是当你想要推送到组织时，就必须使用此参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course) 时，我们在`Seq2SeqTrainingArguments`中添加了`hub_model_id="huggingface-course/mt5-finetuned-amazon-en-es"`。
-
-我们需要做的下一件事是为 Trainer 提供一个`compute_metrics()`函数，以便我们可以在训练期间评估我们的模型。对于摘要模型来说，这比简单地在模型的预测上调用 `rouge_score.compute()` 更复杂一些，因为我们需要将输出和标签解码为文本，然后才能计算 ROUGE 分数。下面的函数正是这样做的，除此之外还使用了 `nltk` 中的 `sent_tokenize()` 函数将摘要句子用换行符分隔开：
+我们需要做的下一件事是为 Trainer 提供一个 `compute_metrics()` 函数，以便我们可以在训练期间评估我们的模型。对于摘要模型来说，这比简单地在模型的预测上调用 `rouge_score.compute()` 更复杂一些，因为我们需要将输出和标签解码为文本，然后才能计算 ROUGE 分数。下面的函数正是这样做的，除此之外还使用了 `nltk` 中的 `sent_tokenize()` 函数将摘要句子用换行符分隔开：
 
 ```python
 import numpy as np
@@ -533,7 +532,7 @@ def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     # 将生成的摘要解码为文本
     decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
-    # 替换标签中的-100，因为我们无法解码它们
+    # 替换标签中的-100,因为我们无法解码它们
     labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
     # 将参考摘要解码为文本
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
@@ -551,9 +550,9 @@ def compute_metrics(eval_pred):
 
 {/if}
 
-接下来，我们需要为我们的序列到序列任务定义一个数据整理器（data collator）。由于 mT5 是一个编码器-解码器的 Transformer 模型，准备我们成批次的数据时有一点需要注意，那就是在解码期间，我们需要将标签向右移动一个单位。这是为了确保解码器只看到之前的真实的标签，而不是当前或未来的标签，这样模型就能避免容易记住标签。这与在像[因果语言模型](https://chat.openai.com/course/chapter7/6)这样的任务中如何使用掩码自注意力机制类似。
+接下来，我们需要为我们的序列到序列任务定义一个数据整理器（data collator）。由于 mT5 是一个编码器-解码器的 Transformer 模型，准备我们成批次的数据时有一点需要注意，那就是在解码期间，我们需要将标签向右移动一个单位。这是为了确保解码器只看到之前的真实的标签，而不是当前或未来的标签，这样模型就能避免容易记住标签。这与在像 [因果语言模型](https://chat.openai.com/course/chapter7/6) 这样的任务中如何使用掩码自注意力机制类似。
 
-幸运的是，🤗 Transformers提供了一个`DataCollatorForSeq2Seq`整理器，它会动态地填充我们的输入和标签。要实例化这个整理器，我们只需要提供`tokenizer`和`model`即可：
+幸运的是，🤗 Transformers 提供了一个 `DataCollatorForSeq2Seq` 整理器，它会动态地填充我们的输入和标签。要实例化这个整理器，我们只需要提供 `tokenizer` 和 `model` 即可：
 
 {#if fw === 'pt'}
 
@@ -573,7 +572,7 @@ data_collator = DataCollatorForSeq2Seq(tokenizer, model=model, return_tensors="t
 
 {/if}
 
-让我们看看当给这个整理器提供一个小批次的样本时，它会产生什么。首先，我们需要删除带有字符串的列，因为整理器不知道如何对这些元素进行填充(padding)：
+让我们看看当给这个整理器提供一个小批次的样本时，它会产生什么。首先，我们需要删除带有字符串的列，因为整理器不知道如何对这些元素进行填充（padding）：
 
 ```python
 tokenized_datasets = tokenized_datasets.remove_columns(
@@ -604,11 +603,11 @@ data_collator(features)
         [    0,   259, 27531, 13483,   259,  7505]])}
 ```
 
-首先要注意的是，第二个例子比第一个例子要长，所以第个一例子的 `input_ids` 和 `attention_mask` 在右边用`[PAD]` token （ID为`0`）进行了填充。同样，我们可以看到标签被填充了`-100`，以确保填充 tokens 被损失函数忽略。最后，我们可以看到一个新的 `decoder_input_ids` ，它通过在第一个条目中插入 `[PAD]`  tokens 来将标签向右移动。
+首先要注意的是，第二个例子比第一个例子要长，所以第个一例子的 `input_ids` 和 `attention_mask` 在右边用 `[PAD]` token （ID 为 `0` ）进行了填充。同样，我们可以看到标签被填充了 `-100` ，以确保填充 tokens 被损失函数忽略。最后，我们可以看到一个新的 `decoder_input_ids` ，它通过在第一个条目中插入 `[PAD]` tokens 来将标签向右移动。
 
 {#if fw === 'pt'}
 
-我们终于拥有了训练所需的所有的前期准备！我们现在只需要使用标准参数实例化 Trainer ：
+我们终于拥有了训练所需的所有的前期准备！我们现在只需要使用标准参数实例化 Trainer 
 
 ```python
 from transformers import Seq2SeqTrainer
@@ -630,7 +629,7 @@ trainer = Seq2SeqTrainer(
 trainer.train()
 ```
 
-在训练期间，你应该看到训练损失逐渐减小，而ROUGE分数随着每个阶段的增加而增加。一旦训练完成，你可以通过运行`Trainer.evaluate()`来查看最后的ROUGE分数：
+在训练期间，你应该看到训练损失逐渐减小，而 ROUGE 分数随着每个阶段的增加而增加。一旦训练完成，你可以通过运行 `Trainer.evaluate()` 来查看最后的 ROUGE 分数：
 
 ```python
 trainer.evaluate()
@@ -658,13 +657,13 @@ trainer.push_to_hub(commit_message="Training complete", tags="summarization")
 'https://huggingface.co/huggingface-course/mt5-finetuned-amazon-en-es/commit/aa0536b829b28e73e1e4b94b8a5aacec420d40e0'
 ```
 
-这将把 checkpoint 和配置文件保存到`output_dir`，然后将所有文件上传到Hub。通过指定`tags`参数，我们还确保在Hub上的小工具会是一个摘要生成的小工具，而不是与mT5架构相关联的默认文本生成小工具（关于模型标签的更多信息，请参见[🤗Hub文档](https://huggingface.co/docs/hub/main#how-is-a-models-type-of-inference-api-and-widget-determined)）。`trainer.push_to_hub()`的输出是Git提交哈希的URL，所以你可以轻松查看对模型库进行的修改！
+这将把 checkpoint 和配置文件保存到 `output_dir` ，然后将所有文件上传到 Hub。通过指定 `tags` 参数，我们还确保在 Hub 上的小工具会是一个摘要生成的小工具，而不是与 mT5 架构相关联的默认文本生成小工具（关于模型标签的更多信息，请参见 [🤗Hub文档](https://huggingface.co/docs/hub/main#how-is-a-models-type-of-inference-api-and-widget-determined) ）。 `trainer.push_to_hub()` 的输出是 Git 提交哈希的 URL，所以你可以轻松查看对模型库进行的修改！
 
 在结束本节之前，让我们看一下如何使用 🤗 Accelerate 提供的底层 API 对 mT5 进行微调。
 
 {:else}
 
-我们几乎准备好训练了！我们只需要使用我们上面定义的数据整理器将我们的数据集转换为`tf.data.Dataset`，然后 `compile()` 和 `fit()` 模型。首先，转换数据集：
+我们几乎准备好训练了！我们只需要使用我们上面定义的数据整理器将我们的数据集转换为 `tf.data.Dataset` ，然后 `compile()` 和 `fit()` 模型。首先，转换数据集：
 ```python
 tf_train_dataset = model.prepare_tf_dataset(
     tokenized_datasets["train"],
@@ -686,9 +685,9 @@ tf_eval_dataset = model.prepare_tf_dataset(
 from transformers import create_optimizer
 import tensorflow as tf
 
-# 训练步数是数据集中的样本数量，除以 batch 大小，然后乘以总的 epoch 数。
-# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset，
-# 而不是原始的 Hugging Face Dataset ，所以 len() 求取它的长度已经是 num_samples // batch_size。
+# 训练步数是数据集中的样本数量,除以 batch 大小,然后乘以总的 epoch 数。
+# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset,
+# 而不是原始的 Hugging Face Dataset ,所以使用 len() 计算它的长度已经是 num_samples // batch_size。
 
 num_train_epochs = 8
 num_train_steps = len(tf_train_dataset) * num_train_epochs
@@ -707,7 +706,7 @@ model.compile(optimizer=optimizer)
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 ```
 
-最后，我们训练模型。我们使用`PushToHubCallback`在每个epoch后将模型保存到Hub，这样我们就可以在后面用它来进行推理：
+最后，我们训练模型。我们使用 `PushToHubCallback` 在每个 epoch 后将模型保存到 Hub，这样我们就可以在后面用它来进行推理：
 
 ```python
 from transformers.keras_callbacks import PushToHubCallback
@@ -721,9 +720,9 @@ model.fit(
 )
 ```
 
-我们在训练期间得到了一些 loss，但实际上我们想看到我们之前计算的 ROUGE 指标。要获得这些指标，我们需要获取模型生成输出并将它们转换为字符串。让我们构建一些参考摘要和预测的列表，以便ROUGE指标进行比较（请注意，如果你在这一部分遇到导入错误，你可能需要执行`!pip install tqdm` ）。
+我们在训练期间得到了一些 loss，但实际上我们想看到我们之前计算的 ROUGE 指标。要获得这些指标，我们需要获取模型生成输出并将它们转换为字符串。让我们构建一些参考摘要和预测的列表，以便 ROUGE 指标进行比较（请注意，如果你在这一部分遇到导入错误，你可能需要执行 `!pip install tqdm` ）。
 
-我们还将使用一种可以显着提高性能的技巧 —— 使用 TensorFlow 的加速线性代数编译器 [XLA](https://www.tensorflow.org/xla) 编译我们的生成代码。XLA 对模型的计算图应用了各种优化，并显着提高了速度和内存使用率。正如 Hugging Face [博客](https://huggingface.co/blog/tf-xla-generate) 中所述，当我们的输入形状变化不大时，XLA 效果最佳。为了处理这个问题，我们将输入填充到 128 的倍数，并使用填充整理器创建一个新数据集，然后我们将`@tf.function(jit_compile=True)`装饰器应用到我们的生成函数上，这将把整个函数标记为用XLA编译。
+我们还将使用一种可以显着提高性能的技巧 —— 使用 TensorFlow 的加速线性代数编译器 [XLA](https://www.tensorflow.org/xla) 编译我们的生成代码。XLA 对模型的计算图应用了各种优化，并显着提高了速度和内存使用率。正如 Hugging Face [博客](https://huggingface.co/blog/tf-xla-generate) 中所述，当我们的输入形状变化不大时，XLA 效果最佳。为了处理这个问题，我们将输入填充到 128 的倍数，并使用填充整理器创建一个新数据集，然后我们使用 `@tf.function(jit_compile=True)` 装饰器装饰我们的生成函数，这将把整个函数标记为用 XLA 编译。
 
 ```python
 from tqdm import tqdm
@@ -784,11 +783,11 @@ result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
 
 ## 使用 🤗 Accelerate 微调 mT5 [[使用 🤗 Accelerate 微调 mT5]]
 
-使用 🤗 Accelerate 微调我们的模型与我们在 [第三章](/course/chapter3) 中遇到的文本分类示例非常相似。主要区别在于需要在训练期间显式生成摘要并定义我们如何计算 ROUGE 分数（请记住，`Seq2SeqTrainer`已经为我们处理了生成摘要的部分）。让我们看看我们如何在 🤗 Accelerate 中实现这两个要求！
+使用 🤗 Accelerate 微调我们的模型与我们在 [第三章](/course/chapter3) 中遇到的文本分类示例非常相似。主要区别在于需要在训练期间显式生成摘要并定义我们如何计算 ROUGE 分数（请记住， `Seq2SeqTrainer` 已经为我们处理了生成摘要的部分）。让我们看看我们如何在 🤗 Accelerate 中实现这两个要求！
 
 ### 为训练做好一切准备 [[为训练做好一切准备]]
 
-首先，我们需要为每个数据分组创建一个`DataLoader`。由于PyTorch的dataloaders期望得到的是张量组成的batch，所以我们需要将数据集的格式设定为`"torch"`：
+首先，我们需要为每个数据分组创建一个 `DataLoader` 。由于 PyTorch 的 dataloaders 期望得到的是张量组成的 batch，所以我们需要将数据集的格式设定为 `"torch"` ：
 
 ```python
 tokenized_datasets.set_format("torch")
@@ -800,7 +799,7 @@ tokenized_datasets.set_format("torch")
 model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 ```
 
-然后我们可以实例化数据整理器，并使用它来定义我们的DataLoader：
+然后我们可以实例化数据整理器，并使用它来定义我们的 DataLoader：
 
 ```python
 from torch.utils.data import DataLoader
@@ -817,7 +816,7 @@ eval_dataloader = DataLoader(
 )
 ```
 
-接下来，我们需要定义我们要使用的优化器。与我们的其他例子一样，我们将使用`AdamW`，这个优化器对大多数问题都很有效：
+接下来，我们需要定义我们要使用的优化器。与我们的其他例子一样，我们将使用 `AdamW` ，这个优化器对大多数问题都很有效：
 
 ```python
 from torch.optim import AdamW
@@ -825,7 +824,7 @@ from torch.optim import AdamW
 optimizer = AdamW(model.parameters(), lr=2e-5)
 ```
 
-最后，我们将模型、优化器和dataloaders输入到`accelerator.prepare()`方法中：
+最后，我们将模型、优化器和 dataloaders 输入到 `accelerator.prepare()` 方法中：
 
 ```python
 from accelerate import Accelerator
@@ -881,7 +880,7 @@ def postprocess_text(preds, labels):
 
 如果你还记得我们是如何定义 `Seq2SeqTrainer` 的 `compute_metrics()` 函数，这对你来说应该很熟悉。
 
-最后，我们需要在 Hugging Face Hub 上创建一个模型仓库。为此，我们可以使用名为🤗 Hub的库。我们只需要为我们的仓库取一个ID，库中有一个实用的函数可以将仓库ID与用户ID组合起来：
+最后，我们需要在 Hugging Face Hub 上创建一个模型仓库。为此，我们可以使用名为🤗 Hub 的库。我们只需要为我们的仓库取一个 ID，库中有一个实用的函数可以将仓库 ID 与用户 ID 组合起来：
 
 ```python
 from huggingface_hub import get_full_repo_name
@@ -911,9 +910,9 @@ repo = Repository(output_dir, clone_from=repo_name)
 文本摘要的训练循环与我们遇到的其他 🤗 Accelerate 示例非常相似，大致分为四个主要步骤：
 
 1. 通过在每个 epoch 迭代 `train_dataloader` 中的所有示例来训练模型。
-2. 在每个 epoch 结束时生成摘要，首先生成 tokens ，然后将它们（和参考摘要）解码为文本。
+2. 在每个 epoch 结束时生成摘要，首先生成 tokens 然后将它们（和参考摘要）解码为文本。
 3. 使用我们之前看到的技术计算 ROUGE 分数。
-4. 保存 checkpoint 并将所有内容推送到 Hub。在这里，我们依赖 `Repository` 对象的巧妙的 `blocking=False` 参数，以便我们可以在每个 epoch 异步地上传 checkpoint 。这使我们能够继续训练，而不必等待与 GB 大小的模型慢呼呼的上传！
+4. 保存 checkpoint 并将所有内容推送到 Hub。在这里，我们依赖 `Repository` 对象的巧妙的 `blocking=False` 参数，以便我们可以在每个 epoch 异步地上传 checkpoint 这使我们能够继续训练，而不必等待与 GB 大小的模型慢呼呼的上传！
 
 这些步骤可以在以下代码块中看到：
 
@@ -951,7 +950,7 @@ for epoch in range(num_train_epochs):
             )
             labels = batch["labels"]
 
-            # 如果我们没有填充到最大长度，我们需要填充标签
+            # 如果我们没有填充到最大长度,我们需要填充标签
             labels = accelerator.pad_across_processes(
                 batch["labels"], dim=1, pad_index=tokenizer.pad_token_id
             )
@@ -959,7 +958,7 @@ for epoch in range(num_train_epochs):
             generated_tokens = accelerator.gather(generated_tokens).cpu().numpy()
             labels = accelerator.gather(labels).cpu().numpy()
 
-            # 替换标签中的 -100，因为我们无法解码它们
+            # 替换标签中的 -100,因为我们无法解码它们
             labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
             if isinstance(generated_tokens, tuple):
                 generated_tokens = generated_tokens[0]

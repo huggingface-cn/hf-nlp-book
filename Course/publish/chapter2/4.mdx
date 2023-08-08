@@ -84,7 +84,7 @@ print(tokenized_text)
 
 加载和保存 tokenizer 就像使用模型一样简单。实际上，它基于相同的两种方法： `from_pretrained()` 和 `save_pretrained()` 。这些方法会加载或保存分词器使用的算法（有点像模型的架构（architecture））以及其词汇表（有点像模型的权重（weights））。
 
-加载使用与 BERT 相同的 Checkpoint 训练的 BERT tokenizer 与加载模型的方式相同，只是换成了 `Bert tokenizer` 类：
+加载使用与 BERT 相同的 checkpoint 训练的 BERT tokenizer 与加载模型的方式相同，只是换成了 `Bert tokenizer` 类：
 
 ```python
 from transformers import BertTokenizer
@@ -92,7 +92,7 @@ from transformers import BertTokenizer
 tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 ```
 
-如同 `AutoModel` / `TFAutoModel` ， `AutoTokenizer` 类将根据 Checkpoint 名称在库中获取正确的 tokenizer 类，并且可以直接与任何 Checkpoint 一起使用：
+如同 `AutoModel` / `TFAutoModel` ， `AutoTokenizer` 类将根据 checkpoint 名称在库中获取正确的 tokenizer 类，并且可以直接与任何 checkpoint 一起使用：
 
 ```python
 from transformers import AutoTokenizer

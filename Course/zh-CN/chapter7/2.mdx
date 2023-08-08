@@ -26,7 +26,7 @@
 
 - **实体命名识别 （NER）**：找出句子中的实体（如人物、地点或组织）。这可以通过为每个实体或“无实体”指定一个类别的标签。
 - **词性标注 （POS）**：将句子中的每个单词标记为对应于特定的词性（如名词、动词、形容词等）。
-- **分块（chunking）**：找出属于同一实体的 tokens 。这个任务（可以与词性标注或命名实体识别结合）可以被描述为将位于块开头的 token 赋予一个标签（通常是 “`B-`” （Begin）），将位于块内的 tokens 赋予另一个标签（通常是 “`I-`”（inner）），将不属于任何块的 tokens 赋予第三个标签（通常是 “`O`” （outer））。
+- **分块（chunking）**：找出属于同一实体的 tokens 这个任务（可以与词性标注或命名实体识别结合）可以被描述为将位于块开头的 token 赋予一个标签（通常是 “ `B-` ” （Begin）），将位于块内的 tokens 赋予另一个标签（通常是 “ `I-` ”（inner）），将不属于任何块的 tokens 赋予第三个标签（通常是 “ `O` ” （outer））。
 <Youtube id="wVHdVlPScxA"/>
 
 当然，还有很多其他类型的 token 分类问题；这些只是几个有代表性的例子。在本节中，我们将在 NER 任务上微调模型 （BERT），然后该模型将能够计算如下预测：
@@ -83,7 +83,7 @@ DatasetDict({
 })
 ```
 
-看到数据集包含了我们之前提到的三项任务的标签：命名实体识别（NER）、词性标注（POS）以及分块（chunking）。这个数据集与其他数据集的一个显著区别在于，输入文本并非以句子或文档的形式呈现，而是以单词列表的形式（最后一列被称为 `tokens` ，不过`tokens`列保存的还是单词，也就是说，这些预先分词的输入仍需要经过 tokenizer 进行子词分词处理）。
+看到数据集包含了我们之前提到的三项任务的标签：命名实体识别（NER）、词性标注（POS）以及分块（chunking）。这个数据集与其他数据集的一个显著区别在于，输入文本并非以句子或文档的形式呈现，而是以单词列表的形式（最后一列被称为 `tokens` ，不过 `tokens` 列保存的还是单词，也就是说，这些预先分词的输入仍需要经过 tokenizer 进行子词分词处理）。
 
 我们来看看训练集的第一个元素：
 
@@ -211,7 +211,7 @@ inputs.tokens()
 如我们所见，tokenizer 添加了模型使用的特殊 tokens（在开始的 `[CLS]` ，在结束的 `[SEP]` ），并且大部分单词保持不变。然而，单词 `lamb` 被分词为两个子词， `la` 和 `##mb` 。这导致了输入和标签之间的不匹配：标签列表只有 9 个元素，而我们的输入现在有 12 个 tokens。解决特殊 tokens 的问题很容易（我们知道它们在开始和结束的位置），但我们还需要确保我们将所有的标签与正确的词对齐。
 
 
-幸运的是，由于我们使用的是快速 tokens ，因此我们可以使用🤗 Tokenizers 超能力，这意味着我们可以轻松地将每个 token映射到其相应的单词（如 [第六章](/course/chapter6/3) 中所学）：
+幸运的是，由于我们使用的是快速 tokens 因此我们可以使用🤗 Tokenizers 超能力，这意味着我们可以轻松地将每个 token 映射到其相应的单词（如 [第六章](/course/chapter6/3) 中所学）：
 
 ```py
 inputs.word_ids()
@@ -269,7 +269,7 @@ print(align_labels_with_tokens(labels, word_ids))
 
 </Tip>
 
-为了预处理我们的整个数据集，我们需要对所有输入进行 tokenize，并在所有标签上应用 `align_labels_with_tokens()` 函数。为了充分利用我们快速 tokenizer 的速度，最好是同时对大量文本 tokenize，所以我们将编写一个处理一组示例的函数，并使用带有 `batched=True` 选项的 `Dataset.map()` 方法。与我们之前的示例唯一不同的是，当 tokenizer 的输入是文本列表（或示例中单词的列表的列表）时， `word_ids()` 函数需要获取我们示例中单词 ID 的索引，所以我们也添加了这个功能：
+为了预处理我们的整个数据集，我们需要对所有输入进行 tokenize，并使用 `align_labels_with_tokens()` 函数处理所有标签。为了充分利用我们快速 tokenizer 的速度，最好是同时对大量文本 tokenize，所以我们将编写一个处理一组示例的函数，并使用带有 `batched=True` 选项的 `Dataset.map()` 方法。与我们之前的示例唯一不同的是，当 tokenizer 的输入是文本列表（或示例中单词的列表的列表）时， `word_ids()` 函数需要获取我们示例中单词 ID 的索引，所以我们也添加了这个功能：
 
 ```py
 def tokenize_and_align_labels(examples):
@@ -288,7 +288,7 @@ def tokenize_and_align_labels(examples):
 
 注意，我们还没有填充我们的输入，我们将在稍后进行，即在使用数据整理器创建 batch 时。
 
-我们现在可以一次性将所有预处理应用于数据集的其他部分：
+我们现在可以一次性使用所有预处理处理数据集的其他部分：
 
 ```py
 tokenized_datasets = raw_datasets.map(
@@ -459,9 +459,9 @@ import tensorflow as tf
 # 在混合精度 float16 中进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
-# 训练步数是数据集中的样本数量，除以 batch 大小，然后乘以总的 epoch 数。
-# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset，
-# 而不是原始的 Hugging Face Dataset ，所以 len() 求取它的长度已经是 num_samples // batch_size。
+# 训练步数是数据集中的样本数量,除以 batch 大小,然后乘以总的 epoch 数。
+# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset,
+# 而不是原始的 Hugging Face Dataset ,所以使用 len() 计算它的长度已经是 num_samples // batch_size。
 num_epochs = 3
 num_train_steps = len(tf_train_dataset) * num_epochs
 
@@ -570,8 +570,7 @@ metric.compute(predictions=[predictions], references=[labels])
 
 {#if fw === 'pt'}
 
-它返回很多信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。对于我们的度量计算，我们将只保留总分，但是你可以自由地调整 `compute_metrics()` 函数返回你想要查看的所有指标。
-`compute_metrics()` 函数首先取 logits 的 argmax，将它们转换为预测值（通常情况下，logits 和概率的顺序是相同，所以我们不需要使用 softmax）。然后我们需要将标签和预测值都从整数转换为字符串。我们删除所有标签为 `-100` 的值，然后将结果传递给 `metric.compute()` 方法：
+它返回很多信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。对于我们的度量计算，我们将只保留总分，但是你可以自由地调整 `compute_metrics()` 函数返回你想要查看的所有指标。 `compute_metrics()` 函数首先取 logits 的 argmax，将它们转换为预测值（通常情况下，logits 和概率的顺序是相同，所以我们不需要使用 softmax）。然后我们需要将标签和预测值都从整数转换为字符串。我们删除所有标签为 `-100` 的值，然后将结果传递给 `metric.compute()` 方法：
 
 ```py
 import numpy as np
@@ -602,7 +601,7 @@ def compute_metrics(eval_preds):
 
 它返回了大量的信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。现在，让我们看看如果我们尝试使用我们实际的模型预测来计算一些真实的分数会发生什么。
 
-TensorFlow 不喜欢把我们的预测拼接在一起，因为这样会导致序列长度不统一。这意味着我们不能仅仅直接使用 `model.predict()` —— 但这并不能阻止我们。我们将逐批获取一些预测并在进行的过程中将它们拼接成一个大的列表，删除表示 masking/padding 的 `-100`  tokens ，然后在最后的列表上计算度量值：
+TensorFlow 不喜欢把我们的预测拼接在一起，因为这样会导致序列长度不统一。这意味着我们不能仅仅直接使用 `model.predict()` —— 但这并不能阻止我们。我们将逐批获取一些预测并在进行的过程中将它们拼接成一个大的列表，删除表示 masking/padding 的 `-100` tokens 然后在最后的列表上计算度量值：
 
 ```py
 import numpy as np
@@ -793,7 +792,7 @@ from torch.optim import AdamW
 optimizer = AdamW(model.parameters(), lr=2e-5)
 ```
 
-Once we have all those objects, we can send them to the `accelerator.prepare()` method:
+当我们拥有了所有这些对象，我们就可以将它们发送到 `accelerator.prepare()` 方法：
 
 ```py
 from accelerate import Accelerator
@@ -827,7 +826,7 @@ lr_scheduler = get_scheduler(
 )
 ```
 
-最后，为了将我们的模型推送到 Hub，我们需要在一个工作文件夹中创建一个 `Repository` 对象。如果你还没有登录的话，首先需要登录到 Hugging Face，我们将根据我们想给我们的模型的模型 ID 来确定仓库名称（你可以使用你喜欢的名字替换 `repo_name` ；它只需要包含你的用户名，可以使用 `get_full_repo_name()` 函数的查看目前的 repo_name）：
+最后，为了将我们的模型推送到 Hub，我们需要在一个工作文件夹中创建一个 `Repository` 对象。如果你还没有登录的话，首先需要登录到 Hugging Face，我们将根据我们想给我们的模型的模型 ID 来确定仓库名称（你可以使用你喜欢的名字替换 `repo_name` ；它只需要包含你的用户名，可以使用 `get_full_repo_name()` 函数的查看目前的 `repo_name` ）：
 
 ```py
 from huggingface_hub import Repository, get_full_repo_name
@@ -942,7 +941,7 @@ unwrapped_model = accelerator.unwrap_model(model)
 unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
 ```
 
-第一行是不言自明的：它告诉所有的进程等待，直到所有的进程都处于那个阶段再继续（阻塞）。这是为了确保在保存之前，我们在每个进程中都有相同的模型。然后获取 `unwrapped_model` ，它就是我们定义的基本模型。 `accelerator.prepare()` 方法会为了在分布式训练中工作而对模型进行了一些修改，所以它不再有 `save_pretraining()` 方法； 使用`accelerator.unwrap_model()` 方法可以撤销对模型的更改。最后，我们调用 `save_pretraining()` ，并指定 `accelerator.save()` 作为 `save_function` 而不是 `torch.save()` 。
+第一行是不言自明的：它告诉所有的进程等待，直到所有的进程都处于那个阶段再继续（阻塞）。这是为了确保在保存之前，我们在每个进程中都有相同的模型。然后获取 `unwrapped_model` ，它就是我们定义的基本模型。 `accelerator.prepare()` 方法会为了在分布式训练中工作而对模型进行了一些修改，所以它不再有 `save_pretraining()` 方法；使用 `accelerator.unwrap_model()` 方法可以撤销对模型的更改。最后，我们调用 `save_pretraining()` ，并指定 `accelerator.save()` 作为 `save_function` 而不是 `torch.save()` 。
 
 完成这些操作后，你应该拥有一个与 `Trainer` 训练出的模型结果相当类似的模型。你可以在 [huggingface-course/bert-finetuned-ner-accelerate](https://huggingface.co/huggingface-course/bert-finetuned-ner-accelerate) 查看我们使用这些代码训练的模型。如果你想在训练循环中测试任何调整，你可以直接通过编辑上面显示的代码来实现它们！
 

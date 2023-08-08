@@ -156,7 +156,7 @@ translator(
 
 
 
-你现在应该知道我们的下一步该做些什么了：所有文本都需要转换为 token IDs 的集合，以便模型能够理解它们。对于这个任务，我们需要同时对输入和目标词元化。我们的首要任务是创建我们的 `tokenizer` 对象。如前所述，我们将使用 Marian 英语到法语的预训练模型。如果你使用另一对语言尝试此代码，请确保调整模型 Checkpoint。 [Helsinki-NLP](https://huggingface.co/Helsinki-NLP)(https://huggingface.co/Helsinki-NLP) 组织提供了超过一千个多语言模型。
+你现在应该知道我们的下一步该做些什么了：所有文本都需要转换为 token IDs 的集合，以便模型能够理解它们。对于这个任务，我们需要同时对输入和目标词元化。我们的首要任务是创建我们的 `tokenizer` 对象。如前所述，我们将使用 Marian 英语到法语的预训练模型。如果你使用另一对语言尝试此代码，请确保调整模型 checkpoint。 [Helsinki-NLP](https://huggingface.co/Helsinki-NLP)(https://huggingface.co/Helsinki-NLP) 组织提供了超过一千个多语言模型。
 
 ```python
 from transformers import AutoTokenizer

@@ -140,7 +140,7 @@ tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token=
 
 <div custom-style="Tip-green">
 
-✏️ **试试看** 获取与 `bert-base-cased` Checkpoint 相关的模型和 tokenizer 并使用 `push_to_hub()` 方法将它们上传到你账户中的一个仓库。并请仔细检查该仓库在你的页面上显示是否正常。
+✏️ **试试看** 获取与 `bert-base-cased` checkpoint 相关的模型和 tokenizer 并使用 `push_to_hub()` 方法将它们上传到你账户中的一个仓库。并请仔细检查该仓库在你的页面上显示是否正常。
 
 </div>
 
@@ -157,7 +157,9 @@ tokenizer.push_to_hub("dummy-model", organization="huggingface", use_auth_token=
 
 ```python
 huggingface-cli login
-``` `huggingface_hub` 包提供了几个非常便捷方法和类可以帮助我们完成 hub 的管理。首先，有一些方法可以管理仓库的创建、删除等：
+```
+
+`huggingface_hub` 包提供了几个非常便捷方法和类可以帮助我们完成 hub 的管理。首先，有一些方法可以管理仓库的创建、删除等：
 
 ```python
 from huggingface_hub import (
@@ -302,7 +304,9 @@ repo.git_pull()
 ```python
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")
-``` `<path_to_dummy_folder>` 现在已经存储了模型和 tokenizer 文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
+```
+
+`<path_to_dummy_folder>` 现在已经存储了模型和 tokenizer 文件。我们遵循常规的 git 工作流程，将文件添加到暂存区，提交它们并推送它们到 hub：
 
 ```python
 repo.git_add()

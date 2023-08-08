@@ -256,6 +256,8 @@ tokenization 翻译正确性和空格问题
 
 qa 手动 format
 
+“``` `”替换
+
 流程：
 
 1. 使用public_export_format将文本导出到publish

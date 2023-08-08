@@ -76,7 +76,7 @@ pubmed_dataset[0]
 ```py
 import psutil
 
-# Process.memory_info是以字节为单位的,所以转换为兆字节
+# Process.memory_info 是以字节为单位的,所以转换为兆字节
 print(f"使用的RAM:{psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
 ```
 
@@ -213,9 +213,9 @@ list(dataset_head)
 同样，你可以使用 `IterableDataset.skip()` 函数从打乱的数据集中创建训练集和验证集，如下所示：
 
 ```py
-# 跳过前1,000个示例,将其余部分创建为训练集
+# 跳过前 1,000 个示例 ,将其余部分创建为训练集
 train_dataset = shuffled_dataset.skip(1000)
-# 将前1,000个示例用于验证集
+# 将前 1,000 个示例用于验证集
 validation_dataset = shuffled_dataset.take(1000)
 ```
 
