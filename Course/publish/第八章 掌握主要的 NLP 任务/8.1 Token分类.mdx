@@ -1,6 +1,6 @@
 
 
-## Token 分类 
+## 8.1 Token 分类 
 
 我们将首先探讨的应用是 Token 分类。这个通用任务涵盖了所有可以表述为“给句子中的词或字贴上标签”的问题，例如：
 
@@ -10,10 +10,7 @@
 
 当然，还有很多其他类型的 token 分类问题；这些只是几个有代表性的例子。在本节中，我们将在 NER 任务上微调模型 （BERT），然后该模型将能够计算如下预测：
 
-<a class="flex justify-center" href="/huggingface-course/bert-finetuned-ner">
-<img class="block dark:hidden lg:w-3/5" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner.png" alt="One-hot encoded labels for question answering."/>
-<img class="hidden dark:block lg:w-3/5" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/model-eval-bert-finetuned-ner-dark.png" alt="One-hot encoded labels for question answering."/>
-</a>
+![用于问答的 One-hot 编码标签](./assets/model-eval-bert-finetuned-ner.png)
 
 你可以 [在这里](https://huggingface.co/huggingface-course/bert-finetuned-ner?text=My+name+is+Sylvain+and+I+work+at+Hugging+Face+in+Brooklyn)(https://huggingface.co/huggingface-course/bert-finetuned-ner?text=My+name+is+Sylvain+and+I+work+at+Hugging+Face+in+Brooklyn) 。找到我们将训练并上传到 Hub 的模型，可以尝试输入一些句子看看模型的预测结果。
 
@@ -23,7 +20,7 @@
 
 <div custom-style="Tip-green">
 
-💡 只要你的数据集由带有相应标签的分词文本组成，你就能够将这里描述的数据处理过程应用到你自己的数据集。如果需要复习如何在 `Dataset` 中加载自定义数据集，请复习第五章。
+💡 只要你的数据集由带有相应标签的分词文本组成，你就能够将这里描述的数据处理过程应用到你自己的数据集。如果需要复习如何在 `Dataset` 中加载自定义数据集，请复习第六章。
 
 </div>
 
@@ -37,7 +34,7 @@ from datasets import load_dataset
 raw_datasets = load_dataset("conll2003")
 ```
 
-这将下载并缓存数据集，就像和我们在第三章加载 GLUE MRPC 数据集一样。查看这个对象可以让我们看到存在哪些列，以及训练集、验证集和测试集之间是如何分割的：
+这将下载并缓存数据集，就像和我们在第四章加载 GLUE MRPC 数据集一样。查看这个对象可以让我们看到存在哪些列，以及训练集、验证集和测试集之间是如何分割的：
 
 ```python
 raw_datasets
@@ -104,7 +101,7 @@ label_names
 ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
 ```
 
-我们在第六章，深入研究 `token-classification` 管道时已经看到了这些标签 我们在这里进行一个快速的回顾：
+我们在第七章，深入研究 `token-classification` 管道时已经看到了这些标签 我们在这里进行一个快速的回顾：
 
 - `O` 表示这个词不对应任何实体。
 - `B-PER` / `I-PER` 意味着这个词对应于人名实体的开头/内部。
@@ -151,7 +148,7 @@ print(line2)
 
 #### 处理数据 
 
-像往常一样，我们的文本需要转换为 Token ID，然后模型才能理解它们。正如我们在第六章所学的那样。不过在 tokens 分类任务中，一个很大的区别是我们有 pre-tokenized 的输入。幸运的是，tokenizer API 可以很容易地处理这个问题；我们只需要通过一个特殊的标志告诉 tokenizer。
+像往常一样，我们的文本需要转换为 Token ID，然后模型才能理解它们。正如我们在第七章所学的那样。不过在 tokens 分类任务中，一个很大的区别是我们有 pre-tokenized 的输入。幸运的是，tokenizer API 可以很容易地处理这个问题；我们只需要通过一个特殊的标志告诉 tokenizer。
 
 首先，让我们创建 `tokenizer` 对象。如前所述，我们将使用 BERT 预训练模型，因此我们将从下载并缓存关联的 tokenizer 开始：
 
@@ -185,7 +182,7 @@ inputs.tokens()
 
 如我们所见，tokenizer 添加了模型使用的特殊 tokens（在开始的 `[CLS]` ，在结束的 `[SEP]` ），并且大部分单词保持不变。然而，单词 `lamb` 被分词为两个子词， `la` 和 `##mb` 。这导致了输入和标签之间的不匹配：标签列表只有 9 个元素，而我们的输入现在有 12 个 tokens。解决特殊 tokens 的问题很容易（我们知道它们在开始和结束的位置），但我们还需要确保我们将所有的标签与正确的词对齐。
 
-幸运的是，由于我们使用的是快速 tokens 因此我们可以使用Tokenizers 超能力，这意味着我们可以轻松地将每个 token 映射到其相应的单词（如第六章中所学）：
+幸运的是，由于我们使用的是快速 tokens 因此我们可以使用Tokenizers 超能力，这意味着我们可以轻松地将每个 token 映射到其相应的单词（如第七章中所学）：
 
 ```python
 inputs.word_ids()
@@ -272,7 +269,7 @@ tokenized_datasets = raw_datasets.map(
 )
 ```
 
-我们已经完成了最困难的部分！现在数据已经经过了预处理，实际的训练过程将会与我们在第三章所做的很相似。
+我们已经完成了最困难的部分！现在数据已经经过了预处理，实际的训练过程将会与我们在第四章所做的很相似。
 
 {#if fw === 'pt'}
 
@@ -290,7 +287,7 @@ tokenized_datasets = raw_datasets.map(
 
 #### 整理数据 
 
-我们不能像第三章那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（inputs ID、注意掩码和 tokens 类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
+我们不能像第四章那样只使用一个 `DataCollatorWithPadding` ，因为那样只会填充输入（inputs ID、注意掩码和 tokens 类型 ID）。在这里我们应该对标签也使用与输入完全相同的方式填充，以保证它们的大小相同。我们将使用 `-100` 进行填充，以便在损失计算中忽略相应的预测。
 
 这些可以由 [`DataCollatorForTokenClassification`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification)(https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorfortokenclassification) 实现。它是一个带有填充功能的数据整理器，使用时只需要传入用于预处理输入的 `tokenizer` ：
 
@@ -390,7 +387,7 @@ model = TFAutoModelForTokenClassification.from_pretrained(
 )
 ```
 
-就像我们在第三章中定义 `TFAutoModelForTokenClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
+就像我们在第四章中定义 `TFAutoModelForTokenClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
 
 ```python
 model.config.num_labels
@@ -491,7 +488,7 @@ model.fit(
 !pip install seqeval
 ```
 
-然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在第三章中所做的那样：
+然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在第四章中所做的那样：
 
 {:else}
 
@@ -501,7 +498,7 @@ model.fit(
 !pip install seqeval
 ```
 
-然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在第三章中所做的那样：
+然后我们可以通过 `evaluate.load()` 函数加载它，就像我们在第四章中所做的那样：
 
 {/if}
 
@@ -634,7 +631,7 @@ model = AutoModelForTokenClassification.from_pretrained(
 )
 ```
 
-就像我们在第三章中定义 `AutoModelForSequenceClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
+就像我们在第四章中定义 `AutoModelForSequenceClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
 
 ```python
 model.config.num_labels
@@ -726,7 +723,7 @@ trainer.push_to_hub(commit_message="Training complete")
 
 ### 自定义训练循环 
 
-现在我们来看看完整的训练循环，这样你就可以轻松地定制你需要的部分。它与我们在第三章中所做的内容很相似，但对评估部分有一些改动。
+现在我们来看看完整的训练循环，这样你就可以轻松地定制你需要的部分。它与我们在第四章中所做的内容很相似，但对评估部分有一些改动。
 
 #### 做好训练前的准备 
 
@@ -777,7 +774,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 <div custom-style="Tip-red">
 
-🚨 如果你正在 TPU 上训练，你需要将上面单元格开始的所有代码移动到一个专门的训练函数中。更多详情请见第三章。
+🚨 如果你正在 TPU 上训练，你需要将上面单元格开始的所有代码移动到一个专门的训练函数中。更多详情请见第四章。
 
 </div>
 

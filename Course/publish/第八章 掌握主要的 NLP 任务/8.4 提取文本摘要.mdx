@@ -37,7 +37,7 @@ DatasetDict({
 })
 ```
 
-如你所见，对于每种语言，都有 200,000 条评论 `train` 的数据集，以及 5,000 条评论用于 `validation` 和 `test` 的数据集。我们感兴趣的评论信息包含在 `review_body` 和 `review_title` 列中。让我们通过创建一个简单的函数来从训练集中随机抽取一些样本，该函数使用我们在第五章学到过：
+如你所见，对于每种语言，都有 200,000 条评论 `train` 的数据集，以及 5,000 条评论用于 `validation` 和 `test` 的数据集。我们感兴趣的评论信息包含在 `review_body` 和 `review_title` 列中。让我们通过创建一个简单的函数来从训练集中随机抽取一些样本，该函数使用我们在第六章学到过：
 
 ```python
 def show_samples(dataset, num_samples=3, seed=42):
@@ -99,7 +99,7 @@ book                       3756
 Name: product_category, dtype: int64
 ```
 
-在英语数据集中，最受欢迎的产品是家居用品、服装和无线电子产品。不过，为了带有亚马逊的特色，让我们专注于总结书籍的评论——毕竟，这是亚马逊这家公司成立的基础！我们可以看到两个符合要求的产品类别（ `book` 和 `digital_ebook_purchase` ），所以让我们用这两个产品类别过滤两种语言的数据集。正如我们在第五章学到的， `Dataset.filter()` 函数可以让我们非常有效地对数据集进行切片，所以我们可以定义一个简单的函数来进行此操作：
+在英语数据集中，最受欢迎的产品是家居用品、服装和无线电子产品。不过，为了带有亚马逊的特色，让我们专注于总结书籍的评论——毕竟，这是亚马逊这家公司成立的基础！我们可以看到两个符合要求的产品类别（ `book` 和 `digital_ebook_purchase` ），所以让我们用这两个产品类别过滤两种语言的数据集。正如我们在第六章学到的， `Dataset.filter()` 函数可以让我们非常有效地对数据集进行切片，所以我们可以定义一个简单的函数来进行此操作：
 
 ```python
 def filter_books(example):
@@ -164,7 +164,7 @@ show_samples(books_dataset)
 
 这的确看起来像是混合了英语和西班牙语的评论！现在我们有了一个训练语料库，最后要检查的一件事是评论及其标题中单词的分布。这对于摘要任务尤其重要，其中数据中的简短参考摘要会使模型偏向于生成的摘要中仅输出一两个单词。下面的图显示了单词分布，我们可以看到有些标题严重偏向于 1-2 个单词：
 
-![Word count distributions for the review titles and texts.](./assets/review-lengths.svg "Word count distributions for the review titles and texts.")
+![评论标题和正文的字数分布](./assets/review-lengths.png "Word count distributions for the review titles and texts.")
 
 为了解决这个问题，我们将过滤掉标题非常短的示例，以便我们的模型可以生成更有效的摘要。由于我们正在处理英文和西班牙文文本，因此我们可以使用粗略的启发式方法在空白处拆分标题，然后用我们强大的 `Dataset.filter()` 方法如下：
 
@@ -176,7 +176,7 @@ books_dataset = books_dataset.filter(lambda x: len(x["review_title"].split()) > 
 
 ### 文本摘要模型 
 
-如果你仔细想想，文本摘要是一种类似于机器翻译的任务：我们有一个像评论这样的文本正文，我们希望将其“翻译”成一个较短的版本，同时捕捉到输入的主要特征。因此，大多数用于文本摘要的 Transformer 模型采用了我们在第一章遇到的编码器-解码器架构。尽管有一些例外，例如 GPT 系列模型，它们在 few-shot（少量微调）之后也可以提取摘要。下表列出了一些可以进行摘要微调的流行预训练模型。
+如果你仔细想想，文本摘要是一种类似于机器翻译的任务：我们有一个像评论这样的文本正文，我们希望将其“翻译”成一个较短的版本，同时捕捉到输入的主要特征。因此，大多数用于文本摘要的 Transformer 模型采用了我们在第二章遇到的编码器-解码器架构。尽管有一些例外，例如 GPT 系列模型，它们在 few-shot（少量微调）之后也可以提取摘要。下表列出了一些可以进行摘要微调的流行预训练模型。
 
 | Transformer 模型 | 描述                                                                                                                                                                                                    | 多种言？|
 | :---------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-----------: |
@@ -191,7 +191,7 @@ books_dataset = books_dataset.filter(lambda x: len(x["review_title"].split()) > 
 
 我们将使用 mT5，这是一种基于 T5 的有趣架构，在文本到文本框架中进行了预训练。在 T5 中，每个 NLP 任务都是以提示前缀（如 `summarize:` ）的形式定义的，这使模型使生成的文本适应提示。如下图所示，这让 T5 变得非常通用，因为你可以用一个模型解决很多任务！
 
-![Different tasks performed by the T5 architecture.](./assets/t5.svg "Different tasks performed by the T5 architecture.")
+![T5架构执行的不同任务](./assets/t5.png "Different tasks performed by the T5 architecture.")
 
 mT5 不使用前缀，但具有 T5 的大部分功能，并且具有多语言的优势。现在我们已经选择了一个模型，接下来让我们来看看如何准备我们的训练数据。
 
@@ -229,7 +229,7 @@ inputs
 {'input_ids': [336, 259, 28387, 11807, 287, 62893, 295, 12507, 1], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1]}
 ```
 
-在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在第3章的第一次微调实验中遇到过。让我们使用 tokenizer 的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的 tokenizer 
+在这里我们可以看到熟悉的 `input_ids` 和 `attention_mask` ，我们在第四章的第一次微调实验中遇到过。让我们使用 tokenizer 的 `convert_ids_to_tokens()` 函数解码这些输入 ID，看看我们正在处理的是什么类型的 tokenizer 
 
 ```python
 tokenizer.convert_ids_to_tokens(inputs.input_ids)
@@ -239,7 +239,7 @@ tokenizer.convert_ids_to_tokens(inputs.input_ids)
 ['▁I', '▁', 'loved', '▁reading', '▁the', '▁Hung', 'er', '▁Games', '</s>']
 ```
 
-特殊的 Unicode 字符 `▁` 和序列结束 token `</s>` 表明我们正在使用基于第6章中讨论的 Unigram 子词分词算法的 SentencePiece tokenizer Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 不必关注口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
+特殊的 Unicode 字符 `▁` 和序列结束 token `</s>` 表明我们正在使用基于第七章中讨论的 Unigram 子词分词算法的 SentencePiece tokenizer Unigram 对于多语言语料库特别有用，因为它让 SentencePiece 不必关注口音、标点符号以及很多语言（如日语）没有空白字符的事实，只专注于找出最优的分词方式。
 
 为了对我们的语料库 tokenize 我们需要处理与摘要相关的一个细微问题：因为我们的目标文本也是文本，所以它们可能超过模型的最大上下文大小。这意味着我们需要对评论及其标题进行截断，以确保我们不会将过长的输入传递给我们的模型。Transformers 中的 tokenizer 提供了一个绝妙的 `text_target` 参数，允许你将目标文本与输入并行 tokenize 以下是如何为 mT5 处理输入和目标文本的示例：
 
@@ -438,7 +438,7 @@ model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 
 <div custom-style="Tip-green">
 
-💡 如果你想知道为什么在下游任务中没有看到任何关于微调模型的警告，那是因为对于序列到序列的任务，我们保留了网络的所有权重。与此相比，在第三章中的文本分类模型中，我们用一个随机初始化的网络替换了预训练模型的头部。
+💡 如果你想知道为什么在下游任务中没有看到任何关于微调模型的警告，那是因为对于序列到序列的任务，我们保留了网络的所有权重。与此相比，在第四章中的文本分类模型中，我们用一个随机初始化的网络替换了预训练模型的头部。
 
 </div>
 
@@ -484,7 +484,7 @@ args = Seq2SeqTrainingArguments(
 )
 ```
 
-在这里， `predict_with_generate` 参数已经被设置为 True 表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在第一章种所讨论的那样，解码器通过逐个预测单词来执行推理，这是由模型的 `generate()` 方法实现的。设置 `predict_with_generate=True` 告诉 `Seq2SeqTrainer` 在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了 `save_total_limit` 选项，训练期间最多只保存 3 个 checkpoint 的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。
+在这里， `predict_with_generate` 参数已经被设置为 True 表示我们应该在评估期间生成摘要，以便我们可以计算每个时期的 ROUGE 分数。正如在第二章种所讨论的那样，解码器通过逐个预测单词来执行推理，这是由模型的 `generate()` 方法实现的。设置 `predict_with_generate=True` 告诉 `Seq2SeqTrainer` 在评估时需要使用该方法。我们还调整了一些默认的超参数，例如学习率、epochs 数和权重衰减，并且我们设置了 `save_total_limit` 选项，训练期间最多只保存 3 个 checkpoint 的选项——这是因为即使是 mT5 的“small”版本也使用大约 1 GB 的硬盘空间，我们可以通过限制我们保存的副本数量来节省一点空间。
 `push_to_hub=True` 参数将允许我们在训练后将模型推送到 Hub；你可以在由 `output_dir` 定义的位置下的用户配置文件中找到对应的仓库。请注意，你可以使用 `hub_model_id` 参数指定要推送到的仓库的名称（特别是当你想要推送到组织时，就必须使用此参数）。例如，当我们将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) 时，我们在 `Seq2SeqTrainingArguments` 中添加了 `hub_model_id="huggingface-course/mt5-finetuned-amazon-en-es"` 。
 
 我们需要做的下一件事是为 Trainer 提供一个 `compute_metrics()` 函数，以便我们可以在训练期间评估我们的模型。对于摘要模型来说，这比简单地在模型的预测上调用 `rouge_score.compute()` 更复杂一些，因为我们需要将输出和标签解码为文本，然后才能计算 ROUGE 分数。下面的函数正是这样做的，除此之外还使用了 `nltk` 中的 `sent_tokenize()` 函数将摘要句子用换行符分隔开：
@@ -746,7 +746,7 @@ result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
 
 ### 使用 Accelerate 微调 mT5 
 
-使用 Accelerate 微调我们的模型与我们在第三章中遇到的文本分类示例非常相似。主要区别在于需要在训练期间显式生成摘要并定义我们如何计算 ROUGE 分数（请记住， `Seq2SeqTrainer` 已经为我们处理了生成摘要的部分）。让我们看看我们如何在 Accelerate 中实现这两个要求！
+使用 Accelerate 微调我们的模型与我们在第四章中遇到的文本分类示例非常相似。主要区别在于需要在训练期间显式生成摘要并定义我们如何计算 ROUGE 分数（请记住， `Seq2SeqTrainer` 已经为我们处理了生成摘要的部分）。让我们看看我们如何在 Accelerate 中实现这两个要求！
 
 #### 为训练做好一切准备 
 
@@ -800,7 +800,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 <div custom-style="Tip-red">
 
-🚨如果你在 TPU 上进行训练，则需要将上述所有代码移动到专门的训练函数中。有关详细信息，请参阅第三章。
+🚨如果你在 TPU 上进行训练，则需要将上述所有代码移动到专门的训练函数中。有关详细信息，请参阅第四章。
 
 </div>
 

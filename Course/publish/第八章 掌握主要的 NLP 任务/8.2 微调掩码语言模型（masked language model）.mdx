@@ -8,7 +8,7 @@
 
 这种在特定领域内数据上微调预训练语言模型的过程通常称为 `领域适应（domain adaptation）` 。它于 2018 年由 [ULMFiT](https://arxiv.org/abs/1801.06146)(https://arxiv.org/abs/1801.06146) 推广，这是使迁移学习真正适用于 NLP 的首批神经架构之一 （基于 LSTM）。下图显示了使用 ULMFiT 进行领域自适应的示例；在本节中，我们将做类似的事情，但使用的是 Transformer 而不是 LSTM！
 
-![ULMFiT.](./assets/ulmfit.svg "ULMFiT.")
+![ULMFiT](./assets/ulmfit.png "ULMFiT.")
 
 在本节结束时，你将在 Hub 上拥有一个 [掩码语言模型(masked language model)](https://huggingface.co/huggingface-course/distilbert-base-uncased-finetuned-imdb?text=This+is+a+great+%5BMASK%5D.)(https://huggingface.co/huggingface-course/distilbert-base-uncased-finetuned-imdb?text=This+is+a+great+%5BMASK%5D.) ，该模型可以自动完成句子，如下所示：
 
@@ -16,7 +16,7 @@
 
 <div custom-style="Tip-green">
 
-🙋 如果你对“掩码语言建模”和“预训练模型”这两个术语感到陌生，请查看第一章，我们在其中解释了所有这些核心概念，并附有视频！
+🙋 如果你对“掩码语言建模”和“预训练模型”这两个术语感到陌生，请查看第二章，我们在其中解释了所有这些核心概念！
 
 </div>
 
@@ -24,7 +24,7 @@
 
 首先，让我们为掩码语言建模选择一个合适的预训练模型。如以下屏幕截图所示，你可以通过在 [Hugging Face Hub](https://huggingface.co/models?pipeline_tag=fill-mask&sort=downloads)(https://huggingface.co/models?pipeline_tag=fill-mask&sort=downloads) 上选择“Fill-Mask”过滤器：
 
-![Hub models.](./assets/mlm-models.png "Hub models.")
+![Hub models](./assets/mlm-models.png "Hub models.")
 尽管 BERT 和 RoBERTa 系列模型的下载量最大，但我们将使用名为 [DistilBERT](https://huggingface.co/distilbert-base-uncased)(https://huggingface.co/distilbert-base-uncased) 的模型。它可以更快地训练，而且对下游性能几乎没有损失。这个模型使用一种称为 [`知识蒸馏（knowledge distillation）`](https://en.wikipedia.org/wiki/Knowledge_distillation)(https://en.wikipedia.org/wiki/Knowledge_distillation) 的特殊技术进行训练，其中使用像 BERT 这样的大型“教师模型”来指导参数少得多的“学生模型”的训练。在本节中对知识蒸馏细节的解释会使我们离题太远，但如果你有兴趣，可以阅读 [`使用 Transformers 进行自然语言处理（Natural Language Processing with Transformers）`](https://www.oreilly.com/library/view/natural-language-processing/9781098136789/)(https://www.oreilly.com/library/view/natural-language-processing/9781098136789/) （俗称 Transformers 教科书）相关内容。
 
 {#if fw === 'pt'}
@@ -216,13 +216,13 @@ for row in sample:
 
 </div>
 
-现在我们已经快速浏览了一下数据，接下来我们要深入准备这些数据以供进行掩码语言建模。如我们所见，与我们在第三章看到的序列分类任务相比，这里需要采取一些额外的步骤。让我们开始吧！
+现在我们已经快速浏览了一下数据，接下来我们要深入准备这些数据以供进行掩码语言建模。如我们所见，与我们在第四章看到的序列分类任务相比，这里需要采取一些额外的步骤。让我们开始吧！
 
 ### 预处理数据 
 
 对于自回归和掩码语言建模，常见的预处理步骤是将所有的示例连接起来，然后将整个语料库切割为等大小的块。这与我们通常的做法有很大的不同，我们通常只是对单个的示例进行 tokenize。为什么要将所有的示例连接在一起呢？原因是如果单个示例太长，可能会被截断，这会导致我们失去可能对语言建模任务有用的信息！
 
-因此，我们首先像往常一样对语料库进行 tokenize 处理，但是不在 tokenizer 中设置 `truncation=True` 选项。如果我们有可以使用快速 tokenizer（如第六章中所述），我们还将获取单词的 ID，因为后面我们需要用到它们来进行整词掩码。我们将把这个过程封装在一个简单的函数中，并删除 text 和 label 列，因为我们不再需要它们。
+因此，我们首先像往常一样对语料库进行 tokenize 处理，但是不在 tokenizer 中设置 `truncation=True` 选项。如果我们有可以使用快速 tokenizer（如第七章中所述），我们还将获取单词的 ID，因为后面我们需要用到它们来进行整词掩码。我们将把这个过程封装在一个简单的函数中，并删除 text 和 label 列，因为我们不再需要它们。
 
 ```python
 def tokenize_function(examples):
@@ -415,7 +415,7 @@ tokenizer.decode(lm_datasets["train"][1]["labels"])
 
 ### 使用 `Trainer` API 微调 DistilBERT 
 
-微调掩码语言模型几乎与微调序列分类模型相同，就像我们在第三章所做的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些 tokens 幸运的是，Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将 tokenizer 和一个 `mlm_probability` 参数（指定掩盖 tokens 的比例）传递给它。我们将选择 15％，这是 BERT 所使用的数量，也是文献中常见的选择：
+微调掩码语言模型几乎与微调序列分类模型相同，就像我们在第四章所做的那样。唯一的区别是我们需要一个特殊的数据整理器，它可以随机屏蔽每批文本中的一些 tokens 幸运的是，Transformers 为这项任务准备了专用的 `DataCollatorForLanguageModeling` 。我们只需要将 tokenizer 和一个 `mlm_probability` 参数（指定掩盖 tokens 的比例）传递给它。我们将选择 15％，这是 BERT 所使用的数量，也是文献中常见的选择：
 
 ```python
 from transformers import DataCollatorForLanguageModeling
@@ -560,7 +560,7 @@ for chunk in batch["input_ids"]:
 
 </div>
 
-现在我们有了两个数据整理器，剩下的微调步骤都是标准的。如果你在 Google Colab 上运行并且没有幸运地得到神秘的 P100 GPU😭，那么训练可能会需要一些时间，所以我们首先将训练集的大小降低到几千个例子。不用担心，我们仍然可以得到一个相当不错的语言模型！在 Datasets 中快速下采样数据集的方法是使用我们在第五章中看到的 `Dataset.train_test_split()` 函数：
+现在我们有了两个数据整理器，剩下的微调步骤都是标准的。如果你在 Google Colab 上运行并且没有幸运地得到神秘的 P100 GPU😭，那么训练可能会需要一些时间，所以我们首先将训练集的大小降低到几千个例子。不用担心，我们仍然可以得到一个相当不错的语言模型！在 Datasets 中快速下采样数据集的方法是使用我们在第六章中看到的 `Dataset.train_test_split()` 函数：
 
 ```python
 train_size = 10_000
@@ -793,7 +793,7 @@ trainer.push_to_hub()
 
 ### 使用 Accelerate 微调 DistilBERT 
 
-正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与第三章中的文本分类示例非常相似。事实上，唯一的不同之处是使用了一个特殊的数据整理器，我们已经在本节的前面讨论过这个问题了！
+正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与第四章中的文本分类示例非常相似。事实上，唯一的不同之处是使用了一个特殊的数据整理器，我们已经在本节的前面讨论过这个问题了！
 然而，我们注意到 `DataCollatorForLanguageModeling` 在每次评估时也会进行随机遮罩，因此我们在每次训练运行中都会看到困惑度得分有些波动。消除这种随机性的一种方法是在整个测试集上 `仅进行一次` 遮罩，然后在评估过程中使用Transformers 中的默认数据整理器来收集 batch。为了了解其工作原理，让我们实现一个简单的函数，类似于我们第一次使用 `DataCollatorForLanguageModeling` 时进行遮罩的方式：
 
 ```python
@@ -1002,5 +1002,5 @@ Nice！—— 我们的模型显然已经调整了它的权重来预测与电影
 
 <div custom-style="Tip-green">
 
-✏️ **试试看！** 为了量化领域适应的好处，分别使用预训练和微调的 DistilBERT checkpoint 和 IMDb 标签来微调一个分类器，并对比一下这个两个 checkpoint 的差异。如果你需要复习文本分类的知识，请查看第三章。
+✏️ **试试看！** 为了量化领域适应的好处，分别使用预训练和微调的 DistilBERT checkpoint 和 IMDb 标签来微调一个分类器，并对比一下这个两个 checkpoint 的差异。如果你需要复习文本分类的知识，请查看第四章。
 </div>

@@ -258,6 +258,8 @@ qa 手动 format
 
 “``` `”替换
 
+qa 的双版本问题
+
 流程：
 
 1. 使用public_export_format将文本导出到publish

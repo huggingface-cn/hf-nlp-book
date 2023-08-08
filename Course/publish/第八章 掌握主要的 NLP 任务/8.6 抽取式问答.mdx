@@ -151,9 +151,9 @@ tokenizer.decode(inputs["input_ids"])
 
 标签将是指示答案起始和结束 token 的索引，模型的任务是为输入中的每个标记预测一个起始和结束的 logit 值，理论上的标签如下所示：
 
-![One-hot encoded labels for question answering.](./assets/qa_labels.svg "One-hot encoded labels for question answering.")
+![用于问答的 One-hot 编码标签](./assets/qa_labels.png "One-hot encoded labels for question answering.")
 
-在做个例子中，Context 没有很长，但是数据集中的一些示例的 Context 会很长，会超过我们设置的最大长度（本例中为 384）。正如我们在第六章中所看到的，当我们探索 `question-answering` 管道的内部结构时，我们会通过将一个样本的较长的 Context 划分成多个训练特征，并在这些特征之间使用滑动窗口，来处理较长的 Context。
+在做个例子中，Context 没有很长，但是数据集中的一些示例的 Context 会很长，会超过我们设置的最大长度（本例中为 384）。正如我们在第七章中所看到的，当我们探索 `question-answering` 管道的内部结构时，我们会通过将一个样本的较长的 Context 划分成多个训练特征，并在这些特征之间使用滑动窗口，来处理较长的 Context。
 
 要了解在这个过程中对当前示例进行了哪些处理，我们可以将长度限制为 100，并使用长度为 50 的 token 窗口。我们设置：
 
@@ -185,7 +185,7 @@ for ids in inputs["input_ids"]:
 
 如我们所见，我们的示例被分成四个输入，每个输入都包含问题和 Context 的一部分。请注意，问题的答案 （“Bernadette Soubirous”） 仅出现在第三个也是最后一个输入中，因此通过以这种方式处理较长的 Context 时，我们可能创建一些 Context 中不包含答案的训练示例。我们把这些示例的标签设置为 `start_position = end_position = 0` （事实上我们在预测 `[CLS]` tokens）。如果不幸答案被截断，我们只有答案的开头（或结束），我们也这样设置这些标签。对于答案完全在 Context 中的示例，标签将是答案起始的 token 的索引和答案结束的 token 的索引。
 
-数据集为我们提供了 Context 中答案的起始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到 tokens 索引，我们将需要使用我们在第六章中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的 tokenizer 返回这些内容：
+数据集为我们提供了 Context 中答案的起始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到 tokens 索引，我们将需要使用我们在第七章中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的 tokenizer 返回这些内容：
 
 ```python
 inputs = tokenizer(
@@ -964,7 +964,7 @@ trainer.push_to_hub(commit_message="Training complete")
 
 ### 自定义训练循环 
 
-现在，让我们来看一下完整的训练循环，这样你就可以轻松地自定义所需的部分。它看起来很像第三章中的训练循环，只是评估循环有所不同。由于我们不再受 `Trainer` 类的限制，因此我们可以在模型训练的过程中定期评估模型。
+现在，让我们来看一下完整的训练循环，这样你就可以轻松地自定义所需的部分。它看起来很像第四章中的训练循环，只是评估循环有所不同。由于我们不再受 `Trainer` 类的限制，因此我们可以在模型训练的过程中定期评估模型。
 
 #### 为训练做准备 
 

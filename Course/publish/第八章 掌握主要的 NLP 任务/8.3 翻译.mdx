@@ -13,16 +13,13 @@
 
 完成后，我们将拥有一个模型，可以进行这样的翻译：
 
-<a class="flex justify-center" href="/huggingface-course/marian-finetuned-kde4-en-to-fr">
-<img class="block dark:hidden lg:w-3/5" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/modeleval-marian-finetuned-kde4-en-to-fr.png" alt="One-hot encoded labels for question answering."/>
-<img class="hidden dark:block lg:w-3/5" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/modeleval-marian-finetuned-kde4-en-to-fr-dark.png" alt="One-hot encoded labels for question answering."/>
-</a>
+![用于问答的 One-hot 编码标签](./assets/modeleval-marian-finetuned-kde4-en-to-fr.png)
 
 与前面的部分一样，你可以使用以下代码找到我们将训练并上传到 Hub 的实际模型，并 [在这里](https://huggingface.co/huggingface-course/marian-finetuned-kde4-en-to-fr?text=This+plugin+allows+you+to+automatically+translate+web+pages+between+several+languages.)(https://huggingface.co/huggingface-course/marian-finetuned-kde4-en-to-fr?text=This+plugin+allows+you+to+automatically+translate+web+pages+between+several+languages.) 查看模型输出的结果。
 
 ### 准备数据 
 
-为了从头开始微调或训练翻译模型，我们需要一个适合该任务的数据集。如前所述，我们将使用 [KDE4 数据集](https://huggingface.co/datasets/kde4)(https://huggingface.co/datasets/kde4)(https://huggingface.co/datasets/kde4) 。在本节中，但你可以很容易地调整代码以使用你自己的数据，只要你有要互译的两种语言的句子对。如果你需要复习如何将自定义数据加载到 `Dataset` ，可以复习一下第五章。
+为了从头开始微调或训练翻译模型，我们需要一个适合该任务的数据集。如前所述，我们将使用 [KDE4 数据集](https://huggingface.co/datasets/kde4)(https://huggingface.co/datasets/kde4)(https://huggingface.co/datasets/kde4) 。在本节中，但你可以很容易地调整代码以使用你自己的数据，只要你有要互译的两种语言的句子对。如果你需要复习如何将自定义数据加载到 `Dataset` ，可以复习一下第六章。
 
 #### KDE4 数据集 
 
@@ -53,7 +50,7 @@ DatasetDict({
 })
 ```
 
-我们有 210,173 对句子，但在一次训练过程中，我们也需要创建自己的验证集。正如我们在第五章学的的那样， `Dataset` 有一个 `train_test_split()` 方法可以帮助我们。我们将设置一个随机数种子以保证结果的可复现性：
+我们有 210,173 对句子，但在一次训练过程中，我们也需要创建自己的验证集。正如我们在第六章学的的那样， `Dataset` 有一个 `train_test_split()` 方法可以帮助我们。我们将设置一个随机数种子以保证结果的可复现性：
 
 ```python
 split_datasets = raw_datasets["train"].train_test_split(train_size=0.9, seed=20)
@@ -262,7 +259,7 @@ model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint, from_pt=True)
 
 #### 数据整理 
 
-我们需要一个数据整理器来处理动态批处理的填充。在本例中，我们不能像第三章那样只使用 `DataCollatorWithPadding` ，因为它只填充输入（inputs ID、注意掩码和 token 类型 ID）。我们的标签也应该被填充到所有标签中的最大长度。而且，如前所述，用于填充标签的填充值应为 `-100` ，而不是 tokenizer 的填充 token，以确保在损失计算中忽略这些填充值。
+我们需要一个数据整理器来处理动态批处理的填充。在本例中，我们不能像第四章那样只使用 `DataCollatorWithPadding` ，因为它只填充输入（inputs ID、注意掩码和 token 类型 ID）。我们的标签也应该被填充到所有标签中的最大长度。而且，如前所述，用于填充标签的填充值应为 `-100` ，而不是 tokenizer 的填充 token，以确保在损失计算中忽略这些填充值。
 
 这一切都可以由 [`DataCollatorForSeq2Seq`](https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorforseq2seq)(https://huggingface.co/transformers/main_classes/data_collator.html#datacollatorforseq2seq) 完成。与 `DataCollatorWithPadding` 一样，它接收用于预处理输入的 `tokenizer` ，但它也接收 `model` 。这是因为数据整理器还将负责准备解码器 inputs ID，它们是标签偏移之后形成的，开头带有特殊 token 由于对于不同的架构有稍微不同的偏移方式， `DataCollatorForSeq2Seq` 需要接收 `model` 对象：
 
@@ -363,7 +360,7 @@ tf_eval_dataset = model.prepare_tf_dataset(
 {#if fw === 'pt'}
 `Seq2SeqTrainer` 对其超类 `Trainer` 的增强功能是在评估或预测时使用 `generate()` 方法。在训练过程中，模型会使用 `decoder_input_ids` ，并通过一个注意力掩码确保它不使用在预测的 token 之后的 token，以加速训练。在推理过程中，我们无法使用这些标签。因此，使用同样的设置评估我们的模型是一个好主意。
 
-正如我们在第一章看到的，解码器通过一个一个地预测 token 来执行推理——这是Transformers 在幕后通过 `generate()` 方法实现的。 `Seq2SeqTrainer` 将允许我们在设置 `predict_with_generate=True` 时，使用该方法进行评估。
+正如我们在第二章看到的，解码器通过一个一个地预测 token 来执行推理——这是Transformers 在幕后通过 `generate()` 方法实现的。 `Seq2SeqTrainer` 将允许我们在设置 `predict_with_generate=True` 时，使用该方法进行评估。
 
 {/if}
 
@@ -375,7 +372,7 @@ BLEU 的一个缺点是它需要文本已经被分词，这使得比较使用不
 !pip install sacrebleu
 ```
 
-然后我们可以就像我们在第三章那样通过 `evaluate.load()` 加载它 
+然后我们可以就像我们在第四章那样通过 `evaluate.load()` 加载它 
 
 ```python
 import evaluate
@@ -856,7 +853,7 @@ def postprocess(predictions, labels):
     return decoded_preds, decoded_labels
 ```
 
-训练循环看起来和本章第 2 节与第三章很像，只是在评估部分有一些不同 —— 所以让我们重点关注一下这一点！
+训练循环看起来和本章第 2 节与第四章很像，只是在评估部分有一些不同 —— 所以让我们重点关注一下这一点！
 
 首先要注意的是，我们使用 `generate()` 方法来计算预测，但这是我们基础模型上的一个方法，而不是Accelerate 在 `prepare()` 方法中创建的封装模型。这就是为什么我们首先 `unwrap_model` ，然后调用此方法。
 
