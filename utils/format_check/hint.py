@@ -8,7 +8,6 @@ from __future__ import absolute_import
 from hint import parsing, utils
 import functools
 
-
 def do_paragraph(errors, p):
     tokens = parsing.tokenizer(p)
     new_errors = parsing.detect_errors(tokens, p)
