@@ -1,6 +1,6 @@
 import os
 import subprocess
-chapter='第八章 掌握主要的 NLP 任务'
+chapter='test'
 # Specify the source and destination folders
 source_folder = f'Course\publish/{chapter}'
 destination_folder = 'Course\docx_output'
@@ -22,7 +22,8 @@ for filename in os.listdir(source_folder):
             '--filter', filter_path,
             '-o', output_file,
             '--reference-doc', reference_doc,
-            "--resource-path", source_folder
+            "--resource-path", source_folder,
+            "--highlight-style","pygments"
         ]
 
         # Execute the pandoc command

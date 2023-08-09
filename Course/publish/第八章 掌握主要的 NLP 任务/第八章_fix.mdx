@@ -315,7 +315,7 @@ tokenized_datasets = raw_datasets.map(
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 from transformers import DataCollatorForTokenClassification
 
 data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
@@ -323,7 +323,7 @@ data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
 
 {:else}
 
-```python
+```{.TensorFlow}
 from transformers import DataCollatorForTokenClassification
 
 data_collator = DataCollatorForTokenClassification(
@@ -364,7 +364,7 @@ for i in range(2):
 {:else}
 
 我们的数据整理器已准备就绪！现在让我们使用 `to_tf_dataset()` 方法创建一个 `tf.data.Dataset` 。你还可以使用 `model.prepare_tf_dataset()` 来使用更少的模板代码来完成此操作——你将在本章的其他小节中看到这一点。
-```python
+```{.TensorFlow}
 tf_train_dataset = tokenized_datasets["train"].to_tf_dataset(
     columns=["attention_mask", "input_ids", "labels", "token_type_ids"],
     collate_fn=data_collator,
@@ -392,14 +392,14 @@ tf_eval_dataset = tokenized_datasets["validation"].to_tf_dataset(
 
 应该由两个字典 `id2label` 和 `label2id` 来设置它们，这两个字典包含从 ID 到标签的映射以及反向的映射：
 
-```python
+```{.TensorFlow}
 id2label = {str(i): label for i, label in enumerate(label_names)}
 label2id = {v: k for k, v in id2label.items()}
 ```
 
 现在我们只需将它们传递给 `TFAutoModelForTokenClassification.from_pretrained()` 方法，它们就会被保存在模型的配置中，然后被正确地保存和上传到 Hub：
 
-```python
+```{.TensorFlow}
 from transformers import TFAutoModelForTokenClassification
 
 model = TFAutoModelForTokenClassification.from_pretrained(
@@ -411,11 +411,11 @@ model = TFAutoModelForTokenClassification.from_pretrained(
 
 就像我们在第四章中定义 `TFAutoModelForTokenClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
 
-```python
+```{.TensorFlow}
 model.config.num_labels
 ```
 
-```python
+```{.TensorFlow}
 9
 ```
 
@@ -429,7 +429,7 @@ model.config.num_labels
 
 现在，我们已准备好训练模型了！不过，我们首先要做两件事：应该登录到 Hugging Face 并定义我们的训练超参数。如果你在 notebook 上工作，有一个便捷函数可以帮助你做到这一点：
 
-```python
+```{.TensorFlow}
 from huggingface_hub import notebook_login
 
 notebook_login()
@@ -439,13 +439,13 @@ notebook_login()
 
 如果你不是在 notebook 上工作，只需在终端中输入以下行：
 
-```python
+```{.TensorFlow}
 huggingface-cli login
 ```
 
 登录后，我们可以准备编译我们模型所需要的所有配置。Transformers 提供了一个便捷的 `create_optimizer()` 函数，它将给你一个带有适当的权重衰减和学习率衰减设置的 `AdamW` 优化器，与内置的 `Adam` 优化器相似，不过这两个优化技巧都将提高模型的性能：
 
-```python
+```{.TensorFlow}
 from transformers import create_optimizer
 import tensorflow as tf
 
@@ -471,7 +471,7 @@ model.compile(optimizer=optimizer)
 
 接下来，我们定义一个 `PushToHubCallback` 回调函数，以便在训练期间将模型上传到 Hub，并使用该回调来拟合模型：
 
-```python
+```{.TensorFlow}
 from transformers.keras_callbacks import PushToHubCallback
 
 callback = PushToHubCallback(output_dir="bert-finetuned-ner", tokenizer=tokenizer)
@@ -506,7 +506,7 @@ model.fit(
 
 用于评估 Token 分类预测的传统框架是 [*seqeval*](https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval) 。要使用此指标，我们首先需要安装 seqeval 库：
 
-```python
+```{.Pytorch}
 !pip install seqeval
 ```
 
@@ -516,7 +516,7 @@ model.fit(
 
 用于评估 Token 分类预测的传统框架是 [*seqeval*](https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval)(https://github.com/chakki-works/seqeval) 。要使用此指标，我们首先需要安装 seqeval 库：
 
-```python
+```{.TensorFlow}
 !pip install seqeval
 ```
 
@@ -565,7 +565,7 @@ metric.compute(predictions=[predictions], references=[labels])
 
 它返回很多信息！我们获得每个单独实体以及整体的准确率、召回率和 F1 分数。对于我们的度量计算，我们将只保留总分，但是你可以自由地调整 `compute_metrics()` 函数返回你想要查看的所有指标。 `compute_metrics()` 函数首先取 logits 的 argmax，将它们转换为预测值（通常情况下，logits 和概率的顺序是相同，所以我们不需要使用 softmax）。然后我们需要将标签和预测值都从整数转换为字符串。我们删除所有标签为 `-100` 的值，然后将结果传递给 `metric.compute()` 方法：
 
-```python
+```{.Pytorch}
 import numpy as np
 
 def compute_metrics(eval_preds):
@@ -595,7 +595,7 @@ def compute_metrics(eval_preds):
 
 TensorFlow 不喜欢把我们的预测拼接在一起，因为这样会导致序列长度不统一。这意味着我们不能仅仅直接使用 `model.predict()` —— 但这并不能阻止我们。我们将逐批获取一些预测并在进行的过程中将它们拼接成一个大的列表，删除表示 masking/padding 的 `-100` tokens 然后在最后的列表上计算度量值：
 
-```python
+```{.TensorFlow}
 import numpy as np
 
 all_predictions = []
@@ -613,7 +613,7 @@ for batch in tf_eval_dataset:
 metric.compute(predictions=[all_predictions], references=[all_labels])
 ```
 
-```python
+```{.TensorFlow}
 {'LOC': {'precision': 0.91, 'recall': 0.92, 'f1': 0.91, 'number': 1668},
  'MISC': {'precision': 0.70, 'recall': 0.79, 'f1': 0.74, 'number': 702},
  'ORG': {'precision': 0.85, 'recall': 0.90, 'f1': 0.88, 'number': 1661},
@@ -636,14 +636,14 @@ metric.compute(predictions=[all_predictions], references=[all_labels])
 
 应该由两个字典 `id2label` 和 `label2id` 来设置它们，这两个字典包含从 ID 到标签的映射以及反向的映射：
 
-```python
+```{.Pytorch}
 id2label = {str(i): label for i, label in enumerate(label_names)}
 label2id = {v: k for k, v in id2label.items()}
 ```
 
 现在我们只需将它们传递给 `AutoModelForTokenClassification.from_pretrained()` 方法，它们就会被保存在模型的配置中，然后被正确地保存和上传到 Hub：
 
-```python
+```{.Pytorch}
 from transformers import AutoModelForTokenClassification
 
 model = AutoModelForTokenClassification.from_pretrained(
@@ -655,11 +655,11 @@ model = AutoModelForTokenClassification.from_pretrained(
 
 就像我们在第四章中定义 `AutoModelForSequenceClassification` 类一样 创建模型会发出一个警告，提示一些权重未被使用（来自预训练头的权重）和一些其他权重被随机初始化（来自新 Token 分类头的权重），我们将要训练这些权重。我们将在一会儿进行训练，但首先让我们确认一下我们的模型是否具有正确的标签数量：
 
-```python
+```{.Pytorch}
 model.config.num_labels
 ```
 
-```python
+```{.Pytorch}
 9
 ```
 
@@ -673,20 +673,20 @@ model.config.num_labels
 
 我们现在准备好训练我们的模型了！在定义我们的 `Trainer` 之前，我们只需要做最后两件事：登录 Hugging Face 并定义我们的训练参数。如果你在 notebook 上工作，有一个方便的功能可以帮助你：
 
-```python
+```{.Pytorch}
 from huggingface_hub import notebook_login
 
 notebook_login()
 ```
 现在，我们已准备好训练模型了！不过，我们首先要做两件事：应该登录到 Hugging Face 并定义我们的训练超参数。如果你在 notebook 上工作，有一个便利函数可以帮助你做到这一点：
 
-```python
+```{.Pytorch}
 huggingface-cli login
 ```
 
 登录后，我们就可以定义我们的 `TrainingArguments` ：
 
-```python
+```{.Pytorch}
 from transformers import TrainingArguments
 
 args = TrainingArguments(
@@ -710,7 +710,7 @@ args = TrainingArguments(
 
 最后，我们将所有内容传递给 `Trainer` 并启动训练：
 
-```python
+```{.Pytorch}
 from transformers import Trainer
 
 trainer = Trainer(
@@ -729,13 +729,13 @@ trainer.train()
 
 训练完成后，我们使用 `push_to_hub()` 上传模型的最新版本
 
-```python
+```{.Pytorch}
 trainer.push_to_hub(commit_message="Training complete")
 ```
 
 如果你想检查一下是否上传成功，这个命令会返回刚刚执行的提交的 URL：
 
-```python
+```{.Pytorch}
 'https://huggingface.co/sgugger/bert-finetuned-ner/commit/26ab21e5b1568f9afeccdaed2d8715f571d786ed'
 ```
 
@@ -751,7 +751,7 @@ trainer.push_to_hub(commit_message="Training complete")
 
 首先我们需要为我们的数据集构建 `DataLoader` 。我们将 `data_collator` 输入 `collate_fn` 参数并打乱训练集，但不打乱验证集：
 
-```python
+```{.Pytorch}
 from torch.utils.data import DataLoader
 
 train_dataloader = DataLoader(
@@ -767,7 +767,7 @@ eval_dataloader = DataLoader(
 
 接下来我们重新实例化我们的模型，以确保我们不是继续之前的微调，而是重新开始从 BERT 预训练模型：
 
-```python
+```{.Pytorch}
 model = AutoModelForTokenClassification.from_pretrained(
     model_checkpoint,
     id2label=id2label,
@@ -777,7 +777,7 @@ model = AutoModelForTokenClassification.from_pretrained(
 
 然后我们需要一个优化器。我们将使用经典 `AdamW` ，它类似于 `Adam` ，但在权重衰减的方式上进行了改进：
 
-```python
+```{.Pytorch}
 from torch.optim import AdamW
 
 optimizer = AdamW(model.parameters(), lr=2e-5)
@@ -785,7 +785,7 @@ optimizer = AdamW(model.parameters(), lr=2e-5)
 
 当我们拥有了所有这些对象，我们就可以将它们发送到 `accelerator.prepare()` 方法：
 
-```python
+```{.Pytorch}
 from accelerate import Accelerator
 
 accelerator = Accelerator()
@@ -802,7 +802,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 现在我们已经将我们的 `train_dataloader` 传递给了 `accelerator.prepare()` ，我们可以使用 `len()` 来计算训练步骤的数量。请记住，我们应该在准备好 `dataloader` 后再使用 `len()` ，因为改动 `dataloader` 会改变其长度。我们使用一个从学习率衰减到 0 的经典线性学习率调度：
 
-```python
+```{.Pytorch}
 from transformers import get_scheduler
 
 num_train_epochs = 3
@@ -819,7 +819,7 @@ lr_scheduler = get_scheduler(
 
 最后，为了将我们的模型推送到 Hub，我们需要在一个工作文件夹中创建一个 `Repository` 对象。如果你还没有登录的话，首先需要登录到 Hugging Face，我们将根据我们想给我们的模型的模型 ID 来确定仓库名称（你可以使用你喜欢的名字替换 `repo_name` ；它只需要包含你的用户名，可以使用 `get_full_repo_name()` 函数的查看目前的 `repo_name` ）：
 
-```python
+```{.Pytorch}
 from huggingface_hub import Repository, get_full_repo_name
 
 model_name = "bert-finetuned-ner-accelerate"
@@ -827,13 +827,13 @@ repo_name = get_full_repo_name(model_name)
 repo_name
 ```
 
-```python
+```{.Pytorch}
 'sgugger/bert-finetuned-ner-accelerate'
 ```
 
 然后我们可以将该仓库克隆到本地文件夹中。如果它已经存在，这个本地文件夹应该是我们正在使用的仓库的现有克隆：
 
-```python
+```{.Pytorch}
 output_dir = "bert-finetuned-ner-accelerate"
 repo = Repository(output_dir, clone_from=repo_name)
 ```
@@ -844,7 +844,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 我们现在准备编写完整的训练循环。为了简化其评估部分，我们定义了一个 `postprocess()` 函数，该函数接收模型的预测和标签，并将它们转换为字符串列表，也就是我们的 `metric` （评估函数）对象需要的输入格式。
 
-```python
+```{.Pytorch}
 def postprocess(predictions, labels):
     predictions = predictions.detach().cpu().clone().numpy()
     labels = labels.detach().cpu().clone().numpy()
@@ -866,7 +866,7 @@ def postprocess(predictions, labels):
 
 以下是完整的训练循环代码：
 
-```python
+```{.Pytorch}
 from tqdm.auto import tqdm
 import torch
 
@@ -926,7 +926,7 @@ for epoch in range(num_train_epochs):
 
 果这是你第一次看到用 Accelerate 保存的模型，让我们花点时间来了解一下这个过程中的三行代码：
 
-```python
+```{.Pytorch}
 accelerator.wait_for_everyone()
 unwrapped_model = accelerator.unwrap_model(model)
 unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
@@ -995,7 +995,7 @@ token_classifier("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 
 让我们继续，我们可以使用 `AutoModelForMaskedLM` 类下载 DistilBERT：
 
-```python
+```{.Pytorch}
 from transformers import AutoModelForMaskedLM
 
 model_checkpoint = "distilbert-base-uncased"
@@ -1004,13 +1004,13 @@ model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
 
 我们可以通过调用 `num_parameters()` 方法查看模型有多少参数：
 
-```python
+```{.Pytorch}
 distilbert_num_parameters = model.num_parameters() / 1_000_000
 print(f"'>>> DistilBERT number of parameters: {round(distilbert_num_parameters)}M'")
 print(f"'>>> BERT number of parameters: 110M'")
 ```
 
-```python
+```{.Pytorch}
 '>>> DistilBERT number of parameters: 67M'
 '>>> BERT number of parameters: 110M'
 ```
@@ -1019,7 +1019,7 @@ print(f"'>>> BERT number of parameters: 110M'")
 
 让我们继续，我们可以使用 `TFAutoModelForMaskedLM` 类下载 DistilBERT：
 
-```python
+```{.TensorFlow}
 from transformers import TFAutoModelForMaskedLM
 
 model_checkpoint = "distilbert-base-uncased"
@@ -1028,12 +1028,12 @@ model = TFAutoModelForMaskedLM.from_pretrained(model_checkpoint)
 
 我们可以通过调用 `summary()` 方法查看模型有多少参数：
 
-```python
+```{.TensorFlow}
 model(model.dummy_inputs)  # 构建模型
 model.summary()
 ```
 
-```python
+```{.TensorFlow}
 Model: "tf_distil_bert_for_masked_lm"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
@@ -1076,7 +1076,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 import torch
 
 inputs = tokenizer(text, return_tensors="pt")
@@ -1093,7 +1093,7 @@ for token in top_5_tokens:
 
 {:else}
 
-```python
+```{.TensorFlow}
 import numpy as np
 import tensorflow as tf
 
@@ -1422,7 +1422,7 @@ for chunk in data_collator(samples)["input_ids"]:
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 import collections
 import numpy as np
 
@@ -1462,7 +1462,7 @@ def whole_word_masking_data_collator(features):
 
 {:else}
 
-```python
+```{.TensorFlow}
 import collections
 import numpy as np
 
@@ -1569,7 +1569,7 @@ huggingface-cli login
 
 登录后，我们可以创建我们的 `tf.data` 数据集。为此，我们将使用 `prepare_tf_dataset()` 方法，该方法会使用我们的模型自动推断哪些列应进入数据集。如果你想准确控制要使用的列，可以改用 `Dataset.to_tf_dataset()` 方法。为了简单起见，我们在这里只使用标准数据整理器，但你也可以尝试全词屏蔽（whole word masking）整理器，并作为一个练习比较结果：
 
-```python
+```{.TensorFlow}
 tf_train_dataset = model.prepare_tf_dataset(
     downsampled_dataset["train"],
     collate_fn=data_collator,
@@ -1589,7 +1589,7 @@ tf_eval_dataset = model.prepare_tf_dataset(
 
 另外，我们设置了一个 `PushToHubCallback` ，它将在每个 epoch 后将模型保存到 Hub。你可以使用 `hub_model_id` 参数指定你想推送到的仓库的名称（如果你想把它推送到一个组织，你必须使用这个参数）。例如，要将模型推送到 [`huggingface-course` 组织](https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course)(https://huggingface.co/huggingface-course) ，我们添加了 `hub_model_id="huggingface-course/distilbert-finetuned-imdb"` 。在默认的情况下，模型的仓库将保存在你的账户中，并以你设置的输出目录命名，所以在我们的示例中，它将是 `"lewtun/distilbert-finetuned-imdb"` 。
 
-```python
+```{.TensorFlow}
 from transformers import create_optimizer
 from transformers.keras_callbacks import PushToHubCallback
 import tensorflow as tf
@@ -1618,7 +1618,7 @@ callback = PushToHubCallback(
 
 登陆后，我们可以指定 `Trainer` 的参数：
 
-```python
+```{.Pytorch}
 from transformers import TrainingArguments
 
 batch_size = 64
@@ -1646,7 +1646,7 @@ training_args = TrainingArguments(
 
 现在，我们拥有了初始化 `Trainer` 所需的所有要素。这里我们只使用了标准的 `data_collator` ，但你可以尝试使用全词屏蔽作为数据整理器的一个练习，并将结果进行比较：
 
-```python
+```{.Pytorch}
 from transformers import Trainer
 
 trainer = Trainer(
@@ -1671,7 +1671,7 @@ trainer = Trainer(
 
 如果我们的测试集主要由语法正确的句子组成，那么衡量我们语言模型质量的一种方式就是计算它给测试集中所有句子的下一个词分配的概率。高概率表示模型对未见过的例子不感到“惊讶”或“困惑”，这表明它已经学习了语言的基本语法模式。困惑度有很多种数学定义，我们将使用的定义是交叉熵损失的指数。因此，我们可以使用 `Trainer.evaluate()` 函数计算测试集上的交叉熵损失，然后取结果的指数，来计算我们预训练模型的困惑度：
 
-```python
+```{.Pytorch}
 import math
 
 eval_results = trainer.evaluate()
@@ -1682,7 +1682,7 @@ print(f">>> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 
 如果我们的测试集主要由语法正确的句子组成，那么衡量我们语言模型质量的一种方式就是计算它给测试集中所有句子的下一个词分配的概率。高概率表示模型对未见过的例子不感到“惊讶”或“困惑”，这表明它已经学习了语言的基本语法模式。困惑度有很多种数学定义，我们将使用的定义是交叉熵损失的指数。因此，我们可以使用 `model.evaluate()` 函数计算测试集上的交叉熵损失，然后取结果的指数，来计算我们预训练模型的困惑度：
 
-```python
+```{.TensorFlow}
 import math
 
 eval_loss = model.evaluate(tf_eval_dataset)
@@ -1699,13 +1699,13 @@ print(f"Perplexity: {math.exp(eval_loss):.2f}")
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 trainer.train()
 ```
 
 {:else}
 
-```python
+```{.TensorFlow}
 model.fit(tf_train_dataset, validation_data=tf_eval_dataset, callbacks=[callback])
 ```
 
@@ -1715,14 +1715,14 @@ model.fit(tf_train_dataset, validation_data=tf_eval_dataset, callbacks=[callback
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 eval_results = trainer.evaluate()
 print(f">>> Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 ```
 
 {:else}
 
-```python
+```{.TensorFlow}
 eval_loss = model.evaluate(tf_eval_dataset)
 print(f"Perplexity: {math.exp(eval_loss):.2f}")
 ```
@@ -1739,7 +1739,7 @@ print(f"Perplexity: {math.exp(eval_loss):.2f}")
 
 一旦训练完成，我们可以将带有训练信息的模型卡片推送到 Hub（checkpoint 在训练过程中就已经保存了）：
 
-```python
+```{.Pytorch}
 trainer.push_to_hub()
 ```
 
@@ -1760,7 +1760,7 @@ trainer.push_to_hub()
 正如我们在 `Trainer` 中所看到的，微调一个被掩蔽的语言模型与第四章中的文本分类示例非常相似。事实上，唯一的不同之处是使用了一个特殊的数据整理器，我们已经在本节的前面讨论过这个问题了！
 然而，我们注意到 `DataCollatorForLanguageModeling` 在每次评估时也会进行随机遮罩，因此我们在每次训练运行中都会看到困惑度得分有些波动。消除这种随机性的一种方法是在整个测试集上 `仅进行一次` 遮罩，然后在评估过程中使用Transformers 中的默认数据整理器来收集 batch。为了了解其工作原理，让我们实现一个简单的函数，类似于我们第一次使用 `DataCollatorForLanguageModeling` 时进行遮罩的方式：
 
-```python
+```{.Pytorch}
 def insert_random_mask(batch):
     features = [dict(zip(batch, t)) for t in zip(*batch.values())]
     masked_inputs = data_collator(features)
@@ -1770,7 +1770,7 @@ def insert_random_mask(batch):
 
 接下来，我们将上述函数应用到测试集，并去除未进行遮罩的列，这样就可以用遮罩过的列来替换它们。你可以通过将上述 `data_collator` 替换为适当的数据整理器来实现全词遮罩。如果你这样做了，那么你应该去除以下代码中的第一行：
 
-```python
+```{.Pytorch}
 downsampled_dataset = downsampled_dataset.remove_columns(["word_ids"])
 eval_dataset = downsampled_dataset["test"].map(
     insert_random_mask,
@@ -1788,7 +1788,7 @@ eval_dataset = eval_dataset.rename_columns(
 
 然后我们可以像往常一样设置 DataLoader，但我们将使用Transformers 中的 `default_data_collator` ：
 
-```python
+```{.Pytorch}
 from torch.utils.data import DataLoader
 from transformers import default_data_collator
 
@@ -1806,13 +1806,13 @@ eval_dataloader = DataLoader(
 
 从这里开始，我们将遵循Accelerate 的标准步骤。第一个任务是重新加载预训练模型：
 
-```python
+```{.Pytorch}
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
 ```
 
 然后我们需要指定优化器；我们将使用标准的 `AdamW` ：
 
-```python
+```{.Pytorch}
 from torch.optim import AdamW
 
 optimizer = AdamW(model.parameters(), lr=5e-5)
@@ -1820,7 +1820,7 @@ optimizer = AdamW(model.parameters(), lr=5e-5)
 
 有了这些对象，我们现在可以用 `Accelerator` 对象准备好一切，以进行训练：
 
-```python
+```{.Pytorch}
 from accelerate import Accelerator
 
 accelerator = Accelerator()
@@ -1831,7 +1831,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 现在我们的模型、优化器和 DataLoader 都配置好了，我们可以按照以下方式设置学习率调度器：
 
-```python
+```{.Pytorch}
 from transformers import get_scheduler
 
 num_train_epochs = 3
@@ -1848,7 +1848,7 @@ lr_scheduler = get_scheduler(
 
 在开始训练之前，我们还需要做的最后一件事就是在 Hugging Face Hub 上创建一个模型仓库！我们可以使用Hub 库，生成我们仓库的全名：
 
-```python
+```{.Pytorch}
 from huggingface_hub import get_full_repo_name
 
 model_name = "distilbert-base-uncased-finetuned-imdb-accelerate"
@@ -1856,13 +1856,13 @@ repo_name = get_full_repo_name(model_name)
 repo_name
 ```
 
-```python
+```{.Pytorch}
 'lewtun/distilbert-base-uncased-finetuned-imdb-accelerate'
 ```
 
 然后，我们可以使用Hub 的 `Repository` 类创建并克隆仓库：
 
-```python
+```{.Pytorch}
 from huggingface_hub import Repository
 
 output_dir = model_name
@@ -1871,7 +1871,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 完成后，只需写出完整的训练和评估循环即可：
 
-```python
+```{.Pytorch}
 from tqdm.auto import tqdm
 import torch
 import math
@@ -1921,7 +1921,7 @@ for epoch in range(num_train_epochs):
         )
 ```
 
-```python
+```{.Pytorch}
 >>> Epoch 0: Perplexity: 11.397545307900472
 >>> Epoch 1: Perplexity: 10.904909330983092
 >>> Epoch 2: Perplexity: 10.729503505340409
@@ -2201,7 +2201,7 @@ tokenized_datasets = split_datasets.map(
 
 首先，我们需要一个模型来进行微调。我们将使用常用的 `AutoModel` API：
 
-```python
+```{.Pytorch}
 from transformers import AutoModelForSeq2SeqLM
 
 model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
@@ -2213,7 +2213,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 
 首先，我们需要一个模型来进行微调。我们将使用常用的 `AutoModel` API：
 
-```python
+```{.TensorFlow}
 from transformers import TFAutoModelForSeq2SeqLM
 
 model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint, from_pt=True)
@@ -2237,7 +2237,7 @@ model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint, from_pt=True)
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 from transformers import DataCollatorForSeq2Seq
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
@@ -2245,7 +2245,7 @@ data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
 {:else}
 
-```python
+```{.TensorFlow}
 from transformers import DataCollatorForSeq2Seq
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, model=model, return_tensors="tf")
@@ -2310,7 +2310,7 @@ for i in range(1, 3):
 
 我们现在可以使用 `data_collator` 将我们的每个数据集转换为 `tf.data.Dataset` ，准备好进行训练：
 
-```python
+```{.TensorFlow}
 tf_train_dataset = model.prepare_tf_dataset(
     tokenized_datasets["train"],
     collate_fn=data_collator,
@@ -2428,7 +2428,7 @@ metric.compute(predictions=predictions, references=references)
 
 我们还将使用一个显著提升性能的技巧 - 使用 [XLA](https://www.tensorflow.org/xla)(https://www.tensorflow.org/xla) ，TensorFlow 的加速线性代数编译器，编译我们的生成代码。XLA 对模型的计算图进行了各种优化，从而显著提升了速度和内存使用率。如 Hugging Face 的 [博客](https://huggingface.co/blog/tf-xla-generate)(https://huggingface.co/blog/tf-xla-generate) 所述，当我们的输入形状不会变化太大时，XLA 工作得最好。因此，我们将把输入补齐到 128 的倍数，然后用填充整理器制作一个新的数据集，然后我们使用 `@tf.function(jit_compile=True)` 装饰器装饰我们的生成函数，这将标记整个函数用 XLA 编译。
 
-```python
+```{.TensorFlow}
 import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
@@ -2481,7 +2481,7 @@ def compute_metrics():
 
 为了将模型的输出转化为评估指标可以使用的文本，我们将使用 `tokenizer.batch_decode()` 方法。因为 tokenizer 会自动处理填充 tokens，所以我们只需要清理标签中的所有 `-100` ：
 
-```python
+```{.Pytorch}
 import numpy as np
 
 def compute_metrics(eval_preds):
@@ -2530,17 +2530,17 @@ huggingface-cli login
 
 在我们开始之前，让我们看看我们在没有任何训练的情况下从我们的模型中得到了什么样的结果：
 
-```python
+```{.TensorFlow}
 print(compute_metrics())
 ```
 
-```python
+```{.TensorFlow}
 {'bleu': 33.26983701454733}
 ```
 
 一旦完成，我们就可以准备编译和训练模型所需的一切。请注意当使用 `tf.keras.mixed_precision.set_global_policy("mixed_float16")` 时——这将告诉 Keras 使用 float16 进行训练，这可以显着提高支持它的 GPU（Nvidia 20xx/V100 或更高版本）的速度。
 
-```python
+```{.TensorFlow}
 from transformers import create_optimizer
 from transformers.keras_callbacks import PushToHubCallback
 import tensorflow as tf
@@ -2566,7 +2566,7 @@ tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 接下来，我们定义一个 `PushToHubCallback` 以便在训练期间将我们的模型上传到 Hub，正如我们在第 2 节中看到的，然后我们只需使用该回调来拟合模型：
 
-```python
+```{.TensorFlow}
 from transformers.keras_callbacks import PushToHubCallback
 
 callback = PushToHubCallback(
@@ -2591,11 +2591,11 @@ model.fit(
 
 最后，让我们看看训练结束后我们的指标是什么样的：
 
-```python
+```{.TensorFlow}
 print(compute_metrics())
 ```
 
-```python
+```{.TensorFlow}
 {'bleu': 57.334066271545865}
 ```
 
@@ -2605,7 +2605,7 @@ print(compute_metrics())
 
 一旦完成这些步骤，我们就可以定义我们的 `Seq2SeqTrainingArguments` 。与 `Trainer` 一样，我们使用 `TrainingArguments` 的子类，其中包含更多可以设置的字段：
 
-```python
+```{.Pytorch}
 from transformers import Seq2SeqTrainingArguments
 
 args = Seq2SeqTrainingArguments(
@@ -2641,7 +2641,7 @@ args = Seq2SeqTrainingArguments(
 
 最后，我们将所有内容传递给 `Seq2SeqTrainer` ：
 
-```python
+```{.Pytorch}
 from transformers import Seq2SeqTrainer
 
 trainer = Seq2SeqTrainer(
@@ -2657,11 +2657,11 @@ trainer = Seq2SeqTrainer(
 
 在开始训练之前，我们先看一下我们的模型得到的分数，以确保我们的微调并未使情况变得更糟。这个命令需要一些时间，所以你可以在执行期间去喝杯咖啡：
 
-```python
+```{.Pytorch}
 trainer.evaluate(max_length=max_length)
 ```
 
-```python
+```{.Pytorch}
 {'eval_loss': 1.6964408159255981,
  'eval_bleu': 39.26865061007616,
  'eval_runtime': 965.8884,
@@ -2673,7 +2673,7 @@ BLEU 得分为 39 并不算太差，这反映了我们的模型已经擅长将�
 
 接下来是训练，这也需要一些时间：
 
-```python
+```{.Pytorch}
 trainer.train()
 ```
 
@@ -2681,11 +2681,11 @@ trainer.train()
 
 训练完成后，我们再次评估我们的模型——希望我们会看到 BLEU 分数有所提高！
 
-```python
+```{.Pytorch}
 trainer.evaluate(max_length=max_length)
 ```
 
-```python
+```{.Pytorch}
 {'eval_loss': 0.8558505773544312,
  'eval_bleu': 52.94161337775576,
  'eval_runtime': 714.2576,
@@ -2698,13 +2698,13 @@ trainer.evaluate(max_length=max_length)
 
 最后，我们使用 `push_to_hub()` 方法来确保我们上传模型的最新版本。 `Trainer` 还创建了一张包含所有评估结果的模型卡并上传。此模型卡包含可帮助模型中心为推理演示选择小部件的元数据。通常不需要做额外的更改，因为它可以从模型类中推断出正确的小部件，但在这个例子中，它仅能通过模型类推断这个是一个序列到序列问题，所以我们指定它是一个翻译模型：
 
-```python
+```{.Pytorch}
 trainer.push_to_hub(tags="translation", commit_message="Training complete")
 ```
 
 如果你想检查命令执行的结果，此命令将返回它刚刚执行的提交的 URL，你可以打开 url 进行检查：
 
-```python
+```{.Pytorch}
 'https://huggingface.co/sgugger/marian-finetuned-kde4-en-to-fr/commit/3601d621e3baae2bc63d3311452535f8f58f6ef3'
 ```
 
@@ -2724,7 +2724,7 @@ trainer.push_to_hub(tags="translation", commit_message="Training complete")
 
 你已经多次看到所有这些，因此这一块会简略进行。首先，我们将数据集设置为“torch”格式，这样我们就可以得到 PyTorch 张量，然后我们用数据集构建 `DataLoader` ：
 
-```python
+```{.Pytorch}
 from torch.utils.data import DataLoader
 
 tokenized_datasets.set_format("torch")
@@ -2741,13 +2741,13 @@ eval_dataloader = DataLoader(
 
 接下来我们重新实例化我们的模型，以确保我们不会继续上一节的微调，而是再次从预训练模型开始重新训练：
 
-```python
+```{.Pytorch}
 model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 ```
 
 然后我们需要一个优化器：
 
-```python
+```{.Pytorch}
 from transformers import AdamW
 
 optimizer = AdamW(model.parameters(), lr=2e-5)
@@ -2755,7 +2755,7 @@ optimizer = AdamW(model.parameters(), lr=2e-5)
 
 一旦我们拥有所有这些对象，我们就可以将它们发送到 `accelerator.prepare()` 方法中。请记住，如果您想在 Colab Notebook 上使用 TPU 进行训练，您需要将所有这些代码移动到一个训练函数中，并且该函数不应任何实例化 `Accelerator` 的单元格。
 
-```python
+```{.Pytorch}
 from accelerate import Accelerator
 
 accelerator = Accelerator()
@@ -2766,7 +2766,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 现在我们已经将我们的 `train_dataloader` 发送到 `accelerator.prepare()` ，我们可以使用它的长度来计算训练步骤的数量。请记住，我们应该始终在准备好数据加载器后执行此操作，因为该方法会改变 `DataLoader` 的长度。然后，我们使用学习率衰减到 0 的经典线性学习率调度：
 
-```python
+```{.Pytorch}
 from transformers import get_scheduler
 
 num_train_epochs = 3
@@ -2783,7 +2783,7 @@ lr_scheduler = get_scheduler(
 
 最后，要将我们的模型推送到 Hub，我们需要在一个工作文件夹中创建一个 `Repository` 对象。如果你尚未登录，请先登录 Hugging Face。我们将从我们想要为模型提供的模型 ID 中确定仓库名称（你可以用你自己的选择替换 `repo_name` ，只需要包含你的用户名，用函数 `get_full_repo_name()` 函数可以查看当前的用户名）：
 
-```python
+```{.Pytorch}
 from huggingface_hub import Repository, get_full_repo_name
 
 model_name = "marian-finetuned-kde4-en-to-fr-accelerate"
@@ -2791,13 +2791,13 @@ repo_name = get_full_repo_name(model_name)
 repo_name
 ```
 
-```python
+```{.Pytorch}
 'sgugger/marian-finetuned-kde4-en-to-fr-accelerate'
 ```
 
 然后我们可以在本地文件夹中克隆该存储库。如果它已经存在，这个本地文件夹应该是我们正在使用的存储库的克隆：
 
-```python
+```{.Pytorch}
 output_dir = "marian-finetuned-kde4-en-to-fr-accelerate"
 repo = Repository(output_dir, clone_from=repo_name)
 ```
@@ -2808,7 +2808,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 我们现在准备编写完整的训练循环。为了简化其评估部分，我们定义了这个 `postprocess()` 函数，它接受预测和标签，并将它们转换为我们的 `metric` 对象所期望的字符串列表：
 
-```python
+```{.Pytorch}
 def postprocess(predictions, labels):
     predictions = predictions.cpu().numpy()
     labels = labels.cpu().numpy()
@@ -2831,7 +2831,7 @@ def postprocess(predictions, labels):
 
 第二个要注意的是，就像 [token 分类](https://chat.openai.com/course/chapter7/2)(https://chat.openai.com/course/chapter7/2) 一样，两个过程可能以不同的形状对输入和标签进行了填充，所以我们使用 `accelerator.pad_across_processes()` 来在调用 `gather()` 方法之前使预测和标签具有相同的形状。如果我们不这么做，评估将出错或永远挂起。
 
-```python
+```{.Pytorch}
 from tqdm.auto import tqdm
 import torch
 
@@ -2887,7 +2887,7 @@ for epoch in range(num_train_epochs):
         )
 ```
 
-```python
+```{.Pytorch}
 epoch 0, BLEU score: 53.47
 epoch 1, BLEU score: 54.24
 epoch 2, BLEU score: 54.44
@@ -3353,7 +3353,7 @@ rouge_dict
 
 微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从 `mt5-small` checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 AutoModelForSeq2SeqLM 类加载模型，该类会自动下载并缓存模型权重：
 
-```python
+```{.Pytorch}
 from transformers import AutoModelForSeq2SeqLM
 
 model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
@@ -3365,7 +3365,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 
 微调模型以进行提取摘要与我们在本章中介绍的其他任务非常相似。我们需要做的第一件事是从 `mt5-small` checkpoint 加载预训练模型。由于摘要提取是一个序列到序列的任务，我们可以使用 `TFAutoModelForSeq2SeqLM` 类加载模型，该类会自动下载并缓存模型权重：
 
-```python
+```{.TensorFlow}
 from transformers import TFAutoModelForSeq2SeqLM
 
 model = TFAutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
@@ -3397,7 +3397,7 @@ huggingface-cli login
 
 我们需要生成摘要以便在训练期间计算 ROUGE 分数。幸运的是，Transformers 提供了专用的 `Seq2SeqTrainingArguments` 和 `Seq2SeqTrainer` 类，可以自动为我们完成这项工作！为了了解它是如何工作的，让我们首先为我们的实验定义超参数和其他参数：
 
-```python
+```{.Pytorch}
 from transformers import Seq2SeqTrainingArguments
 
 batch_size = 8
@@ -3426,7 +3426,7 @@ args = Seq2SeqTrainingArguments(
 
 我们需要做的下一件事是为 Trainer 提供一个 `compute_metrics()` 函数，以便我们可以在训练期间评估我们的模型。对于摘要模型来说，这比简单地在模型的预测上调用 `rouge_score.compute()` 更复杂一些，因为我们需要将输出和标签解码为文本，然后才能计算 ROUGE 分数。下面的函数正是这样做的，除此之外还使用了 `nltk` 中的 `sent_tokenize()` 函数将摘要句子用换行符分隔开：
 
-```python
+```{.Pytorch}
 import numpy as np
 
 def compute_metrics(eval_pred):
@@ -3457,7 +3457,7 @@ def compute_metrics(eval_pred):
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 from transformers import DataCollatorForSeq2Seq
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
@@ -3465,7 +3465,7 @@ data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
 {:else}
 
-```python
+```{.TensorFlow}
 from transformers import DataCollatorForSeq2Seq
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, model=model, return_tensors="tf")
@@ -3510,7 +3510,7 @@ data_collator(features)
 
 我们终于拥有了训练所需的所有的前期准备！我们现在只需要使用标准参数实例化 Trainer 
 
-```python
+```{.Pytorch}
 from transformers import Seq2SeqTrainer
 
 trainer = Seq2SeqTrainer(
@@ -3526,17 +3526,17 @@ trainer = Seq2SeqTrainer(
 
 然后启动我们的训练：
 
-```python
+```{.Pytorch}
 trainer.train()
 ```
 
 在训练期间，你应该看到训练损失逐渐减小，而 ROUGE 分数随着每个阶段的增加而增加。一旦训练完成，你可以通过运行 `Trainer.evaluate()` 来查看最后的 ROUGE 分数：
 
-```python
+```{.Pytorch}
 trainer.evaluate()
 ```
 
-```python
+```{.Pytorch}
 {'eval_loss': 3.028524398803711,
  'eval_rouge1': 16.9728,
  'eval_rouge2': 8.2969,
@@ -3550,11 +3550,11 @@ trainer.evaluate()
 
 从分数中我们可以看到，我们的模型轻松超过了我们的 `lead-3` baseline——很好！最后要做的是将模型权重推送到 Hub，如下所示：
 
-```python
+```{.Pytorch}
 trainer.push_to_hub(commit_message="Training complete", tags="summarization")
 ```
 
-```python
+```{.Pytorch}
 'https://huggingface.co/huggingface-course/mt5-finetuned-amazon-en-es/commit/aa0536b829b28e73e1e4b94b8a5aacec420d40e0'
 ```
 
@@ -3565,7 +3565,7 @@ trainer.push_to_hub(commit_message="Training complete", tags="summarization")
 {:else}
 
 我们几乎准备好训练了！我们只需要使用我们上面定义的数据整理器将我们的数据集转换为 `tf.data.Dataset` ，然后 `compile()` 和 `fit()` 模型。首先，转换数据集：
-```python
+```{.TensorFlow}
 tf_train_dataset = model.prepare_tf_dataset(
     tokenized_datasets["train"],
     collate_fn=data_collator,
@@ -3582,7 +3582,7 @@ tf_eval_dataset = model.prepare_tf_dataset(
 
 现在，我们定义训练超参数并编译：
 
-```python
+```{.TensorFlow}
 from transformers import create_optimizer
 import tensorflow as tf
 
@@ -3609,7 +3609,7 @@ tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 最后，我们训练模型。我们使用 `PushToHubCallback` 在每个 epoch 后将模型保存到 Hub，这样我们就可以在后面用它来进行推理：
 
-```python
+```{.TensorFlow}
 from transformers.keras_callbacks import PushToHubCallback
 
 callback = PushToHubCallback(
@@ -3625,7 +3625,7 @@ model.fit(
 
 我们还将使用一种可以显着提高性能的技巧 —— 使用 TensorFlow 的加速线性代数编译器 [XLA](https://www.tensorflow.org/xla)(https://www.tensorflow.org/xla) 编译我们的生成代码。XLA 对模型的计算图应用了各种优化，并显着提高了速度和内存使用率。正如 Hugging Face [博客](https://huggingface.co/blog/tf-xla-generate)(https://huggingface.co/blog/tf-xla-generate) 中所述，当我们的输入形状变化不大时，XLA 效果最佳。为了处理这个问题，我们将输入填充到 128 的倍数，并使用填充整理器创建一个新数据集，然后我们使用 `@tf.function(jit_compile=True)` 装饰器装饰我们的生成函数，这将把整个函数标记为用 XLA 编译。
 
-```python
+```{.TensorFlow}
 from tqdm import tqdm
 import numpy as np
 
@@ -3665,7 +3665,7 @@ for batch, labels in tqdm(tf_generate_dataset):
 
 一旦我们有了参考摘要和模型输出预测的字符串的列表，计算 ROUGE 分数就很容易了：
 
-```python
+```{.TensorFlow}
 result = rouge_score.compute(
     predictions=decoded_preds, references=decoded_labels, use_stemmer=True
 )
@@ -3673,7 +3673,7 @@ result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
 {k: round(v, 4) for k, v in result.items()}
 ```
 
-```python
+```{.TensorFlow}
 {'rouge1': 31.4815, 'rouge2': 25.4386, 'rougeL': 31.4815, 'rougeLsum': 31.4815}
 ```
 
@@ -3689,19 +3689,19 @@ result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
 
 首先，我们需要为每个数据分组创建一个 `DataLoader` 。由于 PyTorch 的 dataloaders 期望得到的是张量组成的 batch，所以我们需要将数据集的格式设定为 `"torch"` ：
 
-```python
+```{.Pytorch}
 tokenized_datasets.set_format("torch")
 ```
 
 现在我们已经有了仅由张量组成的数据集，接下来要做的是再次实例化 `DataCollatorForSeq2Seq` 。为此，我们需要提供模型微调前的版本，所以让我们从缓存中再次加载它：
 
-```python
+```{.Pytorch}
 model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 ```
 
 然后我们可以实例化数据整理器，并使用它来定义我们的 DataLoader：
 
-```python
+```{.Pytorch}
 from torch.utils.data import DataLoader
 
 batch_size = 8
@@ -3718,7 +3718,7 @@ eval_dataloader = DataLoader(
 
 接下来，我们需要定义我们要使用的优化器。与我们的其他例子一样，我们将使用 `AdamW` ，这个优化器对大多数问题都很有效：
 
-```python
+```{.Pytorch}
 from torch.optim import AdamW
 
 optimizer = AdamW(model.parameters(), lr=2e-5)
@@ -3726,7 +3726,7 @@ optimizer = AdamW(model.parameters(), lr=2e-5)
 
 最后，我们将模型、优化器和 dataloaders 输入到 `accelerator.prepare()` 方法中：
 
-```python
+```{.Pytorch}
 from accelerate import Accelerator
 
 accelerator = Accelerator()
@@ -3749,7 +3749,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 对于学习率调度，我们将使用前几节中的标准线性衰减：
 
-```python
+```{.Pytorch}
 from transformers import get_scheduler
 
 num_train_epochs = 10
@@ -3766,7 +3766,7 @@ lr_scheduler = get_scheduler(
 
 对于后续处理，我们需要一个函数，将生成的摘要拆分为由换行符分隔的句子。这是 ROUGE 指标所期望的格式，我们可以使用以下代码片段来实现：
 
-```python
+```{.Pytorch}
 def postprocess_text(preds, labels):
     preds = [pred.strip() for pred in preds]
     labels = [label.strip() for label in labels]
@@ -3782,7 +3782,7 @@ def postprocess_text(preds, labels):
 
 最后，我们需要在 Hugging Face Hub 上创建一个模型仓库。为此，我们可以使用名为Hub 的库。我们只需要为我们的仓库取一个 ID，库中有一个实用的函数可以将仓库 ID 与用户 ID 组合起来：
 
-```python
+```{.Pytorch}
 from huggingface_hub import get_full_repo_name
 
 model_name = "test-bert-finetuned-squad-accelerate"
@@ -3790,13 +3790,13 @@ repo_name = get_full_repo_name(model_name)
 repo_name
 ```
 
-```python
+```{.Pytorch}
 'lewtun/mt5-finetuned-amazon-en-es-accelerate'
 ```
 
 现在我们可以使用这个仓库名称将本地版本克隆到我们的结果目录中，该目录将存储训练生成的文件：
 
-```python
+```{.Pytorch}
 from huggingface_hub import Repository
 
 output_dir = "results-mt5-finetuned-squad-accelerate"
@@ -3816,7 +3816,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 这些步骤可以在以下代码块中看到：
 
-```python
+```{.Pytorch}
 from tqdm.auto import tqdm
 import torch
 import numpy as np
@@ -3891,7 +3891,7 @@ for epoch in range(num_train_epochs):
         )
 ```
 
-```python
+```{.Pytorch}
 Epoch 0: {'rouge1': 5.6351, 'rouge2': 1.1625, 'rougeL': 5.4866, 'rougeLsum': 5.5005}
 Epoch 1: {'rouge1': 9.8646, 'rouge2': 3.4106, 'rougeL': 9.9439, 'rougeLsum': 9.9306}
 Epoch 2: {'rouge1': 11.0872, 'rouge2': 3.3273, 'rougeL': 11.0508, 'rougeLsum': 10.9468}
@@ -4192,7 +4192,7 @@ DatasetDict({
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 from transformers import AutoTokenizer, GPT2LMHeadModel, AutoConfig
 
 config = AutoConfig.from_pretrained(
@@ -4206,19 +4206,19 @@ config = AutoConfig.from_pretrained(
 
 有了这个配置，我们可以加载一个新模型。注意，这是我们第一次不使用 `from_pretrained()` 函数，因为我们实际上是自己初始化一个全新的模型：
 
-```python
+```{.Pytorch}
 model = GPT2LMHeadModel(config)
 model_size = sum(t.numel() for t in model.parameters())
 print(f"GPT-2 size: {model_size/1000**2:.1f}M parameters")
 ```
 
-```python
+```{.Pytorch}
 GPT-2 size: 124.2M parameters
 ```
 
 {:else}
 
-```python
+```{.TensorFlow}
 from transformers import AutoTokenizer, TFGPT2LMHeadModel, AutoConfig
 
 config = AutoConfig.from_pretrained(
@@ -4232,13 +4232,13 @@ config = AutoConfig.from_pretrained(
 
 有了这个配置，我们可以加载一个新模型。注意，这是我们第一次不使用 `from_pretrained()` 函数，因为我们实际上是自己初始化一个全新的模型：
 
-```python
+```{.TensorFlow}
 model = TFGPT2LMHeadModel(config)
 model(model.dummy_inputs)  # 构建模型
 model.summary()
 ```
 
-```python
+```{.TensorFlow}
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #   
 =================================================================
@@ -4258,7 +4258,7 @@ _________________________________________________________________
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 from transformers import DataCollatorForLanguageModeling
 
 tokenizer.pad_token = tokenizer.eos_token
@@ -4267,7 +4267,7 @@ data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
 
 {:else}
 
-```python
+```{.TensorFlow}
 from transformers import DataCollatorForLanguageModeling
 
 tokenizer.pad_token = tokenizer.eos_token
@@ -4286,7 +4286,7 @@ for key in out:
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 input_ids shape: torch.Size([5, 128])
 attention_mask shape: torch.Size([5, 128])
 labels shape: torch.Size([5, 128])
@@ -4294,7 +4294,7 @@ labels shape: torch.Size([5, 128])
 
 {:else}
 
-```python
+```{.TensorFlow}
 input_ids shape: (5, 128)
 attention_mask shape: (5, 128)
 labels shape: (5, 128)
@@ -4308,7 +4308,7 @@ labels shape: (5, 128)
 
 现在，我们可以使用 `prepare_tf_dataset()` 方法，将上面创建的数据整理器（DataCollator）将数据集转换为 TensorFlow 数据集：
 
-```python
+```{.TensorFlow}
 tf_train_dataset = model.prepare_tf_dataset(
     tokenized_dataset["train"],
     collate_fn=data_collator,
@@ -4351,7 +4351,7 @@ huggingface-cli login
 
 剩下要做的就是配置训练参数并启动 `Trainer` ．我们将使用余弦学习率调度，并进行一些 Warmup 有效 batch size 是 256 （ `per_device_train_batch_size` * `gradient_accumulation_steps` ）。当当单个 batch 无法放入内存时，会使用梯度累积，并通过多次向前/向后传递逐步建立梯度。当我们使用 Accelerate 创建训练循环时，我们将看到这一点。
 
-```python
+```{.Pytorch}
 from transformers import Trainer, TrainingArguments
 
 args = TrainingArguments(
@@ -4384,13 +4384,13 @@ trainer = Trainer(
 
 现在我们只需启动 `Trainer` 并等待训练完成。根据你是在整个训练集还是在训练集的一个子集上运行它，这将分别需要 20 或 2 个小时，因此请喝杯咖啡或者找一本好书来阅读！
 
-```python
+```{.Pytorch}
 trainer.train()
 ```
 
 训练完成后，我们可以将模型和 tokenizer 推送到 Hub：
 
-```python
+```{.Pytorch}
 trainer.push_to_hub()
 ```
 
@@ -4398,7 +4398,7 @@ trainer.push_to_hub()
 
 我们需要做的就是配置训练超参数并调用 `compile()` 和 `fit()` 。我们将使用带有一些预热的学习率调整策略来提高训练的稳定性：
 
-```python
+```{.TensorFlow}
 from transformers import create_optimizer
 import tensorflow as tf
 
@@ -4417,7 +4417,7 @@ tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 现在我们只需调用 `model.fit()` ，并等待训练完成。根据你是否在完整的训练集或者训练集的子集上运行，这将分别需要 20 小时或者 2 小时，所以拿一些咖啡和一本好书来阅读！训练完成后，我们可以将模型和 tokenizer 推送到 Hub：
 
-```python
+```{.TensorFlow}
 from transformers.keras_callbacks import PushToHubCallback
 
 callback = PushToHubCallback(output_dir="codeparrot-ds", tokenizer=tokenizer)
@@ -4453,7 +4453,7 @@ model.fit(tf_train_dataset, validation_data=tf_eval_dataset, callbacks=[callback
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 import torch
 from transformers import pipeline
 
@@ -4465,7 +4465,7 @@ pipe = pipeline(
 
 {:else}
 
-```python
+```{.TensorFlow}
 from transformers import pipeline
 
 course_model = TFGPT2LMHeadModel.from_pretrained("huggingface-course/codeparrot-ds")
@@ -4587,7 +4587,7 @@ rf
 
 由于我们主要关注的是为数据科学库提供合理的代码自动补充功能，因此对于更多使用这些库的训练样本赋予更高的权重是有意义的。我们可以通过使用 `plt` 、 `pd` 、 `sk` 、 `fit` 和 `predict` 等关键词来轻松地识别出这些例子，这些关键词是 `matplotlib.pyplot` 、 `pandas` 和 `sklearn` 的最常用重命名后的导入名称，以及 sklearn 的 fit/predict 方法。如果这些都表示为一个单一的 token，我们可以轻松地检查它们是否出现在输入序列中。Tokens 有可能有空格前缀，所以我们也会在 tokenizer 词汇表中检查这些版本。为了验证其有效性，我们会添加一个应该被分割为多个 tokens 的测试 token：
 
-```python
+```{.Pytorch}
 keytoken_ids = []
 for keyword in [
     "plt",
@@ -4609,13 +4609,13 @@ for keyword in [
         print(f"Keyword has not single token: {keyword}")
 ```
 
-```python
+```{.Pytorch}
 'Keyword has not single token: testtest'
 ```
 
 太好了，这个方法似乎很有效！我们现在可以编写一个自定义的损失函数，它将输入序列、logits 和我们刚刚选择的关键作为输入。首先我们需要对齐 logits 和 inputs：右移一个单位的输入序列形成了标签，因为下一个 token 就是当前 token 的标签。我们可以通过从输入序列的第二个 token 开始设置标签，因为模型不会预测第一个 token。然后我们截断最后一个 logit，因为我们没有完整输入序列后面的标签。有了这些，我们就可以计算每个样本的损失，并计算每个样本中所有关键词的出现次数。最后，我们使用出现次数作为权重，计算所有样本的加权平均值。由于我们不想抛弃所有没有关键词的样本，我们将所有的权重都加 1：
 
-```python
+```{.Pytorch}
 from torch.nn import CrossEntropyLoss
 import torch
 
@@ -4646,7 +4646,7 @@ def keytoken_weighted_loss(inputs, logits, keytoken_ids, alpha=1.0):
 
 让我们从数据加载器开始。我们只需要将数据集的格式设置为 `"torch"` ，然后我们就可以将它传递给一个具有适当 batch size 的 PyTorch 的 `DataLoader` ：
 
-```python
+```{.Pytorch}
 from torch.utils.data.dataloader import DataLoader
 
 tokenized_dataset.set_format("torch")
@@ -4656,7 +4656,7 @@ eval_dataloader = DataLoader(tokenized_dataset["valid"], batch_size=32)
 
 接下来，我们将参数分组，以便优化器知道哪些参数需要进行额外的权重衰减。通常，所有的偏置和 LayerNorm 权重项都不需要；因此我们可以这样做：
 
-```python
+```{.Pytorch}
 weight_decay = 0.1
 
 def get_grouped_params(model, no_decay=["bias", "LayerNorm.weight"]):
@@ -4674,7 +4674,7 @@ def get_grouped_params(model, no_decay=["bias", "LayerNorm.weight"]):
 
 我们希望在训练过程中定期在验证集上评估模型，让我们为此编写一个函数。它只需遍历评估数据加载器，并收集所有进程中的损失值：
 
-```python
+```{.Pytorch}
 def evaluate():
     model.eval()
     losses = []
@@ -4693,13 +4693,13 @@ def evaluate():
 
 通过 `evaluate()` 函数我们定期可以获取损失值和 [困惑度（perplexity）](/course/chapter7/3)(/course/chapter7/3) 。接下来，我们重新加载我们的模型以确保我们再次从头开始训练：
 
-```python
+```{.Pytorch}
 model = GPT2LMHeadModel(config)
 ```
 
 然后我们可以定义我们的优化器，使用之前的函数来分割权重衰减的参数：
 
-```python
+```{.Pytorch}
 from torch.optim import AdamW
 
 optimizer = AdamW(get_grouped_params(model), lr=5e-4)
@@ -4707,7 +4707,7 @@ optimizer = AdamW(get_grouped_params(model), lr=5e-4)
 
 现在让我们准备模型、优化器和数据加载器，然后我们可以开始训练：
 
-```python
+```{.Pytorch}
 from accelerate import Accelerator
 
 accelerator = Accelerator(fp16=True)
@@ -4725,7 +4725,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 现在我们已经将我们的 `train_dataloader` 传递给了 `accelerator.prepare()` ，我们可以使用 `len()` 来计算训练步骤的数量。请记住，我们应该在准备好 `dataloader` 后再使用 `len()` ，因为改动 `dataloader` 会改变其长度。我们使用一个从学习率到 0 的经典线性学习率调度：
 
-```python
+```{.Pytorch}
 num_train_epochs = 1
 num_update_steps_per_epoch = len(train_dataloader)
 num_training_steps = num_train_epochs * num_update_steps_per_epoch
@@ -4740,7 +4740,7 @@ lr_scheduler = get_scheduler(
 
 最后，为了将我们的模型推送到 Hub，我们需要在一个工作文件夹中创建一个 `Repository` 对象。如果你还没有登录的话，首先需要登录到 Hugging Face，我们将根据模型 ID 来确定仓库名称（你可以使用你喜欢的名字替换 `repo_name` ；它只需要包含你的用户名，可以使用 `get_full_repo_name()` 函数的查看目前的 `repo_name`）：
 
-```python
+```{.Pytorch}
 from huggingface_hub import Repository, get_full_repo_name
 
 model_name = "codeparrot-ds-accelerate"
@@ -4748,29 +4748,29 @@ repo_name = get_full_repo_name(model_name)
 repo_name
 ```
 
-```python
+```{.Pytorch}
 'sgugger/codeparrot-ds-accelerate'
 ```
 
 然后我们可以将该仓库克隆到本地文件夹中。如果它已经存在，这个本地文件夹应该是我们正在使用的仓库的现有克隆：
-```python
+```{.Pytorch}
 output_dir = "codeparrot-ds-accelerate"
 repo = Repository(output_dir, clone_from=repo_name)
 ```
 
 我们现在可以通过调用 `repo.push_to_hub()` 方法上传保存在 `output_dir` 中的所有内容。这将帮助我们在每个训练周期结束时上传中间模型。
 
-```python
+```{.Pytorch}
 evaluate()
 ```
 
-```python
+```{.Pytorch}
 (10.934126853942871, 56057.14453125)
 ```
 
 目前的损失和困惑度都是非常高的值，但这并不奇怪，因为我们还没有训练模型。有了这些，我们已经为编写训练脚本的核心部分：训练循环做好了准备。在训练循环中，我们迭代遍历数据加载器并将成批量的数据传递给模型。有了 logits，我们就可以评估我们的自定义损失函数。我们通过梯度累积步骤的数量来缩放损失，以避免在聚合更多步骤时产生更大的损失。在我们优化之前，我们也会剪裁梯度来更好的收敛。最后，每隔一段步数，我们用我们新的 `evaluate()` 函数在评估集上评估模型：
 
-```python
+```{.Pytorch}
 from tqdm.notebook import tqdm
 
 gradient_accumulation_steps = 8
@@ -5355,7 +5355,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
 {#if fw === 'pt'}
 
-```python
+```{.Pytorch}
 import torch
 from transformers import AutoModelForQuestionAnswering
 
@@ -5374,14 +5374,14 @@ with torch.no_grad():
 
 为了便于实验，让我们将这些输出转换为 NumPy 数组：
 
-```python
+```{.Pytorch}
 start_logits = outputs.start_logits.cpu().numpy()
 end_logits = outputs.end_logits.cpu().numpy()
 ```
 
 {:else}
 
-```python
+```{.TensorFlow}
 import tensorflow as tf
 from transformers import TFAutoModelForQuestionAnswering
 
@@ -5396,7 +5396,7 @@ outputs = trained_model(**batch)
 
 为了便于实验，让我们将这些输出转换为 NumPy 数组：
 
-```python
+```{.TensorFlow}
 start_logits = outputs.start_logits.numpy()
 end_logits = outputs.end_logits.numpy()
 ```
@@ -5585,7 +5585,7 @@ compute_metrics(start_logits, end_logits, eval_set, small_eval_set)
 
 现在我们准备好训练我们的模型了。首先，让我们像之前一样使用 `AutoModelForQuestionAnswering` 类创建模型：
 
-```python
+```{.Pytorch}
 model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint)
 ```
 
@@ -5593,7 +5593,7 @@ model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint)
 
 现在我们准备好训练我们的模型了。首先，让我们像之前一样使用 `TFAutoModelForQuestionAnswering` 类创建模型：
 
-```python
+```{.TensorFlow}
 model = TFAutoModelForQuestionAnswering.from_pretrained(model_checkpoint)
 ```
 
@@ -5623,7 +5623,7 @@ huggingface-cli login
 
 让我们来看看我们的 `TrainingArguments` ：
 
-```python
+```{.Pytorch}
 from transformers import TrainingArguments
 
 args = TrainingArguments(
@@ -5644,7 +5644,7 @@ args = TrainingArguments(
 
 现在完成了这一步骤，我们可以创建我们的 TF 数据集。这次我们可以使用简单的默认数据整理器：
 
-```python
+```{.TensorFlow}
 from transformers import DefaultDataCollator
 
 data_collator = DefaultDataCollator(return_tensors="tf")
@@ -5652,7 +5652,7 @@ data_collator = DefaultDataCollator(return_tensors="tf")
 
 然后像往常一样创建数据集。
 
-```python
+```{.TensorFlow}
 tf_train_dataset = model.prepare_tf_dataset(
     train_dataset,
     collate_fn=data_collator,
@@ -5669,7 +5669,7 @@ tf_eval_dataset = model.prepare_tf_dataset(
 
 接下来，我们设置训练超参数并编译我们的模型
 
-```python
+```{.TensorFlow}
 from transformers import create_optimizer
 from transformers.keras_callbacks import PushToHubCallback
 import tensorflow as tf
@@ -5707,7 +5707,7 @@ tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 最后，我们只需将所有内容传递给 `Trainer` 类并启动训练：
 
-```python
+```{.Pytorch}
 from transformers import Trainer
 
 trainer = Trainer(
@@ -5722,7 +5722,7 @@ trainer.train()
 
 {:else}
 
-```python
+```{.TensorFlow}
 from transformers.keras_callbacks import PushToHubCallback
 
 callback = PushToHubCallback(output_dir="bert-finetuned-squad", tokenizer=tokenizer)
@@ -5739,7 +5739,7 @@ model.fit(tf_train_dataset, callbacks=[callback], epochs=num_train_epochs)
 
 训练完成后，我们可以最终评估我们的模型（并祈祷我们可以一次成功）。 `Trainer` 的 `predict()` 方法将返回一个元组，其中第一个元素将是模型的预测结果（在这里是一个包含起始和结束 logits 的对）。我们将这个结果传递给我们的 `compute_metrics()` 函数：
 
-```python
+```{.Pytorch}
 predictions, _, _ = trainer.predict(validation_dataset)
 start_logits, end_logits = predictions
 compute_metrics(start_logits, end_logits, validation_dataset, raw_datasets["validation"])
@@ -5749,7 +5749,7 @@ compute_metrics(start_logits, end_logits, validation_dataset, raw_datasets["vali
 
 训练完成后，我们可以最终评估我们的模型（并祈祷我们可以一次成功）。我们的 `model` 的 `predict()` 方法将负责获取预测结果，并且由于我们之前已经定义了一个 `compute_metrics()` 函数，所以我们可以用一行代码得到我们的结果：
 
-```python
+```{.TensorFlow}
 predictions = model.predict(tf_eval_dataset)
 compute_metrics(
     predictions["start_logits"],
@@ -5771,13 +5771,13 @@ compute_metrics(
 
 最后，我们使用 `push_to_hub()` 方法确保上传模型的最新版本：
 
-```python
+```{.Pytorch}
 trainer.push_to_hub(commit_message="Training complete")
 ```
 
 如果你想检查它，上面的代码返回它刚刚执行的提交的 URL：
 
-```python
+```{.Pytorch}
 'https://huggingface.co/sgugger/bert-finetuned-squad/commit/9dcee1fbc25946a6ed4bb32efb1bd71d5fa90b68'
 ```
 `Trainer` 还会创建一个包含所有评估结果的模型卡片，并将其上传。
@@ -5804,7 +5804,7 @@ trainer.push_to_hub(commit_message="Training complete")
 
 首先，我们需要使用数据集构建 `DataLoader` 。我们将这些数据集的格式设置为 `"torch"` ，并删除模型不使用的验证集列。然后，我们可以使用 Transformers 提供的 `default_data_collator` 作为 `collate_fn` ，并打乱训练集，但不打乱验证集：
 
-```python
+```{.Pytorch}
 from torch.utils.data import DataLoader
 from transformers import default_data_collator
 
@@ -5825,13 +5825,13 @@ eval_dataloader = DataLoader(
 
 接下来，我们重新实例化我们的模型，以确保我们不是从之前的微调继续训练，而是从 BERT 预训练模型重新开始：
 
-```python
+```{.Pytorch}
 model = AutoModelForQuestionAnswering.from_pretrained(model_checkpoint)
 ```
 
 然后，我们需要一个优化器。通常我们使用经典的 `AdamW` 优化器，它与 Adam 类似，不过在权重衰减的方式上有些不同：
 
-```python
+```{.Pytorch}
 from torch.optim import AdamW
 
 optimizer = AdamW(model.parameters(), lr=2e-5)
@@ -5839,7 +5839,7 @@ optimizer = AdamW(model.parameters(), lr=2e-5)
 
 当我们拥有了所有这些对象，我们可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果你想在 Colab Notebook 上使用 TPU 进行训练，你需要将所有这些代码移到一个训练函数中，并且不应该对 `Accelerator` 的单元格执行任何实例化。我们可以通过向 `Accelerator` 传递 `fp16=True` 来强制使用混合精度训练（或者，如果你想要将代码作为脚本执行，只需确保填写适当的Accelerate `config` ）。
 
-```python
+```{.Pytorch}
 from accelerate import Accelerator
 
 accelerator = Accelerator(fp16=True)
@@ -5850,7 +5850,7 @@ model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
 
 从前面几节中你应该知道，我们只有在 `train_dataloader` 通过 `accelerator.prepare()` 方法后才能使用其长度来计算训练步骤的数量。我们使用与之前章节相同的线性学习率调度：
 
-```python
+```{.Pytorch}
 from transformers import get_scheduler
 
 num_train_epochs = 3
@@ -5867,7 +5867,7 @@ lr_scheduler = get_scheduler(
 
 要将模型推送到 Hub，我们需要在工作文件夹中创建一个 `Repository` 对象。如果你尚未登录 Hugging Face Hub，请先登录。我们将根据我们给模型指定的模型 ID 确定仓库名称（可以根据自己的选择替换 `repo_name` ；它只需要包含你的用户名，使用 `get_full_repo_name()` 函数可以获取）：
 
-```python
+```{.Pytorch}
 from huggingface_hub import Repository, get_full_repo_name
 
 model_name = "bert-finetuned-squad-accelerate"
@@ -5875,13 +5875,13 @@ repo_name = get_full_repo_name(model_name)
 repo_name
 ```
 
-```python
+```{.Pytorch}
 'sgugger/bert-finetuned-squad-accelerate'
 ```
 
 然后，我们可以将该存储库克隆到本地文件夹中。如果它已经存在，那么这个本地文件夹应该是我们正在使用的存储库的克隆版本：
 
-```python
+```{.Pytorch}
 output_dir = "bert-finetuned-squad-accelerate"
 repo = Repository(output_dir, clone_from=repo_name)
 ```
@@ -5898,7 +5898,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 
 这是训练循环的完整代码：
 
-```python
+```{.Pytorch}
 from tqdm.auto import tqdm
 import torch
 
@@ -5952,7 +5952,7 @@ for epoch in range(num_train_epochs):
 
 如果这是你第一次看到使用Accelerate 保存的模型，请花点时间了解一下与之相关的三行代码
 
-```python
+```{.Pytorch}
 accelerator.wait_for_everyone()
 unwrapped_model = accelerator.unwrap_model(model)
 unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
