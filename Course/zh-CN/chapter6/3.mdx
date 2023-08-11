@@ -22,18 +22,18 @@
 
 {/if}
 
-在本节中，我们将仔细研究 🤗 Transformers 中 tokenizer 的功能。到目前为止，我们只使用它们来对文本进行 tokenize 或将 ID 解码回文本，但是 tokenizer ——特别是由🤗 Tokenizers 库支持的 tokenizer ——能够做的事情还有很多。为了说明这些附加功能，我们将探讨如何复现在 [第一章](/course/chapter1) 中首次遇到的 `token-classification` （我们称之为 `ner` ） 和 `question-answering` 管道的结果。
+在本节中，我们将仔细研究 🤗 Transformers 中 tokenizer 的功能。到目前为止，我们只使用它们来对文本进行 tokenization 或将 ID 解码回文本，但是 tokenizer ——特别是由🤗 Tokenizers 库支持的 tokenizer ——能够做的事情还有很多。为了说明这些附加功能，我们将探讨如何复现在 [第一章](/course/chapter1) 中首次遇到的 `token-classification` （我们称之为 `ner` ） 和 `question-answering` 管道的结果。
 
 <Youtube id="g8quOxoqhHQ"/>
 
-在接下来的讨论中，我们会经常区分“慢速”和“快速” tokenizer 慢速 tokenizer 是在 🤗 Transformers 库中用 Python 编写的，而快速版本是由 🤗 Tokenizers 提供的，它们是用 Rust 编写的。如果你还记得在 [第五章](/course/chapter5/3) 中对比了快速和慢速 tokenizer 对药物审查数据集进行 tokenize 所需的时间的这张表，你应该理解为什么我们称它们为“快速”和“慢速”：
+在接下来的讨论中，我们会经常区分“慢速”和“快速” tokenizer 慢速 tokenizer 是在 🤗 Transformers 库中用 Python 编写的，而快速版本是由 🤗 Tokenizers 提供的，它们是用 Rust 编写的。如果你还记得在 [第五章](/course/chapter5/3) 中对比了快速和慢速 tokenizer 对药物审查数据集进行 tokenization 所需的时间的这张表，你应该理解为什么我们称它们为“快速”和“慢速”：
 
 |               | 快速 tokenizer      | 慢速 tokenizer 
 :--------------:|:--------------:|:-------------: `batched=True` | 10.8s          | 4min41s `batched=False` | 59.2s          | 5min3s
 
 <Tip warning={true}>
 
-⚠️ 对单个句子进行 tokenize 时，你不总是能看到同一个 tokenizer 的慢速和快速版本之间的速度差异。事实上，快速版本可能实际上更慢！只有同时对大量文本进行 tokenize 时，你才能清楚地看到差异。
+⚠️ 对单个句子进行 tokenization 时，你不总是能看到同一个 tokenizer 的慢速和快速版本之间的速度差异。事实上，快速版本可能实际上更慢！只有同时对大量文本进行 tokenization 时，你才能清楚地看到差异。
 
 </Tip>
 
@@ -103,13 +103,13 @@ encoding.word_ids()
 [None, 0, 1, 2, 3, 3, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10, 11, 12, None]
 ```
 
-我们可以看到 tokenizer 的特殊 token `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个 token 都映射到它来源的单词。这对于确定一个 token 是否在单词的开头或两个 token 是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的 tokenizer 我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速 tokenizer 它所提供的 `word_ids()` 方法适用于任何类型的 tokenizer 在下一章，我们将看到如何利用这种能力，将我们为每个词正确地对应到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有 token（一种称为 `全词掩码（whole word masking）` 的技术）。
+我们可以看到 tokenizer 的特殊 token `[CLS]` 和 `[SEP]` 被映射到 `None` ，然后每个 token 都映射到它来源的单词。这对于确定一个 token 是否在单词的开头或两个 token 是否在同一个单词中特别有用。对于 BERT 类型（BERT-like）的的 tokenizer 我们也可以依靠 `##` 前缀来实现这个功能；不过只要是快速 tokenizer 它所提供的 `word_ids()` 方法适用于任何类型的 tokenizer 在下一章，我们将看到如何利用这种能力，将我们为每个词正确地应用到词汇任务中的标签，如命名实体识别（NER）和词性标注（POS）。我们也可以使用它在掩码语言建模（masked language modeling）中来遮盖来自同一词的所有 token（一种称为 `全词掩码（whole word masking）` 的技术）。
 
 <Tip>
 
-词的概念是复杂的。例如，“I'll”（“I will”的缩写）算作一个词还是两个词？这实际上取决于 tokenizer 和它采用的预分词操作。有些 tokenizer 只在空格处分割，所以它们会把这个看作是一个词。其他 tokenizer 在空格的基础之上还使用标点，所以会认为它是两个词。
+词的概念是复杂的。例如，“I'll”（“I will”的缩写）算作一个词还是两个词？这实际上取决于 tokenizer 和它应用的预分词操作。有些 tokenizer 只在空格处分割，所以它们会把这个看作是一个词。其他 tokenizer 在空格的基础之上还使用标点，所以会认为它是两个词。
 
-✏️ **试试看！**从 bert base cased 和 roberta base  checkpoint 创建一个 tokenizer 并用它们对“81s”进行分词。你观察到了什么？这些词的 ID 是什么？
+✏️ **试试看！**从 bert base cased 和 roberta base  Checkpoint 创建一个 tokenizer 并用它们对“81s”进行分词。你观察到了什么？这些词的 ID 是什么？
 
 </Tip>
 
@@ -137,7 +137,7 @@ Sylvain
 
 ## `token-classification` 管道内部流程 [[`token-classification`管道内部流程]]
 
-在 [第一章](/course/chapter1) 我们初次尝试实现命名实体识别（NER）——该任务是确定文本的哪些部分对应于人名、地名或组织名等实体——当时是使用🤗 Transformers 的 `pipeline()` 函数实现的。然后，在 [第二章](/course/chapter2) ，我们看到一个管道如何将获取原始文本到预测结果的三个阶段整合在一起：tokenize、通过模型处理输入和后处理。 `token-classification` 管道中的前两步与其他任何管道中的步骤相同，但后处理稍有复杂——让我们看看具体情况！
+在 [第一章](/course/chapter1) 我们初次尝试实现命名实体识别（NER）——该任务是确定文本的哪些部分对应于人名、地名或组织名等实体——当时是使用🤗 Transformers 的 `pipeline()` 函数实现的。然后，在 [第二章](/course/chapter2) ，我们看到一个管道如何将获取原始文本到预测结果的三个阶段整合在一起：tokenization、通过模型处理输入和后处理。 `token-classification` 管道中的前两步与其他任何管道中的步骤相同，但后处理稍有复杂——让我们看看具体情况！
 
 {#if fw === 'pt'}
 

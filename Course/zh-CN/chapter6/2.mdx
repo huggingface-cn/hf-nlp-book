@@ -172,7 +172,7 @@ tokenizer = old_tokenizer.train_new_from_iterator(training_corpus, 52000)
 
 注意 `AutoTokenizer.train_new_from_iterator()` 只有你使用的 tokenizer 是“快速（fast）” tokenizer 时才有效。下一节中，你将在看到，🤗 Transformers 库包含两种类型的 tokenizer 一些（慢速的）完全用 Python 编写，而另一些（快速的）由 🤗 Tokenizers 库支持，该库用 [Rust](https://www.rust-lang.org) 编程语言编写。Python 是最常用于数据科学和深度学习应用程序的语言，但是当需要并行化以提高速度时，就需要用另一种语言来编写。例如，模型计算核心的矩阵乘法是用 CUDA 编写的，这是一个针对 GPU 优化的 C 语言库。
 
-用纯 Python 训练一个全新的 tokenizer 会非常缓慢，这就是我们开发 🤗 Tokenizers 库的原因。正如你无需学习 CUDA 语言即可在 GPU 上训练你的模型一样，你也无需学习 Rust 即可使用快速 tokenizer 🤗 Tokenizers 库为许多内部调用 Rust 代码的方法提供 Python 语言绑定；例如，并行化训练新的 tokenizer 或者像我们在 [第三章](/course/chapter3) 中看到的那样，对一批输入进行 tokenize。
+用纯 Python 训练一个全新的 tokenizer 会非常缓慢，这就是我们开发 🤗 Tokenizers 库的原因。正如你无需学习 CUDA 语言即可在 GPU 上训练你的模型一样，你也无需学习 Rust 即可使用快速 tokenizer 🤗 Tokenizers 库为许多内部调用 Rust 代码的方法提供 Python 语言绑定；例如，并行化训练新的 tokenizer 或者像我们在 [第三章](/course/chapter3) 中看到的那样，对一批输入进行 tokenization。
 
 大多数 Transformer 模型都有可用的快速 tokenizer （你可以 [在这里](https://huggingface.co/transformers/#supported-frameworks) 检查一些例外情况），如果 `AutoTokenizer` 可用，API 总是为你选择快速 tokenizer 在下一节中，我们将看看快速 tokenizer 具有的其他一些特殊功能，这些功能对于词元分类和问答等任务非常有用。然而，在深入研究之前，让我们尝试在之前的例子上使用我们的全新 tokenizer 
 

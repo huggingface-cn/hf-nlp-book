@@ -96,7 +96,7 @@ DatasetDict({
 
 </Tip>
 
-接下来，让我们使用 `Dataset.map()` 来规范所有的 `condition` 标签。正如我们在 [第三章](/course/chapter3) 中处理 tokenizer 一样，我们可以定义一个简单的函数，可以使用该函数 `drug_dataset` 处理每个分组的所有行：
+接下来，让我们使用 `Dataset.map()` 来规范所有的 `condition` 标签。正如我们在 [第三章](/course/chapter3) 中处理 tokenizer 一样，我们可以定义一个简单的函数，可以将该函数应用于 `drug_dataset` 每个分组的所有行：
 
 ```py
 def lowercase_condition(example):
@@ -179,7 +179,7 @@ def compute_review_length(example):
     return {"review_length": len(example["review"].split())}
 ```
 
-不同于我们的 `lowercase_condition()` 函数， `compute_review_length()` 返回一个字典，其键并不对应数据集中的某一列名称。在这种情况下，当 `compute_review_length()` 传递给 `Dataset.map()` 时，它将处理数据集中的所有行，最后会创建新的 `review_length` 列：
+不同于我们的 `lowercase_condition()` 函数， `compute_review_length()` 返回一个字典，其键并不对应数据集中的某一列名称。在这种情况下，当 `compute_review_length()` 传递给 `Dataset.map()` 时，它将应用于数据集中的所有行，最后会创建新的 `review_length` 列：
 
 ```py
 drug_dataset = drug_dataset.map(compute_review_length)
@@ -277,7 +277,7 @@ new_drug_dataset = drug_dataset.map(
 
 如果你在笔记本中运行此代码，你会看到此命令的执行速度比前一个命令快得多。这不是因为我们的评论已经是处理过的——如果你重新执行上一节的指令（没有 `batched=True` ），它将花费与之前相同的时间。这是因为列表推导式通常比在同一代码中用 `for` 循环执行相同的代码更快，并且我们还通过同时访问多个元素而不是一个一个来处理来提高处理的速度。
 
-在 [第六章](/course/chapter6) 我们将遇到的“快速” tokenizer 它可以快速对长文本列表进行 tokenize。使用 `Dataset.map()` 搭配 `batched=True` 参数是加速的关键。例如，要使用快速 tokenizer 对所有药物评论 tokenize，我们可以使用如下的函数：
+在 [第六章](/course/chapter6) 我们将遇到的“快速” tokenizer 它可以快速对长文本列表进行 tokenization。使用 `Dataset.map()` 搭配 `batched=True` 参数是加速的关键。例如，要使用快速 tokenizer 对所有药物评论 tokenization，我们可以使用如下的函数：
 
 ```python
 from transformers import AutoTokenizer
@@ -308,9 +308,9 @@ def tokenize_function(examples):
 `batched=True` | 10.8s          | 4min41s 
 `batched=False` | 59.2s          | 5min3s
 
-这意味着使用快速 tokenizer 配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的 tokenize 代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
+这意味着使用快速 tokenizer 配合 `batched=True` 选项比没有批处理的慢速版本快 30 倍——这真的太 Amazing 了！这就是为什么在使用 `AutoTokenizer` 时，将会默认使用 `use_fast=True` 的主要原因 （以及为什么它们被称为“快速”的原因）。他们能够实现这样的加速，因为在底层的 tokenization 代码是在 Rust 中执行的，Rust 是一种可以易于并行化执行的语言。
 
-并行化也是快速 tokenizer 通过批处理实现近 6 倍加速的原因：单个 tokenize 操作是不能并行的，但是当你想同时对大量文本进行 tokenize 时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。 `Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速 tokenizer 加速（尤其是当你使用的 tokenizer 没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
+并行化也是快速 tokenizer 通过批处理实现近 6 倍加速的原因：单个 tokenization 操作是不能并行的，但是当你想同时对大量文本进行 tokenization 时，你可以将执行过程拆分为多个进程，每个进程负责处理自己的文本。 `Dataset.map()` 也有一些自己的并行化能力。尽管它们没有 Rust 提供支持，但它们仍然可以帮助慢速 tokenizer 加速（尤其是当你使用的 tokenizer 没有快速版本时）。要启用多进程处理，请在调用 `Dataset.map()` 时使用 `num_proc` 参数并指定要在调用中使用的进程数 
 
 ```py
 slow_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased", use_fast=False)
@@ -346,7 +346,7 @@ tokenized_dataset = drug_dataset.map(slow_tokenize_function, batched=True, num_p
 
 </Tip>
 
-让我们来看看它是如何实现的！在这里，我们将对我们的样本进行 tokenize 并将最大截断长度设置为 128，但我们将要求 tokenizer 返回全部文本块，而不仅仅是第一个。这可以通过设置 `return_overflowing_tokens=True` 来实现：
+让我们来看看它是如何实现的！在这里，我们将对我们的样本进行 tokenization 并将最大截断长度设置为 128，但我们将要求 tokenizer 返回全部文本块，而不仅仅是第一个。这可以通过设置 `return_overflowing_tokens=True` 来实现：
 
 ```py
 def tokenize_and_split(examples):
@@ -608,9 +608,9 @@ drug_dataset.reset_format()
 
 ```py
 drug_dataset_clean = drug_dataset["train"].train_test_split(train_size=0.8, seed=42)
-# 将默认的 "test" 部分重命名为 "validation"
+# 将默认的 "test" 部分重命名为"validation"
 drug_dataset_clean["validation"] = drug_dataset_clean.pop("test")
-# 将 "test" 部分添加到我们的 `DatasetDict` 中
+# 将 "test" 集添加到我们的`DatasetDict`中
 drug_dataset_clean["test"] = drug_dataset["test"]
 drug_dataset_clean
 ```

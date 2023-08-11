@@ -107,9 +107,9 @@ from tensorflow.keras.optimizers.schedules import PolynomialDecay
 
 batch_size = 8
 num_epochs = 3
-# 训练步数是数据集中的样本数量，除以 batch 大小，然后乘以总的 epoch 数。
-# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset，
-# 而不是原始的 Hugging Face Dataset ，所以 len() 求取它的长度已经是 num_samples // batch_size。
+# 训练步数是数据集中的样本数除以batch size再乘以 epoch。
+# 注意这里的tf_train_dataset是一个转化为batch后的 tf.data.Dataset，
+# 不是原来的 Hugging Face Dataset，所以它的 len() 已经是 num_samples // batch_size。
 num_train_steps = len(tf_train_dataset) * num_epochs
 lr_scheduler = PolynomialDecay(
     initial_learning_rate=5e-5, end_learning_rate=0.0, decay_steps=num_train_steps

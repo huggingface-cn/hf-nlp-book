@@ -7,7 +7,7 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/zh-CN/chapter6/section4.ipynb"},
 ]} />
 
-在深入探讨 Transformer 模型常用的三种分词算法（字节对编码[BPE]、WordPiece 和 Unigram）之前，我们首先来看看 tokenizer 对文本进行的预处理。以下是 tokenization 过程的高度概括：
+在深入探讨 Transformer 模型常用的三种分词算法（字节对编码【BPE】、WordPiece 和 Unigram）之前，我们首先来看看 tokenizer 对文本进行的预处理。以下是 tokenization 过程的高度概括：
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter6/tokenization_pipeline.svg" alt="The tokenization pipeline.">
@@ -43,11 +43,11 @@ print(tokenizer.backend_tokenizer.normalizer.normalize_str("Héllò hôw are ü?
 'hello how are u?'
 ```
 
-在这个例子中，由于我们选择了 `bert-base-uncased` checkpoint，所以会在标准化的过程中转换为小写并删除重音。
+在这个例子中，由于我们选择了 `bert-base-uncased` Checkpoint，所以会在标准化的过程中转换为小写并删除重音。
 
 <Tip>
 
-✏️ **试试看！** 从 `bert-base-cased` checkpoint 加载 tokenizer 并处理相同的示例。看一看 tokenizer 的 `cased` 和 `uncased` 版本之间的主要区别是什么？
+✏️ **试试看！** 从 `bert-base-cased` Checkpoint 加载 tokenizer 并处理相同的示例。看一看 tokenizer 的 `cased` 和 `uncased` 版本之间的主要区别是什么？
 
 </Tip>
 
@@ -116,6 +116,6 @@ SentencePiece 的另一个主要特点是可逆 tokenization：由于没有对�
 训练 | 从小型词汇表开始，学习合并 token 的规则 | 从小型词汇表开始，学习合并 token 的规则 | 从大型词汇表开始，学习删除 token 的规则
 训练步骤 | 合并对应最常见的 token 对 | 合并对应得分最高的 token 对，优先考虑每个独立 token 出现频率较低的对 | 删除会在整个语料库上最小化损失的词汇表中的所有 token
 学习 | 合并规则和词汇表 | 仅词汇表 | 含有每个 token 分数的词汇表
-编码 | 将一个单词分割成字符并使用在训练过程中学到的合并 | 从开始处找到词汇表中的最长子词，然后对其余部分做同样的事 | 使用在训练中学到找到最可能的 token 分割方式
+编码 | 将一个单词分割成字符并应用在训练过程中学到的合并 | 从开始处找到词汇表中的最长子词，然后对其余部分做同样的事 | 使用在训练中学到找到最可能的 token 分割方式
 
 现在让我们深入了解 BPE！

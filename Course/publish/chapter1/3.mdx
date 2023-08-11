@@ -43,7 +43,6 @@ from transformers import pipeline
 classifier = pipeline("sentiment-analysis")
 classifier("I've been waiting for a HuggingFace course my whole life.")
 ```
-
 ```python out
 [{'label': 'POSITIVE', 'score': 0.9598047137260437}]
 ```
@@ -54,7 +53,6 @@ classifier(
     ["I've been waiting for a HuggingFace course my whole life.", "I hate this so much!"]
 )
 ```
-
 ```python out
 [{'label': 'POSITIVE', 'score': 0.9598047137260437},
  {'label': 'NEGATIVE', 'score': 0.9994558095932007}]
@@ -94,7 +92,6 @@ classifier(
     candidate_labels=["education", "politics", "business"],
 )
 ```
-
 ```python out
 {'sequence': 'This is a course about the Transformers library',
  'labels': ['education', 'business', 'politics'],
@@ -120,7 +117,6 @@ from transformers import pipeline
 generator = pipeline("text-generation")
 generator("In this course, we will teach you how to")
 ```
-
 ```python out
 [{'generated_text': 'In this course, we will teach you how to understand and use '
                     'data flow and data interchange when handling user data. We '
@@ -153,7 +149,6 @@ generator(
     num_return_sequences=2,
 )
 ```
-
 ```python out
 [{'generated_text': 'In this course, we will teach you how to manipulate the world and '
                     'move your mental and physical capabilities to your advantage.'},
@@ -189,7 +184,6 @@ from transformers import pipeline
 unmasker = pipeline("fill-mask")
 unmasker("This course will teach you all about <mask> models.", top_k=2)
 ```
-
 ```python out
 [{'sequence': 'This course will teach you all about mathematical models.',
   'score': 0.19619831442832947,
@@ -220,7 +214,6 @@ from transformers import pipeline
 ner = pipeline("ner", grouped_entities=True)
 ner("My name is Sylvain and I work at Hugging Face in Brooklyn.")
 ```
-
 ```python out
 [{'entity_group': 'PER', 'score': 0.99816, 'word': 'Sylvain', 'start': 11, 'end': 18}, 
  {'entity_group': 'ORG', 'score': 0.97960, 'word': 'Hugging Face', 'start': 33, 'end': 45}, 
@@ -252,7 +245,6 @@ question_answerer(
     context="My name is Sylvain and I work at Hugging Face in Brooklyn",
 )
 ```
-
 ```python out
 {'score': 0.6385916471481323, 'start': 33, 'end': 45, 'answer': 'Hugging Face'}
 klyn",
@@ -292,7 +284,6 @@ summarizer(
 """
 )
 ```
-
 ```python out
 [{'summary_text': ' America has changed dramatically during recent years . The '
                   'number of engineering graduates in the U.S. has declined in '
@@ -315,7 +306,6 @@ from transformers import pipeline
 translator = pipeline("translation", model="Helsinki-NLP/opus-mt-fr-en")
 translator("Ce cours est produit par Hugging Face.")
 ```
-
 ```python out
 [{'translation_text': 'This course is produced by Hugging Face.'}]
 

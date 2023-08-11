@@ -133,7 +133,7 @@ DatasetDict({
 })
 ```
 
-这正是我们想要的。现在，我们可以采用各种预处理技术来清洗数据、tokenize 评论等等。
+这正是我们想要的。现在，我们可以应用各种预处理技术来清洗数据、tokenize 评论等等。
 
 <div custom-style="Tip-green">`load_dataset()` 函数的 `data_files` 参数非常灵活：可以是单个文件路径、文件路径列表或者是标签映射到文件路径的字典。你还可以根据 Unix shell 的规则，对符合指定模式的文件进行通配（例如，你可以通过设置 `data_files="*.JSON"` 匹配目录中所有的 JSON 文件）。有关更多详细信息，请参阅 [Datasets 文档](https://huggingface.co/docs/datasets/v2.12.0/en/loading#local-and-remote-files)(https://huggingface.co/docs/datasets/v2.12.0/en/loading#local-and-remote-files) 。
 
@@ -261,7 +261,7 @@ DatasetDict({
 
 </div>
 
-接下来，让我们使用 `Dataset.map()` 来规范所有的 `condition` 标签。正如我们在第四章中处理 tokenizer 一样，我们可以定义一个简单的函数，可以使用该函数处理 `drug_dataset` 每个分组的所有行：
+接下来，让我们使用 `Dataset.map()` 来规范所有的 `condition` 标签。正如我们在第四章中处理 tokenizer 一样，我们可以定义一个简单的函数，可以将该函数应用于 `drug_dataset` 每个分组的所有行：
 
 ```python
 def lowercase_condition(example):
@@ -1748,7 +1748,7 @@ comments_dataset = comments_dataset.map(concatenate_text)
 
 ### 创建文本嵌入 
 
-我们在第三章学过，我们可以通过使用 `AutoModel` 类来完成文本嵌入。我们需要做的就是选择一个合适的 checkpoint 来加载模型。幸运的是，有一个名为 `sentence-transformers` 的库专门用于创建文本嵌入。如库中的 [文档](https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search)(https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search) 所述的，我们这次要实现的是非对称语义搜索（asymmetric semantic search），因为我们有一个简短的查询，我们希望在比如 issue 评论等更长的文档中找到其答案。通过查看 [模型概览表](https://www.sbert.net/docs/pretrained_models.html#model-overview)(https://www.sbert.net/docs/pretrained_models.html#model-overview) 我们可以发现 `multi-qa-mpnet-base-dot-v1` checkpoint 在语义搜索方面具有最佳性能，因此我们将在我们的应用程序中使用它。我们还将使用相同的 checkpoint 加载了对应的 tokenizer ：
+我们在第三章学过，我们可以通过使用 `AutoModel` 类来完成文本嵌入。我们需要做的就是选择一个合适的 Checkpoint 来加载模型。幸运的是，有一个名为 `sentence-transformers` 的库专门用于创建文本嵌入。如库中的 [文档](https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search)(https://www.sbert.net/examples/applications/semantic-search/README.html#symmetric-vs-asymmetric-semantic-search) 所述的，我们这次要实现的是非对称语义搜索（asymmetric semantic search），因为我们有一个简短的查询，我们希望在比如 issue 评论等更长的文档中找到其答案。通过查看 [模型概览表](https://www.sbert.net/docs/pretrained_models.html#model-overview)(https://www.sbert.net/docs/pretrained_models.html#model-overview) 我们可以发现 `multi-qa-mpnet-base-dot-v1` Checkpoint 在语义搜索方面具有最佳性能，因此我们将在我们的应用程序中使用它。我们还将使用相同的 Checkpoint 加载了对应的 tokenizer ：
 
 {#if fw === 'pt'}
 
@@ -1779,7 +1779,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 model = TFAutoModel.from_pretrained(model_ckpt, from_pt=True)
 ```
 
-请注意，我们在调用 `from_pretrained()` 方法的时候添加了 `from_pt=True` 参数。这是因为 `multi-qa-mpnet-base-dot-v1` checkpoint 只有 PyTorch 权重，因此设置 `from_pt=True` 会自动将它们转换为 TensorFlow 格式。如你所见，在Transformers 中切换框架非常简单！
+请注意，我们在调用 `from_pretrained()` 方法的时候添加了 `from_pt=True` 参数。这是因为 `multi-qa-mpnet-base-dot-v1` Checkpoint 只有 PyTorch 权重，因此设置 `from_pt=True` 会自动将它们转换为 TensorFlow 格式。如你所见，在Transformers 中切换框架非常简单！
 
 {/if}
 
@@ -2052,7 +2052,7 @@ URL: https://github.com/huggingface/datasets/issues/824
 
 ### 章末测试 
 
-####  1. Datasets 中的 `load_dataset ()` 函数允许你从下列哪个位置加载数据集？
+####  1.Datasets 中的 `load_dataset ()` 函数允许你从下列哪个位置加载数据集？
 
 1. 在本地，例如在你的笔记本电脑上
 2. Hugging Face Hub
@@ -2119,7 +2119,7 @@ dataset[0]
 2. 相同长度的查询和段落
 3. 一个较长的查询和一个较短的段落来回答查询
 
-####  10．我可以使用 Datasets 来加载用于其他领域（如语音处理）的数据吗？
+####  10．我可以使用Datasets 来加载用于其他领域（如语音处理）的数据吗？
 
 1. 不能
 2. 能
@@ -2179,7 +2179,7 @@ dataset = load_dataset("glue", "mrpc", split="train")
 1. CPU 与 GPU RAM 之间的映射    
 解析: 不是这样的——请再试一次！
 2. RAM 和文件系统存储之间的映射    
-解析: 正确！Datasets 将每个数据集视为一个内存映射文件。这使得 Datasets 库访问和操作数据集的元素时，无需将其完全加载到内存中。
+解析: 正确！Datasets 将每个数据集视为一个内存映射文件。这使得Datasets 库访问和操作数据集的元素时，无需将其完全加载到内存中。
 3. Datasets 缓存中两个文件之间的映射    
 解析: 这是不正确的——请再试一次！
 
@@ -2192,7 +2192,7 @@ dataset = load_dataset("glue", "mrpc", split="train")
 1. 访问内存映射文件比从磁盘读取或写入磁盘更快。    
 解析: 正确！这使得 Datasets 非常快。但这并不是唯一的好处。
 2. 应用程序可以访问一个非常大的文件中的数据段，而不必首先将整个文件读入 RAM。    
-解析: 正确！——这允许 Datasets 在你的笔记本电脑上加载数 GB 的数据集，而不会让你的 CPU 崩溃。内存映射还提供了什么其他优势？
+解析: 正确！——这允许Datasets 在你的笔记本电脑上加载数 GB 的数据集，而不会让你的 CPU 崩溃。内存映射还提供了什么其他优势？
 3. 它消耗更少的能量，所以你的电池持续时间更长。    
 解析: 这是不正确的——请再试一次！
 
@@ -2257,7 +2257,7 @@ dataset[0]
 正确选项: 2. 能
 
 1. 不能    
-解析: 这是不正确的 —— Datasets 目前支持表格数据、音频和计算机视觉。你可以在 Hub 上查看计算机视觉的 [MNIST](https://huggingface.co/datasets/allocine)(https://huggingface.co/datasets/allocine) 例子。
+解析: 这是不正确的 -- Datasets 目前支持表格数据、音频和计算机视觉。你可以在 Hub 上查看计算机视觉的 [MNIST]( https://huggingface.co/datasets/allocine )( https://huggingface.co/datasets/allocine ) 例子。
 2. 能    
-解析: 正确！你可以查看Transformers 库中关于语音和视觉的发展，看看 Datasets 是如何应用于这些领域中的。
+解析: 正确！你可以查看Transformers 库中关于语音和视觉的发展，看看Datasets 是如何应用于这些领域中的。
 

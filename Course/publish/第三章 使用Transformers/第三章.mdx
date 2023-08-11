@@ -60,9 +60,9 @@ classifier(
 - 将每个词元（token）映射到一个数字，称为 **input ID**（inputs ID）
 - 添加模型需要的其他输入，例如特殊词元（如 `[CLS]` 和 `[SEP]` ）
 
-在使用模型时所有这些预处理都需要与模型预训练时的方式完全相同，因此我们首先需要从 [Model Hub](https://huggingface.co/models)(https://huggingface.co/models) 中下载这些信息。为此，我们使用 `AutoTokenizer` 类和它的 `from_pretrained()` 方法，并输入我们模型 checkpoint 的名称，它将自动获取与模型的 tokenizer 相关联的数据，并对其进行缓存（因此只有在你第一次运行下面的代码时才会下载）。
+在使用模型时所有这些预处理都需要与模型预训练时的方式完全相同，因此我们首先需要从 [Model Hub](https://huggingface.co/models)(https://huggingface.co/models) 中下载这些信息。为此，我们使用 `AutoTokenizer` 类和它的 `from_pretrained()` 方法，并输入我们模型 Checkpoint 的名称，它将自动获取与模型的 tokenizer 相关联的数据，并对其进行缓存（因此只有在你第一次运行下面的代码时才会下载）。
 
-`sentiment-analysis` （情绪分析）管道默认的 checkpoint 是 `distilbert-base-uncased-finetuned-sst-2-english` （你可以在 [这里](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english)(https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) ）看到它的模型卡片，我们运行以下代码：
+`sentiment-analysis` （情绪分析）管道默认的 Checkpoint 是 `distilbert-base-uncased-finetuned-sst-2-english` （你可以在 [这里](https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english)(https://huggingface.co/distilbert-base-uncased-finetuned-sst-2-english) ）看到它的模型卡片，我们运行以下代码：
 
 ```python
 from transformers import AutoTokenizer
@@ -349,9 +349,9 @@ model.config.id2label
 
 ## 3.2 模型
 
-在本节中，我们将更详细地了解如何创建和使用模型。我们将使用 `AutoModel` / `TFAutoModel` 类，当你希望从 checkpoint 实例化任何模型时，使用它非常方便。
+在本节中，我们将更详细地了解如何创建和使用模型。我们将使用 `AutoModel` / `TFAutoModel` 类，当你希望从 Checkpoint 实例化任何模型时，使用它非常方便。
 
-`AutoModel` / `TFAutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
+`AutoModel` / `TFAutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 Checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
 
 然而，如果你知道你想要使用的模型的类型，你可以直接使用其架构相对应的模型类。让我们看看如何使用 BERT 模型。
 
@@ -438,7 +438,7 @@ from transformers import BertModel
 model = BertModel.from_pretrained("bert-base-cased")
 ```
 
-正如你在上一小节看到的，从现在开始，我们会将 `BertModel` 替换为等效的 `AutoModel` 类，这样可以摆脱对 checkpoint 的依赖；如果你的代码适用于一个 checkpoint 那么它就可以在另一个 checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
+正如你在上一小节看到的，从现在开始，我们会将 `BertModel` 替换为等效的 `AutoModel` 类，这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint 那么它就可以在另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
 
 {:else}
 ```python
@@ -447,17 +447,17 @@ from transformers import TFBertModel
 model = TFBertModel.from_pretrained("bert-base-cased")
 ```
 
-正如你在上一小节看到的，从现在开始，我们将用等效的 `TFAutoModel` 类替换 `TFBert` 模型。这样可以摆脱对 checkpoint 的依赖；如果你的代码适用于一个 checkpoint 那么它应该与另一个 checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
+正如你在上一小节看到的，从现在开始，我们将用等效的 `TFAutoModel` 类替换 `TFBert` 模型。这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint 那么它应该与另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
 
 {/if}
 
-在上述代码示例中，我们没有使用 `BertConfig` ，而是通过 `bert-base-cased` 标签加载了一个预训练模型。这是一个由 BERT 的作者训练的模型 checkpoint 权重；你可以在其 [模型卡片](https://huggingface.co/bert-base-cased)(https://huggingface.co/bert-base-cased) 中查看更多详细信息。
+在上述代码示例中，我们没有使用 `BertConfig` ，而是通过 `bert-base-cased` 标签加载了一个预训练模型。这是一个由 BERT 的作者训练的模型 Checkpoint 权重；你可以在其 [模型卡片](https://huggingface.co/bert-base-cased)(https://huggingface.co/bert-base-cased) 中查看更多详细信息。
 
-现在，此模型已经用 checkpoint 的所有权重进行了初始化。它可以直接用于推理它训练过的任务，也可以在新任务上进行微调。通过使用预训练的权重进行训练，相比于从头开始训练，我们可以迅速获得比较好的结果。
+现在，此模型已经用 Checkpoint 的所有权重进行了初始化。它可以直接用于推理它训练过的任务，也可以在新任务上进行微调。通过使用预训练的权重进行训练，相比于从头开始训练，我们可以迅速获得比较好的结果。
 
 权重已下载并缓存在缓存文件夹中（因此，未来调用 `from_pretrained()` 方法的调用将不会重新下载它们）默认为 `~/.cache/huggingface/transformers` 。你可以通过设置 `HF_HOME` 环境变量来自定义缓存文件夹。
 
-加载模型的标识符可以是 Model Hub 上任何模型的标签，只要它与 BERT 架构兼容。可用的 BERT  checkpoint 的完整列表可以在 [这里](https://huggingface.co/models?filter=bert)(https://huggingface.co/models?filter=bert) 找到。
+加载模型的标识符可以是 Model Hub 上任何模型的标签，只要它与 BERT 架构兼容。可用的 BERT  Checkpoint 的完整列表可以在 [这里](https://huggingface.co/models?filter=bert)(https://huggingface.co/models?filter=bert) 找到。
 
 #### 保存模型 
 
@@ -483,7 +483,7 @@ config.json tf_model.h5
 ```
 {/if}
 
-如果你看一下 `config.json` 文件，你会认出构建模型架构所需的属性。这个文件还包含一些元数据，例如 checkpoint 的来源，以及你上次保存 checkpoint 时所使用的 Transformers 版本。
+如果你看一下 `config.json` 文件，你会认出构建模型架构所需的属性。这个文件还包含一些元数据，例如 Checkpoint 的来源，以及你上次保存 Checkpoint 时所使用的 Transformers 版本。
 
 `pytorch_model.bin` / `tf_model.h5` 文件被称为 `state dictionary（状态字典）` ；它包含了你的模型的所有权重。这两个文件是相辅相成的；配置文件是构建你的模型架构所必需的，而模型权重就是你的模型参数。
 
@@ -624,7 +624,7 @@ print(tokenized_text)
 
 加载和保存 tokenizer 就像使用模型一样简单。实际上，它基于相同的两种方法： `from_pretrained()` 和 `save_pretrained()` 。这些方法会加载或保存分词器使用的算法（有点像模型的架构（architecture））以及其词汇表（有点像模型的权重（weights））。
 
-加载使用与 BERT 相同的 checkpoint 训练的 BERT tokenizer 与加载模型的方式相同，只是换成了 `Bert tokenizer` 类：
+加载使用与 BERT 相同的 Checkpoint 训练的 BERT tokenizer 与加载模型的方式相同，只是换成了 `Bert tokenizer` 类：
 
 ```python
 from transformers import BertTokenizer
@@ -632,7 +632,7 @@ from transformers import BertTokenizer
 tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 ```
 
-如同 `AutoModel` / `TFAutoModel` ， `AutoTokenizer` 类将根据 checkpoint 名称在库中获取正确的 tokenizer 类，并且可以直接与任何 checkpoint 一起使用：
+如同 `AutoModel` / `TFAutoModel` ， `AutoTokenizer` 类将根据 Checkpoint 名称在库中获取正确的 tokenizer 类，并且可以直接与任何 Checkpoint 一起使用：
 
 ```python
 from transformers import AutoTokenizer
@@ -1221,29 +1221,29 @@ output = model(**tokens)
 
 #### 2. Transformer 模型的输出有的张量多少个维度，每个维度分别是什么？
 
-1. 2 个维度，分别是：序列长度（Sequence Length）和批次大小（Batch Size）
-2. 2 个维度，分别是：序列长度（Sequence Length）和隐藏层大小（Hidden Size）
-3. 3 个维度，分别是：序列长度（Sequence Length）、批次大小（Batch Size）和隐藏层大小（Hidden Size）
+1. 2 个维度，分别是：序列长度(Sequence Length)和批次大小(Batch Size)
+2. 2 个维度，分别是：序列长度(Sequence Length)和隐藏层大小(Hidden Size)
+3. 3 个维度，分别是：序列长度(Sequence Length)、批次大小(Batch Size)和隐藏层大小(Hidden Size)
 
 #### 3．下列哪一个是子词分词的例子（从分词的颗粒度来划分）？
 
 1. WordPiece
 2. 基于单个字符的分词
 3. 基于空格和标点符号的分割
-4. BPE（Byte Pair Encoding）
+4. BPE(Byte Pair Encoding)
 5. Unigram
 6. 以上都不是
 
 #### 4．什么是模型头（Haed 层）？
 
-1. 原始 Transformer 网络的一种组件，直接将张量（Tensors）输入到到正确的层
-2. 也称为自注意力（self-attention）机制，它会根据序列的其他 tokens 调整一个 token 的表示
+1. 原始 Transformer 网络的一种组件，直接将张量(Tensors)输入到到正确的层
+2. 也称为自注意力(self-attention)机制，它会根据序列的其他 tokens 调整一个 token 的表示
 3. 一个附加组件，通常由一个或几个层组成，用于将 Transformer 的预测转换为特定于任务的输出
 
 #### 5．什么是 AutoModel / TFAutoModel？
 
 1. 根据你的数据自动进行训练的模型
-2. 一个根据 checkpoint（检查点）返回模型体系结构的对象
+2. 一个根据 Checkpoint(检查点)返回模型体系结构的对象
 3. 一种可以自动检测输入语言来加载正确权重的模型
 
 
@@ -1252,9 +1252,9 @@ output = model(**tokens)
 1. 截短
 2. 直接将 Tensors 返回
 3. 填充
-4. 注意力掩码（Attention masking）
+4. 注意力掩码(Attention masking)
 
-#### 7．对使用SoftMax 激活函数对序列分类（Sequence Classification）模型的 logits 输出进行处理有什么意义？
+#### 7．对序列分类(Sequence Classification)模型的 logits 输出应用 SoftMax 激活函数有什么意义？
 
 1. 它软化了 logits 输出，使结果更可靠。
 2. 它限定了上下界，使模型的输出结果可以被解释。
@@ -1264,8 +1264,8 @@ output = model(**tokens)
 
 1. <code>encode</code> 因为它可以将文本编码为 ID，将预测的 ID 解码为文本
 2. 直接调用 Tokenizer 对象。
-3. <code>pad</code>（填充）
-4. <code>tokenize</code>
+3. <code>pad</code>(填充)
+4. <code>tokenize</code>(tokenization)
 
 #### 9．这个代码示例中的 `result` 变量包含什么？
 
@@ -1275,7 +1275,7 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 result = tokenizer.tokenize("Hello!")
 ```
-1. 字符串列表，每个字符串都是一个 Token
+1. 字符串列表，每个字符串都是一个 tokens (Token)
 2. 一个 ID 的列表
 3. 包含所有分词后的的字符串
 
@@ -1291,7 +1291,7 @@ encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
 1. 不，看起来是对的。
-2. Tokenizer 和模型应该来自相同的 checkpoint。
+2. Tokenizer 和模型应该来自相同的 Checkpoint。
 3. 由于模型输入需要是一个 Batch，因此可以使用 tokenizer 对其进行截断或填充来改进这段代码。
 
 #### 10．下面的代码有什么错误吗？
@@ -1306,8 +1306,8 @@ encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
 1. 不，看起来是对的。
-2. Tokenizer 和模型应该来自相同的 checkpoint。
-3. 由于每个输入都是一个 Batch，因此可以使用 tokenizer 对其进行平移和截断来改善这段代码。
+2. Tokenizer 和模型应该来自相同的 Checkpoint。
+3. 由于每个输入都是一个 Batch，因此可以使用 tokenizer (Tokenizer)对其进行平移和截断来改善这段代码。
 
 ### 解析
 
@@ -1324,19 +1324,19 @@ result = model(**encoded)
 
 #### 2. Transformer 模型的输出有的张量多少个维度，每个维度分别是什么？
 
-正确选项: 3. 3 个维度，分别是：序列长度（Sequence Length）、批次大小（Batch Size）和隐藏层大小（Hidden Size）
+正确选项: 3. 3 个维度，分别是：序列长度(Sequence Length)、批次大小(Batch Size)和隐藏层大小(Hidden Size)
 
-1. 2 个维度，分别是：序列长度（Sequence Length）和批次大小（Batch Size）    
-解析: 错！该模型的张量输出还具有第三个维度：隐藏层大小（Hidden Size）。
-2. 2 个维度，分别是：序列长度（Sequence Length）和隐藏层大小（Hidden Size）    
-解析: 错！所有 Transformer 模型都批量进行计算，即使是单个序列；那么也会有批次大小（Batch Size）的维度并且值为 1！
-3. 3 个维度，分别是：序列长度（Sequence Length）、批次大小（Batch Size）和隐藏层大小（Hidden Size）    
+1. 2 个维度，分别是：序列长度(Sequence Length)和批次大小(Batch Size)    
+解析: 错！该模型的张量输出还具有第三个维度：隐藏层大小(Hidden Size)。
+2. 2 个维度，分别是：序列长度(Sequence Length)和隐藏层大小(Hidden Size)    
+解析: 错！所有 Transformer 模型都批量进行计算，即使是单个序列；那么也会有批次大小(Batch Size)的维度并且值为 1！
+3. 3 个维度，分别是：序列长度(Sequence Length)、批次大小(Batch Size)和隐藏层大小(Hidden Size)    
 
 #### 3．下列哪一个是子词分词的例子（从分词的颗粒度来划分）？
 
 正确选项: 1. WordPiece
 
-正确选项: 4. BPE（Byte Pair Encoding）
+正确选项: 4. BPE(Byte Pair Encoding)
 
 正确选项: 5. Unigram
 
@@ -1346,7 +1346,7 @@ result = model(**encoded)
 解析: 基于单个字符的分词和子词分词的颗粒度是不同的。
 3. 基于空格和标点符号的分割    
 解析: 这是一种基于单词的分词而不是子词分词！
-4. BPE（Byte Pair Encoding）    
+4. BPE(Byte Pair Encoding)    
 解析: 是的，这是一个子词分词的的例子！
 5. Unigram    
 解析: 是的，这是一个子词分词的例子！
@@ -1356,23 +1356,23 @@ result = model(**encoded)
 
 正确选项: 3. 一个附加组件，通常由一个或几个层组成，用于将 Transformer 的预测转换为特定于任务的输出
 
-1. 原始 Transformer 网络的一种组件，直接将张量（Tensors）输入到到正确的层    
+1. 原始 Transformer 网络的一种组件，直接将张量(Tensors)输入到到正确的层    
 解析: 不对！没有这样的组件。
-2. 也称为自注意力（self-attention）机制，它会根据序列的其他 tokens 调整一个 token 的表示    
+2. 也称为自注意力(self-attention)机制，它会根据序列的其他 tokens 调整一个 token 的表示    
 解析: 不对！自注意力层确实包含“注意力头”，但是和模型头并不是同一个概念。
 3. 一个附加组件，通常由一个或几个层组成，用于将 Transformer 的预测转换为特定于任务的输出    
 解析: 没错。它的全名是 Adaptation Heads，也被简单地称为模型的头部，在不同的任务上有不同的形式：语言模型头，问题回答头，序列分类头．
 
 #### 5．什么是 AutoModel / TFAutoModel？
 
-正确选项: 2. 一个根据 checkpoint（检查点）返回模型体系结构的对象
+正确选项: 2. 一个根据 Checkpoint(检查点)返回模型体系结构的对象
 
 1. 根据你的数据自动进行训练的模型    
 解析: 错误。你可能把 AutoModel / TFAutoModel 与 Hugging Face 的 [AutoTrain](https://huggingface.co/autotrain)(https://huggingface.co/autotrain) 产品相混淆了？
-2. 一个根据 checkpoint（检查点）返回模型体系结构的对象    
-解析: 确切地说： AutoModel / TFAutoModel 只需要知道初始化的 checkpoint 名称就可以返回正确的体系结构。
+2. 一个根据 Checkpoint(检查点)返回模型体系结构的对象    
+解析: 确切地说：AutoModel / TFAutoModel只需要知道初始化的 Checkpoint(检查点)名称就可以返回正确的体系结构。
 3. 一种可以自动检测输入语言来加载正确权重的模型    
-解析: 不正确；虽然有些 checkpoint 和模型能够处理多种语言，但是没有内置的工具可以根据语言自动选择 checkpoint。你应该前往 [Model Hub](https://huggingface.co/models)(https://huggingface.co/models) 寻找完成所需任务的最佳 checkpoint！
+解析: 不正确；虽然有些 Checkpoint(检查点)和模型能够处理多种语言，但是没有内置的工具可以根据语言自动选择 Checkpoint(检查点)。你应该前往 [Model Hub](https://huggingface.co/models)(https://huggingface.co/models) 寻找完成所需任务的最佳 Checkpoint(检查点)！
 
 #### 6．当将不同长度的句子序列在一起批处理时，需要进行哪些处理？
 
@@ -1380,18 +1380,18 @@ result = model(**encoded)
 
 正确选项: 3. 填充
 
-正确选项: 4. 注意力掩码（Attention masking）
+正确选项: 4. 注意力掩码(Attention masking)
 
 1. 截短    
 解析: 是的，截断是一个正确的方式，截断可以将他们转化为一个固定长度的矩形序列。这是唯一的正确答案吗？
 2. 直接将 Tensors 返回    
-解析: 在批处理序列时不可以直接返回长度不一致的 Tensors，必须是固定长度。
+解析: 在批处理序列时不可以直接返回长度不一致的 Tensors。(必须是固定长度)
 3. 填充    
 解析: 是的，填充是一个正确的方式，可以将他们转化为一个固定长度的矩形序列。这是唯一的正确答案吗？
-4. 注意力掩码（Attention masking）    
+4. 注意力掩码(Attention masking)    
 解析: 当然！当处理不同长度的序列时，注意力掩码是最重要的。然而，仅仅使用注意力遮蔽是不够的。
 
-#### 7．对使用SoftMax 激活函数对序列分类（Sequence Classification）模型的 logits 输出进行处理有什么意义？
+#### 7．对序列分类(Sequence Classification)模型的 logits 输出应用 SoftMax 激活函数有什么意义？
 
 正确选项: 2. 它限定了上下界，使模型的输出结果可以被解释。
 
@@ -1411,11 +1411,11 @@ result = model(**encoded)
 1. <code>encode</code> 因为它可以将文本编码为 ID，将预测的 ID 解码为文本    
 解析: 错！虽然 <code>encode</code> 方法确实是 Tokenizer 中的方法之一，但是它并不是核心的方法，此外将预测 ID 解码为文本的是 decode。
 2. 直接调用 Tokenizer 对象。    
-解析: 完全正确！ tokenizer 的 <code>__call__</code>方法是一个非常强大的方法，可以处理几乎任何事情。它同时也可以从模型中获取预测。
-3. <code>pad</code>（填充）    
-解析: 错！<code>pad</code>（填充）非常有用，但它只是 Tokenizer API 的一部分。
-4. <code>tokenize</code>
-解析: 可以说，<code>tokenize</code>法是最有用的方法之一，但它不是 Tokenizer API 的核心方法。
+解析: 完全正确！ tokenizer (Tokenizer) 的 <code>__call__</code>方法是一个非常强大的方法，可以处理几乎任何事情。它同时也可以从模型中获取预测。
+3. <code>pad</code>(填充)    
+解析: 错！<code>pad</code>(填充)非常有用，但它只是 Tokenizer API 的一部分。
+4. <code>tokenize</code>(tokenization)    
+解析: 可以说，<code>tokenize</code>(tokenization)方法是最有用的方法之一，但它不是 Tokenizer API 的核心方法。
 
 #### 9．这个代码示例中的 `result` 变量包含什么？
 
@@ -1425,9 +1425,9 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 result = tokenizer.tokenize("Hello!")
 ```
-正确选项: 1. 字符串列表，每个字符串都是一个 token
+正确选项: 1. 字符串列表，每个字符串都是一个 tokens (Token)
 
-1. 字符串列表，每个字符串都是一个 token
+1. 字符串列表，每个字符串都是一个 tokens (Token)    
 解析: 正确！把 tokens 转换成 id 后，就可以传输给模型了！
 2. 一个 ID 的列表    
 解析: 不正确；这是 <code>__call__</code> 或 <code>convert_tokens_to_ids</code>方法的作用！
@@ -1445,11 +1445,11 @@ model = AutoModel.from_pretrained("gpt2")
 encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
-正确选项: 2. Tokenizer 和模型应该来自相同的 checkpoint。
+正确选项: 2. Tokenizer 和模型应该来自相同的 Checkpoint。
 
 1. 不，看起来是对的。    
-解析: 将一个模型与一个在不同 checkpoint 训练的 tokenizer 耦合在一起并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出（如果它可以运行的话）会是错乱的。
-2. Tokenizer 和模型应该来自相同的 checkpoint。    
+解析: 将一个模型与一个在不同 Checkpoint 训练的 tokenizer 耦合在一起并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。
+2. Tokenizer 和模型应该来自相同的 Checkpoint。    
 解析: 对！
 3. 由于模型输入需要是一个 Batch，因此可以使用 tokenizer 对其进行截断或填充来改进这段代码。    
 解析: 的确，模型输入需要是一个 Batch。然而，截断或填充这个序列并不一定有意义，这里只有一句话，而截断或填充这些技术是用来批处理一个句子列表使其长度一致的。
@@ -1465,12 +1465,12 @@ model = TFAutoModel.from_pretrained("gpt2")
 encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
-正确选项: 2. Tokenizer 和模型应该来自相同的 checkpoint。
+正确选项: 2. Tokenizer 和模型应该来自相同的 Checkpoint。
 
 1. 不，看起来是对的。    
-解析: 不幸的是，将一个模型与一个不同 checkpoint 训练的 tokenizer 耦合在并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出（如果它可以运行的话）会是错乱的。
-2. Tokenizer 和模型应该来自相同的 checkpoint。    
+解析: 不幸的是，将一个模型与一个不同 Checkpoint 训练的 tokenizer 耦合在并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。
+2. Tokenizer 和模型应该来自相同的 Checkpoint。    
 解析: 对！
-3. 由于每个输入都是一个 Batch，因此可以使用 tokenizer 对其进行平移和截断来改善这段代码。    
+3. 由于每个输入都是一个 Batch，因此可以使用 tokenizer (Tokenizer)对其进行平移和截断来改善这段代码。    
 解析: 的确，每个模型都需要 Batch 类型的输入。然而，截断或填充这个序列并不一定有意义，这里只有一句话，而这些技术是用来批处理一个句子列表的。
 

@@ -23,13 +23,13 @@
 {/if}
 
 {#if fw === 'pt'}
-这一小节我们将学习[第一小节](/course/chapter2)中提到的“如何使用模型中心（hub）的大型数据集”，下面是我们用模型中心的数据在PyTorch上训练句子分类器的一个例子：
+在这一小节你将学习 [第一小节](/course/chapter2) 中提到的“如何使用模型中心（hub）大型数据集”，下面是用模型中心的数据在 PyTorch 上训练句子分类器的一个例子：
 
 ```python
 import torch
 from transformers import AdamW, AutoTokenizer, AutoModelForSequenceClassification
 
-# Same as before
+# 和之前一样
 checkpoint = "bert-base-uncased"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
@@ -39,7 +39,7 @@ sequences = [
 ]
 batch = tokenizer(sequences, padding=True, truncation=True, return_tensors="pt")
 
-# This is new
+# 新增部分
 batch["labels"] = torch.tensor([1, 1])
 
 optimizer = AdamW(model.parameters())
@@ -49,7 +49,7 @@ optimizer.step()
 ```
 
 {:else}
-这一小节我们将学习[第一小节](/course/chapter2)中提到的“如何使用模型中心（hub）的大型数据集”，下面是我们用模型中心的数据在TensorFlow上训练句子分类器的一个例子：
+在这一小节你将学习 [第一小节](/course/chapter2) 中提到的“如何使用模型中心（hub）大型数据集”，下面是用模型中心的数据在 TensorFlow 上训练句子分类器的一个例子：
 
 ```python
 import tensorflow as tf
@@ -66,7 +66,7 @@ sequences = [
 ]
 batch = dict(tokenizer(sequences, padding=True, truncation=True, return_tensors="tf"))
 
-# This is new
+# 新增部分
 model.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
 labels = tf.convert_to_tensor([1, 1])
 model.train_on_batch(batch, labels)

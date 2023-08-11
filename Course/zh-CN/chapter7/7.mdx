@@ -22,7 +22,7 @@
 
 {/if}
 
-现在我们来看看问答这个任务！这个任务有很多种类型，但我们在本节将要关注的是称为 `抽取式（extractive）` 问题回答的形式。针对一些文档会有一些问题，其中答案就在文档段落之内。
+现在我们来看看问题回答这个任务！这个任务有很多种类型，但我们在本节将要关注的是称为*抽取式*问题回答的形式。针对一些文档会有一些问题，其中答案就在文档段落之内。
 
 <Youtube id="ajPx5LwJD-I"/>
 
@@ -34,7 +34,9 @@
 
 <Tip>
 
-💡 像 BERT 这样的纯编码器模型往往很擅长提取诸如 “谁发明了 Transformer 架构？”之类的事实性问题的答案。但在给出诸如 “为什么天空是蓝色的？” 之类的开放式问题时表现不佳。在这些更具挑战性的情况下，通常使用编码器-解码器模型如 T5 和 BART 来以类似于 [文本摘要](https://chat.openai.com/course/chapter7/5) 的方式整合信息。如果你对这种 `生成式（generative）` 问题回答感兴趣，我们推荐你查看我们基于 [ELI5 数据集](https://huggingface.co/datasets/eli5) 的 [演示demo](https://yjernite.github.io/lfqa.html) 。
+💡 像 BERT 这样的纯编码器模型往往很擅长提取诸如 "谁发明了 Transformer 架构？"之类的事实性问题的答案。但在给出诸如 "为什么天空是蓝色的？" 之类的开放式问题时表现不佳。通常使用编码器-解码器模型如 T5 和 BART 来以类似于 [文本摘要](https://chat.openai.com/course/chapter7/5) 的方式整合信息。如果你对这种*生成式*问题回答感兴趣，我们推荐你查看我们基于 [ELI5 数据集](https://huggingface.co/datasets/eli5) 的 [演示](https://yjernite.github.io/lfqa.html) 。
+
+</Tip>
 
 ## 准备数据 [[准备数据]]
 
@@ -50,7 +52,7 @@ from datasets import load_dataset
 raw_datasets = load_dataset("squad")
 ```
 
-我们可以查看这个 `raw_datasets` 对象来了解更多关于 SQuAD 数据集的信息：
+我们可以查看这个对象来了解更多关于 SQuAD 数据集的信息：
 
 ```py
 raw_datasets
@@ -82,7 +84,8 @@ Context: 'Architecturally, the school has a Catholic character. Atop the Main Bu
 Question: 'To whom did the Virgin Mary allegedly appear in 1858 in Lourdes France?'
 Answer: {'text': ['Saint Bernadette Soubirous'], 'answer_start': [515]}
 ```
-`context` 和 `question` 字段的使用非常直观。 `answers` 字段相对复杂一些，因为它包含一个字典，其中有两个都是列表的字段。这是在评估时 `squad` 指标所期望的格式；如果你使用的是你自己的数据，你不必一定将答案放在同样的格式中。 `text` 字段是非常明显的答案文本，而 `answer_start` 字段包含了 Context 中每个答案的起始索引。
+
+ `context` 和 `question` 字段的使用非常直观。 `answers` 字段相对复杂一些，因为它包含一个字典，其中有两个都是列表的字段。这是在评估时 `squad` 指标所期望的格式；如果你使用的是你自己的数据，你不必一定将答案放在同样的格式中。 `text` 字段是非常明显的答案文本，而 `answer_start` 字段包含了 Context 中每个答案的起始索引。
 
 在训练过程中，只有一个可能的答案。我们可以使用 `Dataset.filter()` 方法来进行检查：
 
@@ -109,7 +112,7 @@ print(raw_datasets["validation"][2]["answers"])
 {'text': ['Santa Clara, California', "Levi's Stadium", "Levi's Stadium in the San Francisco Bay Area at Santa Clara, California."], 'answer_start': [403, 355, 355]}
 ```
 
-我们不会深入探究评估的代码，因为所有的东西都将由🤗 Datasets metric 帮我们完成，但简单来说，一些问题可能有多个可能的答案，而该评估代码将把预测的答案与所有可接受的答案进行比较，并选择最佳分数。例如，如果我们看一下索引为 2 的样本：
+我们不会深入探究评估样本，因为所有的东西都将由🤗 Datasets 指标帮我们打包，但简短的解释是，有些问题有多个可能的答案，评估时将比较一个预测的答案和所有可接受的答案，然后取得最佳分数。比如我们看看索引 2 处的样本：
 
 ```py
 print(raw_datasets["validation"][2]["context"])
@@ -121,15 +124,15 @@ print(raw_datasets["validation"][2]["question"])
 'Where did Super Bowl 50 take place?'
 ```
 
-我们可以看到，答案的确可能是我们之前看到的三个可能选择 `['Denver Broncos', 'Denver Broncos', 'Denver Broncos']` 的之一。
+我们可以看到，答案的确可能是我们之前看到的三个可能选择的之一。
 
 ### 处理训练数据 [[处理训练数据]]
 
 <Youtube id="qgaM0weJHpA"/>
 
-我们从预处理训练数据开始。最困难的部分将是生成问题答案的标签，即找到 Context 中对应答案 token 的起始和结束位置。
+我们从预处理训练数据开始。最困难的部分将是生成问题答案的标签，即找到 Context 中对应答案的 token 的开始和结束位置。
 
-但我们不要急于求成。首先，我们需要使用 tokenizer 将输入中的文本转换为模型可以理解的 ID：
+但我们不要急于求成。首先，我们需要使用 tokenizer 将输入中的文本转换为模型可以理解的 ID:
 
 ```py
 from transformers import AutoTokenizer
@@ -138,7 +141,7 @@ model_checkpoint = "bert-base-cased"
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-如前所述，我们将对 BERT 模型进行微调，但你可以使用任何其他模型类型，只要它实现了快速 tokenizer 即可。你可以在 [支持快速 tokenizer 的框架](https://huggingface.co/transformers/#supported-frameworks) 表中看到所有带有快速版本的架构，要检查你正在使用的 `tokenizer` 对象是否真的是由🤗 Tokenizers 支持的，你可以查看它的 `is_fast` 属性：
+如前所述，我们将对 BERT 模型进行微调，但你可以使用任何其他模型类型，只要它实现了快速 tokenizer 即可。你可以在 [这个大表格](https://huggingface.co/transformers/#supported-frameworks) 中看到所有带有快速版本的架构，要检查你正在使用的 `tokenizer` 对象是否真的是由🤗 Tokenizers 支持的，你可以查看它的 `is_fast` 属性：
 
 ```py
 tokenizer.is_fast
@@ -148,7 +151,7 @@ tokenizer.is_fast
 True
 ```
 
-我们可以将 question 和 context 一起传递给我们的 tokenizer 它会正确插入特殊 tokens 形成如下句子：
+我们可以将 question 和 context 一起传递给我们的 tokenizer ，它会正确插入特殊词元以形成如下句子：
 
 ```
 [CLS] question [SEP] context [SEP]
@@ -175,21 +178,21 @@ tokenizer.decode(inputs["input_ids"])
 'and the Gold Dome ), is a simple, modern stone statue of Mary. [SEP]'
 ```
 
-标签将是指示答案起始和结束 token 的索引，模型的任务是为输入中的每个标记预测一个起始和结束的 logit 值，理论上的标签如下所示：
+然后标签将成为开始和结束答案的词元的索引，并且模型的任务是预测输入中每词元的开始和结束 logit, 理论标签如下：
 
 <div class="flex justify-center">
 <img class="block dark:hidden" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/qa_labels.svg" alt="One-hot encoded labels for question answering."/>
 <img class="hidden dark:block" src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter7/qa_labels-dark.svg" alt="One-hot encoded labels for question answering."/>
 </div>
 
-在做个例子中，Context 没有很长，但是数据集中的一些示例的 Context 会很长，会超过我们设置的最大长度（本例中为 384）。正如我们在 [第六章](/course/chapter6/4) 中所看到的，当我们探索 `question-answering` 管道的内部结构时，我们会通过将一个样本的较长的 Context 划分成多个训练特征，并在这些特征之间使用滑动窗口，来处理较长的 Context。
+在这种情况下，Context 不会太长，但是数据集中的一些示例的 Context 很长，会超过我们设置的最大长度(本例中为 384)。正如我们在 [第六章](/course/chapter6/4) 中所看到的，当我们探索 `question-answering` 管道的内部结构时，我们会通过将一个样本的较长的 Context 划分成多个训练特征，并在这些特征之间滑动窗口，来处理较长的 Context。
 
-要了解在这个过程中对当前示例进行了哪些处理，我们可以将长度限制为 100，并使用长度为 50 的 token 窗口。我们设置：
+要了解在这个过程中对当前示例进行了哪些处理，我们可以将长度限制为 100，并使用长度为 50 的词元窗口。我们设置：
 
-- `max_length` 来设置最大长度 （这里为 100）
+- `max_length` 设置最大长度 (此处为 100)
 - `truncation="only_second"` 在问题和 Context 过长时截断 Context（Context 位于第二个位置）
-- `stride` 设置两个连续块之间的重叠 tokens 数 （这里为 50）
-- `return_overflowing_tokens=True` 告诉 tokenizer 我们想要保留超过长度的 tokens 
+- `stride` 设置两个连续块之间的重叠词元数 (这里为 50)
+- `return_overflowing_tokens=True` 让 tokenizer 知道我们想要保留超过长度的词元
 
 ```py
 inputs = tokenizer(
@@ -212,9 +215,9 @@ for ids in inputs["input_ids"]:
 '[CLS] To whom did the Virgin Mary allegedly appear in 1858 in Lourdes France? [SEP]. It is a replica of the grotto at Lourdes, France where the Virgin Mary reputedly appeared to Saint Bernadette Soubirous in 1858. At the end of the main drive ( and in a direct line that connects through 3 statues and the Gold Dome ), is a simple, modern stone statue of Mary. [SEP]'
 ```
 
-如我们所见，我们的示例被分成四个输入，每个输入都包含问题和 Context 的一部分。请注意，问题的答案 （“Bernadette Soubirous”） 仅出现在第三个也是最后一个输入中，因此通过以这种方式处理较长的 Context 时，我们可能创建一些 Context 中不包含答案的训练示例。我们把这些示例的标签设置为 `start_position = end_position = 0` （事实上我们在预测 `[CLS]` tokens）。如果不幸答案被截断，我们只有答案的开头（或结束），我们也这样设置这些标签。对于答案完全在 Context 中的示例，标签将是答案起始的 token 的索引和答案结束的 token 的索引。
+如我们所见，我们的示例被分成四个输入，每个输入都包含问题和 Context 的一部分。请注意，问题的答案 ("Bernadette Soubirous") 仅出现在第三个也是最后一个输入中，因此通过以这种方式处理较长的 Context 时，我们可能创建一些答案不包含在 Context 中的训练示例。我们把这些示例的标签设置为 `start_position = end_position = 0` (因此我们预测 `[CLS]` 词元)。如果不幸答案被截断，我们只有答案的开头（或结束），我们也这样设置这些标签。对于答案完全在 Context 中的示例，标签将是答案开始的词元的索引和答案结束的词元的索引。
 
-数据集为我们提供了 Context 中答案的起始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到 tokens 索引，我们将需要使用我们在 [第六章](/course/chapter6/4) 中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的 tokenizer 返回这些内容：
+数据集为我们提供了 Context 中答案的开始字符，加上答案的长度，我们可以找到 Context 中的结束字符。要将它们映射到词元索引，我们将需要使用我们在 [第六章](/course/chapter6/4) 中研究的偏移映射。我们可以通过使用 `return_offsets_mapping=True` 让我们的 tokenizer 返回这些内容：
 
 ```py
 inputs = tokenizer(
@@ -233,7 +236,7 @@ inputs.keys()
 dict_keys(['input_ids', 'token_type_ids', 'attention_mask', 'offset_mapping', 'overflow_to_sample_mapping'])
 ```
 
-如我们所见，我们得到了 inputs ID、tokens 类型 ID 和注意力掩码，以及我们所需的偏移映射和一个额外的键 `overflow_to_sample_mapping` 。当我们同时对多个文本进行 tokenize 时，为了从支持 Rust 中受益，这个键的值对我们很有用。由于一个样本可以产生多个特征，它将每个特征映射到它来源的示例。因为这里我们只对一个示例进行了 tokenize，所以我们得到一个由 `0` 组成的列表：
+如我们所见，我们得到了inputs ID、词元类型 ID 和注意力掩码，以及我们所需的偏移映射和一个额外的键 `overflow_to_sample_mapping` 。当我们同时对多个文本进行tokenization时（为了从我们的 tokenizer 从对 Rust 支持中受益），这个键的的值对我们很有用。由于一个样本可以产生多个特征，它将每个特征映射到它来源的示例。因为这里我们只对一个示例进行了tokenization，所以我们得到一个由 `0` 组成的列表：
 
 ```py
 inputs["overflow_to_sample_mapping"]
@@ -243,7 +246,7 @@ inputs["overflow_to_sample_mapping"]
 [0, 0, 0, 0]
 ```
 
-但是，如果我们对更多的示例进行 tokenize 这将变得更加有用：
+但是，如果我们对更多的示例tokenization，这将变得更加有用：
 
 ```py
 inputs = tokenizer(
@@ -265,16 +268,18 @@ print(f"Here is where each comes from: {inputs['overflow_to_sample_mapping']}.")
 'Here is where each comes from: [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3].'
 ```
 
-在我们的这个例子中，前三个示例 （在训练集中的索引 2、3 和 4 处） 每个示例都给出了四个特征，最后一个示例（在训练集中的索引 5 处） 给出了 7 个特征。
+正如我们所看到的，前三个示例 (在训练集中的索引 2、3 和 4 处) 每个都给出了四个特征，最后一个示例(在训练集中的索引 5 处) 给出了 7 个特征。
 
-这些信息将有助于将我们获得的每个特征映射到其相应的标签。如前所述，这些标签的规则是：
+此信息将有助于将我们获得的每个特征映射到其相应的标签。如前所述，这些标签是：
 
 - 如果答案不在相应上下文的范围内，则为 `(0, 0)` 
-- 如果答案在相应上下文的范围内，则为 `(start_position, end_position)` ，其中 `start_position` 是答案起始处的 token 索引（在 inputs ID 中）， `end_position` 是答案结束处的 token 索引（在 inputs ID 中）
+- 如果答案在相应上下文的范围内，则为 `(start_position, end_position)` ，其中 `start_position` 是答案开始处的词元索引（在inputs ID 中）， `end_position` 是答案结束处的词元索引（在inputs ID 中）
 
-为了确定这两种情况中的哪一种，并且如果是第二种，则需要确定 token 的位置，我们首先找到在输入 ID 中起始和结束上下文的索引。我们可以使用 token 类型 ID 来完成此操作，但由于并非所有模型都需要它们（例如 DistilBERT 不需要它们），我们将使用 tokenizer 的 `sequence_ids()` 方法返回的 `BatchEncoding` 。
+为了确定这两种情况中的哪一种，并且如果是第二种，则确定词元的位置，我们首先找到开始和结束上下文在inputs ID 中的索引。我们可以使用词元类型 ID 来完成此操作，但由于并非所有模型都需要它们（例如 DistilBERT 不需要它们），我们将使用 tokenizer 的 `sequence_ids()` 方法返回的 `BatchEncoding` 。
 
-一旦我们有了这些 tokens 的索引，我们就会查看相应的偏移量，它们是两个整数的元组，表示原始 Context 中的字符范围。因此，我们可以检测此特征中的 Context 块是在答案之后起始还是在答案起始之前结束（在这种情况下，标签是 `(0, 0)` ）。如果不是这样，我们循环查找答案的第一个和最后一个 token：
+一旦我们有了这些词元的索引，我们就会查看相应的偏移量，它们是两个整数的元组，表示原始 Context 中的字符范围。因此，我们可以检测此特征中的 Context 块是在答案之后开始还是在答案开始之前结束(在这种情况下，标签是 `(0, 0)` )。如果不是这样，我们循环查找答案的第一个和最后一个词元：
+
+一旦我们获得了那些词元索引，我们就查看相应的偏移，它们是表示原始上下文内字符范围的两个整数元组。因此，我们可以检测到此特征中上下文块是在答案之后开始还是在答案之前结束（在这种情况下标签为 `(0, 0)` ）。如果不是这种情况，我们循环查找答案的第一个和最后一个词元：
 
 ```py
 answers = raw_datasets["train"][2:6]["answers"]
@@ -288,7 +293,7 @@ for i, offset in enumerate(inputs["offset_mapping"]):
     end_char = answer["answer_start"][0] + len(answer["text"][0])
     sequence_ids = inputs.sequence_ids(i)
 
-    # 找到上下文的起始和结束
+    # 找到上下文的开始和结束
     idx = 0
     while sequence_ids[idx] != 1:
         idx += 1
@@ -297,12 +302,12 @@ for i, offset in enumerate(inputs["offset_mapping"]):
         idx += 1
     context_end = idx - 1
 
-    # 如果答案不完全在上下文内,标签为(0, 0)
+    # 如果答案不完全在上下文内，标签为(0, 0)
     if offset[context_start][0] > start_char or offset[context_end][1] < end_char:
         start_positions.append(0)
         end_positions.append(0)
     else:
-        # 否则,它就是起始和结束 token 的位置
+        # 否则，它就是开始和结束词元的位置
         idx = context_start
         while idx <= context_end and offset[idx][0] <= start_char:
             idx += 1
@@ -321,7 +326,7 @@ start_positions, end_positions
  [85, 53, 21, 0, 0, 70, 33, 0, 40, 0, 0, 0, 68, 35, 0, 0, 0, 0, 0])
 ```
 
-让我们查看一些结果以验证我们的方法是否正确。对于第一个特征，我们找到了 `(83, 85)` 作为标签，因此让我们将理论答案与从 83 到 85（包括 85）的 tokens 解码的结果进行比较：
+让我们查看一些结果以验证我们的方法是否正确。对于第一个特征，我们找到了 `(83, 85)` 作为标签，因此让我们将理论答案与从 83 到 85（包括）的词元解码范围进行比较：
 
 ```py
 idx = 0
@@ -339,7 +344,7 @@ print(f"Theoretical answer: {answer}, labels give: {labeled_answer}")
 'Theoretical answer: the Main Building, labels give: the Main Building'
 ```
 
-很好！寻找的答案是正确的！现在让我们来看一下索引为 4 的位置，我们我们得到的标签是 `(0, 0)` ，这意味着答案不在该特征的上下文块中：
+好的！那就是匹配成功了！现在让我们来看一下索引为 4 的位置，我们将标签设置为 `(0, 0)` ，这意味着答案不在该特征的上下文块中：
 
 ```py
 idx = 4
@@ -358,11 +363,11 @@ print(f"Theoretical answer: {answer}, decoded example: {decoded_example}")
 
 <Tip>
 
-✏️ **轮你来了！** 在使用 XLNet 架构时，需要在左侧进行填充，并且问题和 Context 应该互换。将我们刚刚看到的所有代码调整为 XLNet 架构（并添加 `padding=True` ）。请注意，填充后的 `[CLS]` tokens 可能不在索引为 0 的位置。
+✏️ **轮你来了！** 在使用 XLNet 架构时，应用在左侧进行填充，并且问题和 Context 应该互换。将我们刚刚看到的所有代码调整为 XLNet 架构（并添加 `padding=True` ）。请注意，填充后的 `[CLS]` 词元可能不在索引为 0 的位置。
 
 </Tip>
 
-现在，我们已经逐步了解了如何预处理我们的训练数据，我们可以将其组合到一个函数中，并使用该函数处理整个训练数据集。我们将每个特征都填充到我们设置的最大长度，因为大多数上下文都很长（相应的样本将被分成几个特征），所以在这里进行动态填充没有带来真正有效的成效：
+现在，我们已经逐步了解了如何预处理我们的训练数据，我们可以将其组合到一个函数中，并将其应用于整个训练数据集。我们将每个特征都填充到我们设置的最大长度，因为大多数上下文都很长（相应的样本将被分成几个特征），所以在这里应用动态填充没有带来真正有效的成效：
 
 ```py
 max_length = 384
@@ -394,7 +399,7 @@ def preprocess_training_examples(examples):
         end_char = answer["answer_start"][0] + len(answer["text"][0])
         sequence_ids = inputs.sequence_ids(i)
 
-        # 找到上下文的起始和结束
+        # 找到上下文的开始和结束
         idx = 0
         while sequence_ids[idx] != 1:
             idx += 1
@@ -403,12 +408,12 @@ def preprocess_training_examples(examples):
             idx += 1
         context_end = idx - 1
 
-        # 如果答案不完全在上下文内,标签为(0, 0)
+        # 如果答案不完全在上下文内，标签为(0, 0)
         if offset[context_start][0] > start_char or offset[context_end][1] < end_char:
             start_positions.append(0)
             end_positions.append(0)
         else:
-            # 否则,它就是起始和结束 tokens 的位置
+            # 否则，它就是开始和结束词元的位置
             idx = context_start
             while idx <= context_end and offset[idx][0] <= start_char:
                 idx += 1
@@ -424,9 +429,9 @@ def preprocess_training_examples(examples):
     return inputs
 ```
 
-请注意，我们定义了两个常量来确定所使用的最大长度以及滑动窗口的长度，并且在之前 tokenize 之前对数据进行了一些清洗：SQuAD 数据集中的一些问题在开头和结尾有额外的空格，这些空格没有任何意义（如果你使用像 RoBERTa 这样的模型，它们会占用 tokenize 时的空间），因此我们去掉了这些额外的空格。
+请注意，我们定义了两个常量来确定所使用的最大长度以及滑动窗口的长度，并且在之前tokenization之前对数据进行了一些清洗：SQuAD 数据集中的一些问题在开头和结尾有额外的空格，这些空格没有任何意义（如果你使用像 RoBERTa 这样的模型，它们会占用tokenization时的空间），因此我们去掉了这些额外的空格。
 
-要使用该函数处理整个训练集，我们可以使用 `Dataset.map()` 方法并传递 `batched=True` 参数。这是必要的，因为我们正在更改数据集的长度（因为一个示例可能会产生多个训练特征）：
+要将此函数应用于整个训练集，我们使用 `Dataset.map()` 方法并传递 `batched=True` 参数。这是必要的，因为我们正在更改数据集的长度（因为一个示例可能会产生多个训练特征）：
 
 ```py
 train_dataset = raw_datasets["train"].map(
@@ -445,9 +450,9 @@ len(raw_datasets["train"]), len(train_dataset)
 
 ### 处理验证数据 [[处理验证数据]]
 
-处理验证数据的预处理会更加容易，因为我们不需要生成标签（除非我们想计算验证损失，但那个数字并不能真正帮助我们了解模型的好坏）。真正的挑战在于将模型的预测转化为为原始 Context 的片段。为此，我们只需要存储偏移映射并且找到一种方法来将每个创建的特征与其来自的原始示例匹配起来。由于原始数据集中有一个 ID 列，我们将使用该列。
+处理验证数据的预处理会更加容易，因为我们不需要生成标签（除非我们想计算验证损失，但那个数字并不能真正帮助我们了解模型的好坏）。真正的挑战在于将模型的预测转化为为原始 Context 的片段。为此，我们只需要存储偏移映射并且找到一种方法来将每个创建的特征与其来自的原始示例匹配起来。由于原始数据集中有一个 ID 列，我们将使用该 ID。
 
-我们唯一要添加的是对偏移映射的微小修改。偏移映射包含问题和 Context 的偏移量，但一旦我们进入后处理阶段，我们将无法知道 inputs ID 的哪个部分对应于 Context，哪个部分是问题（我们使用的 `sequence_ids()` 方法仅可用于 tokenizer 的输出）。因此，我们将将与问题对应的偏移设置为 `None` Context 对应的偏移量保持不变：
+我们唯一要添加的是对偏移映射的微小清洗。它们将包含问题和 Context 的偏移量，但一旦我们进入后处理阶段，我们将无法知道inputs ID 的哪个部分对应于 Context，哪个部分是问题（我们使用的 `sequence_ids()` 方法仅可用于 tokenizer 的输出）。因此，我们将将与问题对应的偏移设置为 `None` ：
 
 ```py
 def preprocess_validation_examples(examples):
@@ -480,7 +485,7 @@ def preprocess_validation_examples(examples):
     return inputs
 ```
 
-我们可以像以前一样使用此函数处理整个验证数据集：
+我们可以像以前一样将此函数应用于整个验证数据集：
 
 ```py
 validation_dataset = raw_datasets["validation"].map(
@@ -503,13 +508,13 @@ len(raw_datasets["validation"]), len(validation_dataset)
 
 ## 使用 `Trainer` API 微调模型 [[使用 `Trainer` API 微调模型]]
 
-这个例子的训练代码与前面的部分非常相似，最困难的部分是编写 `compute_metrics()` 函数。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，🤗 Datasets 库中的 metric 就可以为我们做大部分工作。
+这个例子的训练代码与前面的部分非常相似，最困难的部分是编写 `compute_metrics()` 函数。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，🤗 Datasets 库中的指标就可以为我们做大部分工作。
 
 {:else}
 
 ## 使用 Keras 微调模型 [[使用 Keras 微调模型]]
 
-这个例子的训练代码与前面的部分非常相似，最困难的部分是计算评估指标。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，🤗 Datasets 库中的 metric 就可以为我们做大部分工作。
+这个例子的训练代码与前面的部分非常相似，最困难的部分是计算评估指标。由于我们将所有样本填充到了我们设置的最大长度，所以没有需要定义的数据整理器，因此我们唯一需要担心的事情是计算评估指标。比较困难的部分将是将模型预测的结果还原到原始示例中的文本片段；一旦我们完成了这一步骤，🤗 Datasets 库中的指标就可以为我们做大部分工作。
 
 {/if}
 
@@ -525,18 +530,18 @@ len(raw_datasets["validation"]), len(validation_dataset)
 
 {/if}
 
-模型将输出答案在 inputs ID 中起始和结束位置的 logit，正如我们在探索 [`question-answering` pipeline](/course/chapter6/3b) 时看到的那样。后处理步骤将类似于我们在那里所做的，所以这里简单回顾一下我们所采取的操作：
+模型将输出答案在inputs ID 中是答案的起始和结束位置输出 Logit, 正如我们在探索 [`question-answering` pipeline](/course/chapter6/3b) 时看到的那样。后处理步骤将类似于我们在那里所做的，所以这里简单回顾一下我们所采取的操作：
 
-- 我们屏蔽了除了 Context 之外的 tokens 对应的起始和结束 logit。
+- 我们屏蔽了除了 Context 之外的词元对应的起始和结束对数几率。
 - 然后，我们使用 softmax 将起始和结束 logits 转换为概率。
 - 我们通过将两个概率对应的乘积来为每个 `(start_token, end_token)` 对分配一个分数。
 - 我们寻找具有最大分数且产生有效答案（例如， `start_token` 小于 `end_token` ）的对。
 
-这次我们将稍微改变这个流程，因为我们不需要计算实际分数（只需要预测的答案）。这意味着我们可以跳过 softmax 步骤（因为 softmax 并不会改变分数的顺序）。为了加快计算速度，我们也不会为所有可能的 `(start_token, end_token)` 对计算分数，而只会计算与最高的 `n_best` 对应的 logit 分数（其中 `n_best=20` ）。由于我们将跳过 softmax，这些分数将是 logit 分数，而且是起始和结束对数几率的和（而不是乘积，因为规则 \($\log(ab) = \log(a) + \log(b))$。
+这次我们将稍微改变这个流程，因为我们不需要计算实际分数（只需要预测的答案）。这意味着我们可以跳过 softmax 步骤。为了加快计算速度，我们也不会为所有可能的 `(start_token, end_token)` 对计算分数，而只会计算与最高的 `n_best` 对应的 logit 分数（其中 `n_best=20` ）。由于我们将跳过 softmax，这些分数将是 logit 分数，并且通过将起始和结束对数几率的和（而不是乘积，因为规则 \($\log(ab) = \log(a) + \log(b))$。
 
-为了证明这一切，我们需要一些预测。由于我们还没有训练我们的模型，我们将使用 QA 管道的默认模型对一小部分验证集生成一些预测。我们可以使用和之前一样的处理函数；因为它依赖于全局常量 `tokenizer` ，我们只需将该对象更改为我们要临时使用的模型的 tokenizer 
+为了证明这一切，我们需要一些预测。由于我们还没有训练我们的模型，我们将使用 QA 管道的默认模型对一小部分验证集生成一些预测。我们可以使用和之前一样的处理函数；因为它依赖于全局常量 `tokenizer` , 我们只需将该对象更改为我们要临时使用的模型的 tokenizer ：
 
-为了测试这些代码，我们需要一些预测结果。由于我们还没有训练模型，我们将使用 QA pipeline 的默认模型在验证集的一小部分上生成一些预测结果。我们可以使用与之前相同的处理函数；因为它依赖于全局常量 `tokenizer` ，所以我们只需要暂时将该对象更改为我们想要使用的模型的 tokenizer：
+为了测试所有这些，我们需要一些预测结果。由于我们还没有训练模型，我们将使用 QA pipeline 的默认模型在验证集的一小部分上生成一些预测结果。我们可以使用与之前相同的处理函数；因为它依赖于全局常量 `tokenizer` ，所以我们只需要暂时将该对象更改为我们想要使用的模型的 tokenizer：
 
 ```python
 small_eval_set = raw_datasets["validation"].select(range(100))
@@ -556,7 +561,7 @@ eval_set = small_eval_set.map(
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 ```
 
-然后我们移除 `eval_set` 中模型不需要的列，构建一个包含所有小型验证集数据的 batch，并将其传递给模型。如果有可用的 GPU，我们将使用它以加快速度：
+然后我们移除 `eval_set` 中模型不需要的列，构建一个包含所有小型验证集的 batch，并将其传递给模型。如果有可用的 GPU，我们将使用它以加快速度：
 
 {#if fw === 'pt'}
 
@@ -650,7 +655,7 @@ for example in small_eval_set:
                 # 跳过不完全在上下文中的答案
                 if offsets[start_index] is None or offsets[end_index] is None:
                     continue
-                # 跳过长度为负数或大于 max_answer_length 的答案。
+                # 跳过长度为负数或大于max_answer_length的答案。
                 if (
                     end_index < start_index
                     or end_index - start_index + 1 > max_answer_length
@@ -676,7 +681,7 @@ import evaluate
 metric = evaluate.load("squad")
 ```
 
-这个评估指标一个如上所示格式（一个包含示例 ID 和预测文本的字典列表）的预测答案，同时也需要一个如下格式（一个包含示例 ID 和可能答案的字典列表）的参考答案：
+这个评估指标期望预测答案的格式如上所示（一个包含示例 ID 和预测文本的字典列表），而理论答案的格式如下（一个包含示例 ID 和可能答案的字典列表）：
 
 ```python
 theoretical_answers = [
@@ -696,7 +701,7 @@ print(theoretical_answers[0])
 {'id': '56be4db0acb8001400a502ec', 'answers': {'text': ['Denver Broncos', 'Denver Broncos', 'Denver Broncos'], 'answer_start': [177, 177, 177]}}
 ```
 
-还不错！现在让我们看一下评估指标给出的分数：
+还不错！现在让我们看一下指标给出的分数：
 
 ```python
 metric.compute(predictions=predicted_answers, references=theoretical_answers)
@@ -706,12 +711,13 @@ metric.compute(predictions=predicted_answers, references=theoretical_answers)
 {'exact_match': 83.0, 'f1': 88.25}
 ```
 
-根据 [DistilBERT 的论文](https://arxiv.org/abs/1910.01108v2) 所述，DistilBERT 在 SQuAD 上微调后整体数据集的得分为 79.1 和 86.9，这个结果相当不错。
+考虑到根据 [论文](https://arxiv.org/abs/1910.01108v2) 所述，DistilBERT 在 SQuAD 上微调后整体数据集的得分为 79.1 和 86.9，这个结果相当不错。
 
 {#if fw === 'pt'}
 
-现在，让我们将刚才所做的放入 `compute_metrics()` 函数中，我们将在 `Trainer` 中使用它。通常， `compute_metrics()` 函数只接收一个包含 logits 和标签的 `eval_preds` 元组。但是在这里，我们需要更多的信息，因为我们需要在特征数据集中查找偏移量，并在示例数据集中查找原始 Context，因此我们无法在训练过程中使用此函数来获取常规的评估结果。我们只会在训练结束时使用它来检查结果。
-`compute_metrics()` 函数与之前的步骤相同；我们只是添加了一个小的检查，以防我们找不到任何有效的答案（在这种情况下，我们的预测会输出一个空字符串）。
+现在，让我们将刚才所做的放入 `compute_metrics()` 函数中，我们将在 `Trainer` 中使用它。通常， `compute_metrics()` 函数只接收一个包含逻辑回归和标签的 `eval_preds` 元组。但是在这里，我们需要更多的信息，因为我们需要在特征数据集中查找偏移量，并在示例数据集中查找原始 Context，因此我们无法在训练过程中使用此函数来获取常规的评估结果。我们只会在训练结束时使用它来检查结果。
+
+ `compute_metrics()` 函数与之前的步骤相同；我们只是添加了一个小的检查，以防我们找不到任何有效的答案（在这种情况下，我们的预测会输出一个空字符串）。
 
 {:else}
 
@@ -772,7 +778,7 @@ def compute_metrics(start_logits, end_logits, features, examples):
     return metric.compute(predictions=predicted_answers, references=theoretical_answers)
 ```
 
-我们可以检查它在我们的预测结果上的计算的结果：
+我们可以检查它在我们的预测结果上的工作情况：
 
 ```python
 compute_metrics(start_logits, end_logits, eval_set, small_eval_set)
@@ -806,7 +812,7 @@ model = TFAutoModelForQuestionAnswering.from_pretrained(model_checkpoint)
 
 和往常一样，我们会收到一个警告，提示有些权重没有被使用（来自预训练头部的权重），而其他一些权重是随机初始化的（用于问答头部的权重）。你现在应该已经习惯了这种情况，但这意味着这个模型还没有准备好使用，需要进行微调——好在我们正在做这一点！
 
-为了能够将我们的模型推送到 Hub，我们需要登录 Hugging Face。如果你在 Notebook 中运行此代码，则可以使用以下的函数执行此操作，该函数会显示一个小部件，你可以在其中输入登录凭据：
+为了能够将我们的模型推送到 Hub, 我们需要登录 Hugging Face。如果你在 Notebook 中运行此代码，则可以使用以下的函数执行此操作，该函数会显示一个小部件，你可以在其中输入登录凭据：
 
 ```python
 from huggingface_hub import notebook_login
@@ -822,7 +828,7 @@ huggingface-cli login
 
 {#if fw === 'pt'}
 
-完成后，我们就可以定义我们的 `TrainingArguments` 。正如我们在定义计算评估函数时所说的，由于 `compute_metrics()` 函数的输入参数限制，我们无法使用常规的方法来编写评估循环。不过，我们可以编写自己的 `Trainer` 子类来实现这一点（你可以在 [问答示例脚本](https://github.com/huggingface/transformers/blob/master/examples/pytorch/question-answering/trainer_qa.py) 中找到该方法），但放在本节中会有些冗长。因此，我们在这里将仅在训练结束时评估模型，并在下面的“自定义训练循环”中向你展示如何使用常规的方法进行评估。
+完成后，我们就可以定义我们的 `TrainingArguments` 。正如我们在定义计算评估函数时所说的，由于 `compute_metrics()` 函数的输入参数限制，我们无法使用常规的方法来编写评估循环。不过，我们可以编写自己的 `Trainer` 子类来实现这一点（你可以在 [问答示例脚本](https://github.com/huggingface/transformers/blob/master/examples/pytorch/question-answering/trainer_qa.py) 中找到该方法），但这在本节中有些冗长。因此，我们在这里将仅在训练结束时评估模型，并在下面的"自定义训练循环"中向你展示如何使用常规的方法进行评估。
 
 这确实是 `Trainer` API 局限性的地方，而🤗 Accelerate 库则表现出色：定制化特定用例的类可能会很繁琐，但定制化调整训练循环却很简单。
 
@@ -879,9 +885,9 @@ from transformers import create_optimizer
 from transformers.keras_callbacks import PushToHubCallback
 import tensorflow as tf
 
-# 训练步骤的数量是数据集中的样本数量除以 batch 大小,然后乘以总的训练周期数。
-# 注意,这里的 tf_train_dataset 是一个batch的 tf.data.Dataset,
-# 而不是原始的 Hugging Face 数据集,所以使用 len() 计算其长度已经是 num_samples // batch_size。
+# 训练步骤的数量是数据集中的样本数量除以批次大小，然后乘以总的训练周期数。
+# 注意，这里的 tf_train_dataset 是一个batch的 tf.data.Dataset，
+# 而不是原始的 Hugging Face 数据集，所以它的 len() 已经是 num_samples // batch_size。
 num_train_epochs = 3
 num_train_steps = len(tf_train_dataset) * num_train_epochs
 optimizer, schedule = create_optimizer(
@@ -900,13 +906,13 @@ tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 {/if}
 
-默认情况下，使用的仓库将保存在你的账户中，并以你设置的输出目录命名，所以在我们的例子中它将位于 `"sgugger/bert-finetuned-squad"` 中。我们可以通过传递一个 `hub_model_id` 来覆盖这个设置；例如，要将模型推送到我们使用的 `huggingface_course` 组织中，我们使用了 `hub_model_id="huggingface_course/bert-finetuned-squad"` （这是我们在本节开始时演示的模型）。
+默认情况下，使用的存储库将位于你的仓库中，并以你设置的输出目录命名，所以在我们的例子中它将位于 `"sgugger/bert-finetuned-squad"` 中。我们可以通过传递一个 `hub_model_id` 来覆盖这个设置；例如，要将模型推送到我们使用的 `huggingface_course` 组织中，我们使用了 `hub_model_id="huggingface_course/bert-finetuned-squad"` （这是我们在本节开始时演示的模型）。
 
 {#if fw === 'pt'}
 
 <Tip>
 
-💡 如果你正在使用的输出目录已经存在，则它需要是你要推送到的存储库的本地克隆（因此，如果在定义你的 `Trainer` 时出现错误，请设置一个新的名称）。
+💡 如果你正在使用的输出目录已经存在，则它需要是你要推送到的存储库的本地克隆（因此如果在定义你的 `Trainer` 时出现错误，请设置一个新的名称）。
 
 </Tip>
 
@@ -932,7 +938,7 @@ from transformers.keras_callbacks import PushToHubCallback
 
 callback = PushToHubCallback(output_dir="bert-finetuned-squad", tokenizer=tokenizer)
 
-# 我们将在之后进行验证,因此训练过程中不会进行验证
+# 我们将在之后进行验证，因此训练过程中不会进行验证
 model.fit(tf_train_dataset, callbacks=[callback], epochs=num_train_epochs)
 ```
 
@@ -970,7 +976,7 @@ compute_metrics(
 {'exact_match': 81.18259224219489, 'f1': 88.67381321905516}
 ```
 
-很棒！作为对比，BERT 文章中报告的该模型的基准分数分别为 80.8 和 88.5，所以我们的结果正好达到了预期分数。
+很棒！作为对比，BERT 文章中报告的该模型的基准分数分别为 80.8 和 88.5，所以我们的结果正好达到了预期。
 
 {#if fw === 'pt'}
 
@@ -980,12 +986,13 @@ compute_metrics(
 trainer.push_to_hub(commit_message="Training complete")
 ```
 
-如果你想检查它，上面的代码返回它刚刚执行的提交的 URL：
+如果你想检查它，这将返回它刚刚执行的提交的 URL:
 
 ```python out
 'https://huggingface.co/sgugger/bert-finetuned-squad/commit/9dcee1fbc25946a6ed4bb32efb1bd71d5fa90b68'
 ```
-`Trainer` 还会创建一个包含所有评估结果的模型卡片，并将其上传。
+
+ `Trainer` 还会创建一个包含所有评估结果的模型卡片，并将其上传。
 
 {/if}
 
@@ -1007,7 +1014,7 @@ trainer.push_to_hub(commit_message="Training complete")
 
 ### 为训练做准备 [[为训练做准备]]
 
-首先，我们需要使用数据集构建 `DataLoader` 。我们将这些数据集的格式设置为 `"torch"` ，并删除模型不使用的验证集列。然后，我们可以使用 Transformers 提供的 `default_data_collator` 作为 `collate_fn` ，并打乱训练集，但不打乱验证集：
+首先，我们需要从数据集中构建 `DataLoader` 。我们将这些数据集的格式设置为 `"torch"` ，并删除模型不使用的验证集列。然后，我们可以使用 Transformers 提供的 `default_data_collator` 作为 `collate_fn` ，并打乱训练集，但不打乱验证集：
 
 ```py
 from torch.utils.data import DataLoader
@@ -1042,7 +1049,7 @@ from torch.optim import AdamW
 optimizer = AdamW(model.parameters(), lr=2e-5)
 ```
 
-当我们拥有了所有这些对象，我们可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果你想在 Colab Notebook 上使用 TPU 进行训练，你需要将所有这些代码移到一个训练函数中，并且不应该对 `Accelerator` 的单元格执行任何实例化。我们可以通过向 `Accelerator` 传递 `fp16=True` 来强制使用混合精度训练（或者，如果你想要将代码作为脚本执行，只需确保填写适当的🤗 Accelerate `config` ）。
+当我们拥有了所有这些对象，我们可以将它们发送到 `accelerator.prepare()` 方法。请记住，如果你想在 Colab Notebook 上使用 TPU 进行训练，你需要将所有这些代码移到一个训练函数中，并且不应该对 `Accelerator` 的单元格执行任何实例化。我们可以通过向 `Accelerator` 传递 `fp16=True` 来强制使用混合精度训练（或者，如果你将代码作为脚本执行，只需确保填写适当的🤗 Accelerate `config` ）。
 
 ```py
 from accelerate import Accelerator
@@ -1070,7 +1077,7 @@ lr_scheduler = get_scheduler(
 )
 ```
 
-要将模型推送到 Hub，我们需要在工作文件夹中创建一个 `Repository` 对象。如果你尚未登录 Hugging Face Hub，请先登录。我们将根据我们给模型指定的模型 ID 确定仓库名称（可以根据自己的选择替换 `repo_name` ；它只需要包含你的用户名，使用 `get_full_repo_name()` 函数可以获取）：
+要将模型推送到 Hub，我们需要在工作文件夹中创建一个 `Repository` 对象。如果你尚未登录 Hugging Face Hub，请先登录。我们将根据我们给模型指定的模型 ID 确定仓库名称（可以根据自己的选择替换 `repo_name` ；它只需要包含你的用户名，使用 `get_full_repo_name()` 函数可以获取）:
 
 ```py
 from huggingface_hub import Repository, get_full_repo_name
@@ -1098,7 +1105,7 @@ repo = Repository(output_dir, clone_from=repo_name)
 现在，我们准备编写完整的训练循环。在定义一个进度条以跟踪训练进度之后，循环分为三个部分：
 
 - 训练本身，即对 `train_dataloader` 进行迭代，模型前向传播、反向传播和优化器更新。
-- 评估，其中我们在将 `start_logits` 和 `end_logits` 的所有值收集起来之前，遍历整个评估数据集。完成评估循环后，我们将所有结果收集起来。请注意，由于 `Accelerator` 可能在最后添加了一些样本以确保每个进程中的示例数相同，因此我们需要进行截断。
+- 评估，其中我们在将 `start_logits` 和 `end_logits` 的所有值收集起来之前，遍历整个评估数据集。完成评估循环后，我们将所有结果连接起来。请注意，由于 `Accelerator` 可能在最后添加了一些样本以确保每个进程中的示例数相同，因此我们需要进行截断。
 - 保存和上传，首先保存模型和分词器，然后调用 `repo.push_to_hub()` 。与之前一样，我们使用 `blocking=False` 参数告诉🤗 Hub 库在异步过程中推送。这样，训练将继续进行，而这个（需要很长时间的）指令将在后台异步执行。
 
 这是训练循环的完整代码：
@@ -1165,7 +1172,7 @@ unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
 
 第一行很好理解：它告诉所有进程在继续之前等待所有进程都到达该阶段。这是为了确保我们在保存之前，在每个进程中都有相同的模型。然后，我们获取 `unwrapped_model` ，它是我们定义的基本模型。 `accelerator.prepare()` 方法会更改模型来适应分布式训练，因此它不再具有 `save_pretrained()` 方法；使用 `accelerator.unwrap_model()` 方法可以撤消这个更改。最后，我们调用 `save_pretrained()` ，但告诉该方法使用 `accelerator.save()` 而不是 `torch.save()` 。
 
-完成后，你应该拥有一个产生与使用 `Trainer` 训练的模型非常相似的结果的模型。你可以在 [`huggingface-course/bert-finetuned-squad-accelerate`](https://huggingface.co/huggingface-course/bert-finetuned-squad-accelerate) 查看我们使用此代码训练的模型。如果你想测试对训练循环进行的任何调整，可以直接通过编辑上面显示的代码来实现！
+完成后，你应该拥有一个产生与使用 `Trainer` 训练的模型非常相似的结果的模型。你可以在 [*huggingface-course/bert-finetuned-squad-accelerate*](https://huggingface.co/huggingface-course/bert-finetuned-squad-accelerate) 查看我们使用此代码训练的模型。如果你想测试对训练循环进行的任何调整，可以直接通过编辑上面显示的代码来实现！
 
 {/if}
 
@@ -1176,7 +1183,7 @@ unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
 ```py
 from transformers import pipeline
 
-# 将其替换为你自己的 checkpoint 
+# 将其替换为你自己的 Checkpoint 
 model_checkpoint = "huggingface-course/bert-finetuned-squad"
 question_answerer = pipeline("question-answering", model=model_checkpoint)
 
