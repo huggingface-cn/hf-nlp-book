@@ -112,7 +112,7 @@ question_answerer(question=question, context=long_context)
 
 ## 使用模型进行问答 [[使用模型进行问答]]
 
-与任何其他管道一样，我们首先对输入进行tokenization，然后将其传入模型。 `question-answering` 管道默认情况下用于的 Checkpoint 是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在 [第七章](/course/chapter7/7) 详细讨论 SQuAD 数据集）:
+与任何其他管道一样，我们首先对输入进行 tokenize，然后将其传入模型。 `question-answering` 管道默认情况下用于的 checkpoint 是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在 [第七章](/course/chapter7/7) 详细讨论 SQuAD 数据集）:
 
 {#if fw === 'pt'}
 
@@ -181,9 +181,9 @@ torch.Size([1, 66]) torch.Size([1, 66])
 import torch
 
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除context之外的所有内容
+# 屏蔽除 context 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 不屏蔽 [CLS]  token 
+# 不屏蔽 [CLS] token 
 mask[0] = False
 mask = torch.tensor(mask)[None]
 
@@ -197,9 +197,9 @@ end_logits[mask] = -10000
 import tensorflow as tf
 
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除context之外的所有内容
+# 屏蔽除 context 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 不屏蔽 [CLS]  token 
+# 不屏蔽 [CLS] token 
 mask[0] = False
 mask = tf.constant(mask)[None]
 
@@ -323,7 +323,7 @@ print(result)
 
 ## 处理长文本 [[处理长文本]]
 
-如果我们尝试将我们之前使用的长问题和长上下文进行tokenization，我们将得到一个比 `question-answering` pipeline 中使用的最大长度（384）更大的 tokens 数量：
+如果我们尝试将我们之前使用的长问题和长上下文进行 tokenize，我们将得到一个比 `question-answering` pipeline 中使用的最大长度（384）更大的 tokens 数量：
 
 ```py
 inputs = tokenizer(question, long_context)
@@ -424,7 +424,7 @@ print(inputs["overflow_to_sample_mapping"])
 [0, 0, 0, 0, 0, 0, 0]
 ```
 
-当我们一起对多个句子tokenization时，这会更有用。例如，这个：
+当我们一起对多个句子 tokenize 时，这会更有用。例如，这个：
 
 ```py
 sentences = [
@@ -525,11 +525,11 @@ torch.Size([2, 384]) torch.Size([2, 384])
 
 ```py
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除上下文tokens之外的所有内容
+# 屏蔽除 context tokens 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 取消对[CLS] token的屏蔽
+# 取消对 [CLS] token 的屏蔽
 mask[0] = False
-# 屏蔽所有的[PAD] tokens
+# 屏蔽所有的 [PAD] tokens
 mask = torch.logical_or(torch.tensor(mask)[None], (inputs["attention_mask"] == 0))
 
 start_logits[mask] = -10000
@@ -540,11 +540,11 @@ end_logits[mask] = -10000
 
 ```py
 sequence_ids = inputs.sequence_ids()
-# 屏蔽除上下文tokens之外的所有内容
+# 屏蔽除 context tokens 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-# 取消对[CLS] token的屏蔽
+# 取消对 [CLS] token的屏蔽
 mask[0] = False
-# 屏蔽所有的[PAD] tokens
+# 屏蔽所有的 [PAD] tokens
 mask = tf.math.logical_or(tf.constant(mask)[None], inputs["attention_mask"] == 0)
 
 start_logits = tf.where(mask, -10000, start_logits)

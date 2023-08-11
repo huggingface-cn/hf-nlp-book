@@ -52,7 +52,7 @@
 #### 5．什么是 AutoModel / TFAutoModel？
 
 1. 根据你的数据自动进行训练的模型
-2. 一个根据 Checkpoint(检查点)返回模型体系结构的对象
+2. 一个根据 checkpoint(检查点)返回模型体系结构的对象
 3. 一种可以自动检测输入语言来加载正确权重的模型
 
 #### 6．当将不同长度的句子序列在一起批处理时，需要进行哪些处理？
@@ -99,7 +99,7 @@ encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
 1. 不，看起来是对的。
-2. Tokenizer 和模型应该来自相同的 Checkpoint。
+2. Tokenizer 和模型应该来自相同的 checkpoint。
 3. 由于模型输入需要是一个 Batch，因此可以使用 tokenizer 对其进行截断或填充来改进这段代码。
 
 #### 10．下面的代码有什么错误吗？
@@ -114,7 +114,7 @@ encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
 1. 不，看起来是对的。
-2. Tokenizer 和模型应该来自相同的 Checkpoint。
+2. Tokenizer 和模型应该来自相同的 checkpoint。
 3. 由于每个输入都是一个 Batch，因此可以使用 tokenizer (Tokenizer)对其进行平移和截断来改善这段代码。
 
 ### 解析
@@ -173,14 +173,14 @@ result = model(**encoded)
 
 #### 5．什么是 AutoModel / TFAutoModel？
 
-正确选项: 2. 一个根据 Checkpoint(检查点)返回模型体系结构的对象
+正确选项: 2. 一个根据 checkpoint(检查点)返回模型体系结构的对象
 
 1. 根据你的数据自动进行训练的模型    
 解析: 错误。你可能把 AutoModel / TFAutoModel 与 Hugging Face 的 [AutoTrain](https://huggingface.co/autotrain)(https://huggingface.co/autotrain) 产品相混淆了？
-2. 一个根据 Checkpoint(检查点)返回模型体系结构的对象    
-解析: 确切地说：AutoModel / TFAutoModel只需要知道初始化的 Checkpoint(检查点)名称就可以返回正确的体系结构。
+2. 一个根据 checkpoint(检查点)返回模型体系结构的对象    
+解析: 确切地说：AutoModel / TFAutoModel只需要知道初始化的 checkpoint(检查点)名称就可以返回正确的体系结构。
 3. 一种可以自动检测输入语言来加载正确权重的模型    
-解析: 不正确；虽然有些 Checkpoint(检查点)和模型能够处理多种语言，但是没有内置的工具可以根据语言自动选择 Checkpoint(检查点)。你应该前往 [Model Hub](https://huggingface.co/models)(https://huggingface.co/models) 寻找完成所需任务的最佳 Checkpoint(检查点)！
+解析: 不正确；虽然有些 checkpoint(检查点)和模型能够处理多种语言，但是没有内置的工具可以根据语言自动选择 checkpoint(检查点)。你应该前往 [Model Hub](https://huggingface.co/models)(https://huggingface.co/models) 寻找完成所需任务的最佳 checkpoint(检查点)！
 
 #### 6．当将不同长度的句子序列在一起批处理时，需要进行哪些处理？
 
@@ -253,11 +253,11 @@ model = AutoModel.from_pretrained("gpt2")
 encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
-正确选项: 2. Tokenizer 和模型应该来自相同的 Checkpoint。
+正确选项: 2. Tokenizer 和模型应该来自相同的 checkpoint。
 
 1. 不，看起来是对的。    
-解析: 将一个模型与一个在不同 Checkpoint 训练的 tokenizer 耦合在一起并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。
-2. Tokenizer 和模型应该来自相同的 Checkpoint。    
+解析: 将一个模型与一个在不同 checkpoint 训练的 tokenizer 耦合在一起并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。
+2. Tokenizer 和模型应该来自相同的 checkpoint。    
 解析: 对！
 3. 由于模型输入需要是一个 Batch，因此可以使用 tokenizer 对其进行截断或填充来改进这段代码。    
 解析: 的确，模型输入需要是一个 Batch。然而，截断或填充这个序列并不一定有意义，这里只有一句话，而截断或填充这些技术是用来批处理一个句子列表使其长度一致的。
@@ -273,11 +273,11 @@ model = TFAutoModel.from_pretrained("gpt2")
 encoded = tokenizer("Hey!", return_tensors="pt")
 result = model(**encoded)
 ```
-正确选项: 2. Tokenizer 和模型应该来自相同的 Checkpoint。
+正确选项: 2. Tokenizer 和模型应该来自相同的 checkpoint。
 
 1. 不，看起来是对的。    
-解析: 不幸的是，将一个模型与一个不同 Checkpoint 训练的 tokenizer 耦合在并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。
-2. Tokenizer 和模型应该来自相同的 Checkpoint。    
+解析: 不幸的是，将一个模型与一个不同 checkpoint 训练的 tokenizer 耦合在并不是一个好主意。模型没有在这个这个 tokenizer 上训练来理解 tokenizer 的输出，因此模型的输出(如果它可以运行的话)会是错乱的。
+2. Tokenizer 和模型应该来自相同的 checkpoint。    
 解析: 对！
 3. 由于每个输入都是一个 Batch，因此可以使用 tokenizer (Tokenizer)对其进行平移和截断来改善这段代码。    
 解析: 的确，每个模型都需要 Batch 类型的输入。然而，截断或填充这个序列并不一定有意义，这里只有一句话，而这些技术是用来批处理一个句子列表的。

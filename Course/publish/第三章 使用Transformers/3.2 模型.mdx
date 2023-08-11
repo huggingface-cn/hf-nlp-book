@@ -1,8 +1,8 @@
 ## 3.2 模型
 
-在本节中，我们将更详细地了解如何创建和使用模型。我们将使用 `AutoModel` / `TFAutoModel` 类，当你希望从 Checkpoint 实例化任何模型时，使用它非常方便。
+在本节中，我们将更详细地了解如何创建和使用模型。我们将使用 `AutoModel` / `TFAutoModel` 类，当你希望从 checkpoint 实例化任何模型时，使用它非常方便。
 
-`AutoModel` / `TFAutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 Checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
+`AutoModel` / `TFAutoModel` 类及其所有的相关类其实就是对库中可用的各种模型的简单包装。它是一个智能的包装，因为它可以自动猜测你的 checkpoint 适合的模型架构，然后实例化一个具有相同架构的模型。
 
 然而，如果你知道你想要使用的模型的类型，你可以直接使用其架构相对应的模型类。让我们看看如何使用 BERT 模型。
 
@@ -14,22 +14,22 @@
 ```python
 from transformers import BertConfig, BertModel
 
-## 初始化配置类
+# 初始化 Config 类
 config = BertConfig()
 
-## 从配置类初始化模型
+# 从 Config 类初始化模型
 model = BertModel(config)
 ```
 
 {:else}
 
-```python
+```py
 from transformers import BertConfig, TFBertModel
 
-## 初始化配置类
+# 初始化 Config 类
 config = BertConfig()
 
-## 从配置类初始化模型
+# 从 Config 类初始化模型
 model = TFBertModel(config)
 ```
 {/if}
@@ -89,7 +89,7 @@ from transformers import BertModel
 model = BertModel.from_pretrained("bert-base-cased")
 ```
 
-正如你在上一小节看到的，从现在开始，我们会将 `BertModel` 替换为等效的 `AutoModel` 类，这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint 那么它就可以在另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
+正如你在上一小节看到的，从现在开始，我们会将 `BertModel` 替换为等效的 `AutoModel` 类，这样可以摆脱对 checkpoint 的依赖；如果你的代码适用于一个 checkpoint 那么它就可以在另一个 checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
 
 {:else}
 ```python
@@ -98,17 +98,17 @@ from transformers import TFBertModel
 model = TFBertModel.from_pretrained("bert-base-cased")
 ```
 
-正如你在上一小节看到的，从现在开始，我们将用等效的 `TFAutoModel` 类替换 `TFBert` 模型。这样可以摆脱对 Checkpoint 的依赖；如果你的代码适用于一个 Checkpoint 那么它应该与另一个 Checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 Checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
+正如你在上一小节看到的，从现在开始，我们将用等效的 `TFAutoModel` 类替换 `TFBert` 模型。这样可以摆脱对 checkpoint 的依赖；如果你的代码适用于一个 checkpoint 那么它应该与另一个 checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
 
 {/if}
 
-在上述代码示例中，我们没有使用 `BertConfig` ，而是通过 `bert-base-cased` 标签加载了一个预训练模型。这是一个由 BERT 的作者训练的模型 Checkpoint 权重；你可以在其 [模型卡片](https://huggingface.co/bert-base-cased)(https://huggingface.co/bert-base-cased) 中查看更多详细信息。
+在上述代码示例中，我们没有使用 `BertConfig` ，而是通过 `bert-base-cased` 标签加载了一个预训练模型。这是一个由 BERT 的作者训练的模型 checkpoint 权重；你可以在其 [模型卡片](https://huggingface.co/bert-base-cased)(https://huggingface.co/bert-base-cased) 中查看更多详细信息。
 
-现在，此模型已经用 Checkpoint 的所有权重进行了初始化。它可以直接用于推理它训练过的任务，也可以在新任务上进行微调。通过使用预训练的权重进行训练，相比于从头开始训练，我们可以迅速获得比较好的结果。
+现在，此模型已经用 checkpoint 的所有权重进行了初始化。它可以直接用于推理它训练过的任务，也可以在新任务上进行微调。通过使用预训练的权重进行训练，相比于从头开始训练，我们可以迅速获得比较好的结果。
 
 权重已下载并缓存在缓存文件夹中（因此，未来调用 `from_pretrained()` 方法的调用将不会重新下载它们）默认为 `~/.cache/huggingface/transformers` 。你可以通过设置 `HF_HOME` 环境变量来自定义缓存文件夹。
 
-加载模型的标识符可以是 Model Hub 上任何模型的标签，只要它与 BERT 架构兼容。可用的 BERT  Checkpoint 的完整列表可以在 [这里](https://huggingface.co/models?filter=bert)(https://huggingface.co/models?filter=bert) 找到。
+加载模型的标识符可以是 Model Hub 上任何模型的标签，只要它与 BERT 架构兼容。可用的 BERT  checkpoint 的完整列表可以在 [这里](https://huggingface.co/models?filter=bert)(https://huggingface.co/models?filter=bert) 找到。
 
 #### 保存模型 
 
@@ -134,7 +134,7 @@ config.json tf_model.h5
 ```
 {/if}
 
-如果你看一下 `config.json` 文件，你会认出构建模型架构所需的属性。这个文件还包含一些元数据，例如 Checkpoint 的来源，以及你上次保存 Checkpoint 时所使用的 Transformers 版本。
+如果你看一下 `config.json` 文件，你会认出构建模型架构所需的属性。这个文件还包含一些元数据，例如 checkpoint 的来源，以及你上次保存 checkpoint 时所使用的 Transformers 版本。
 
 `pytorch_model.bin` / `tf_model.h5` 文件被称为 `state dictionary（状态字典）` ；它包含了你的模型的所有权重。这两个文件是相辅相成的；配置文件是构建你的模型架构所必需的，而模型权重就是你的模型参数。
 

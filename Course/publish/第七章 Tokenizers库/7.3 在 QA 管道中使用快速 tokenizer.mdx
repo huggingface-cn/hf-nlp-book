@@ -81,7 +81,7 @@ question_answerer(question=question, context=long_context)
 
 ### 使用模型进行问答 
 
-与任何其他管道一样，我们首先对输入进行tokenization，然后将其传入模型。 `question-answering` 管道默认情况下用于的 Checkpoint 是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad)(https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在第八章详细讨论 SQuAD 数据集）:
+与任何其他管道一样，我们首先对输入进行tokenization，然后将其传入模型。 `question-answering` 管道默认情况下用于的 checkpoint 是 [distilbert-base-cased-distilled-squad](https://huggingface.co/distilbert-base-cased-distilled-squad)(https://huggingface.co/distilbert-base-cased-distilled-squad) （名字中的"squad"源自模型微调所用的数据集；我们将在第八章详细讨论 SQuAD 数据集）:
 
 {#if fw === 'pt'}
 
