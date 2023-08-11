@@ -1,0 +1,1037 @@
+# 第八章 如何寻求帮助
+
+现在，你已经知道如何使用Transformers 处理最常见的 NLP 任务，可以开始自己的项目了！在本章中我们将探讨遇到的问题以及解决方法。你将学习如何成功调试代码或训练，以及在无法自行解决问题时如何向社区寻求帮助。如果你发现了 Hugging Face 库中的一个 bug，我们会告诉你报告 bug 的最佳方法，以便尽快解决问题。
+
+在本章中，你将学习：
+
+- 出现错误时要做的第一件事
+- 如何在网上寻求帮助 [forums](https://discuss.huggingface.co)(https://discuss.huggingface.co) 
+- 如何调试你的训练管道
+- 如何写一个好问题
+
+当然，所有这些都与 Transformers 或 Hugging Face 生态无关；本章的经验教训适用于大多数开源项目！
+
+## 8.1 解决错误及提问方法
+
+在本节中，我们将研究当你尝试从新调整的 Transformer 模型生成预测时可能发生的一些常见错误。本节为第四节做准备，探索如何调试训练阶段本身。
+
+我们为这一节准备了一个 [模板模型库](https://huggingface.co/lewtun/distilbert-base-uncased-finetuned-squad-d5716d28)(https://huggingface.co/lewtun/distilbert-base-uncased-finetuned-squad-d5716d28) ，如果你想运行本章中的代码，首先需要将模型复制到自己的 [Hugging Face Hub](https://huggingface.co)(https://huggingface.co) 账号。这需要你在 Jupyter Notebook 中运行以下任一命令来登录：
+
+```python
+from huggingface_hub import notebook_login
+
+notebook_login()
+```
+
+或在你最喜欢的终端中执行以下操作：
+
+```python
+huggingface-cli login
+```
+
+这里将会提示你输入用户名和密码，并保存一个令牌 `~/.cache/huggingface/` 。完成登录后，可以使用以下功能复制模板存储库：
+
+```python
+from distutils.dir_util import copy_tree
+from huggingface_hub import Repository, snapshot_download, create_repo, get_full_repo_name
+
+def copy_repository_template():
+    # 克隆存储库并提取本地路径
+    template_repo_id = "lewtun/distilbert-base-uncased-finetuned-squad-d5716d28"
+    commit_hash = "be3eaffc28669d7932492681cd5f3e8905e358b4"
+    template_repo_dir = snapshot_download(template_repo_id, revision=commit_hash)
+    # 在Hub上创建一个新仓库
+    model_name = template_repo_id.split("/")[1]
+    create_repo(model_name, exist_ok=True)
+    # 克隆空仓库
+    new_repo_id = get_full_repo_name(model_name)
+    new_repo_dir = model_name
+    repo = Repository(local_dir=new_repo_dir, clone_from=new_repo_id)
+    # 复制文件
+    copy_tree(template_repo_dir, new_repo_dir)
+    # 上传到Hub上
+    repo.push_to_hub()
+```
+
+现在当你调用 `copy_repository_template()` 时，它将在你的帐户下创建模板存储库的副本。
+
+### 从 Transformers 调试 `pipeline` 
+
+接下来要开始我们调试 Transformer 模型的奇妙世界之旅，请考虑以下情景：你正在与一位同事合作进行一个提问-回答的项目，这个项目用来帮助电子商务网站的客户找到有关消费品的答案。你的同事给你发了一条消息，举个例子：
+
+> 嗨！我刚刚使用了 Hugging Face 课程的第七章中的技术进行了一个实验，并在 SQuAD 上获得了一些很棒的结果！我觉得我们可以用这个模型作为项目的起点。Hub 上的模型 ID 是 "lewtun/distillbert-base-uncased-finetuned-squad-d5716d28"。你来测试一下 ）
+
+你首先想到的是使用 Transformers 中的 `pipeline` ：
+
+```python
+from transformers import pipeline
+
+model_checkpoint = get_full_repo_name("distillbert-base-uncased-finetuned-squad-d5716d28")
+reader = pipeline("question-answering", model=model_checkpoint)
+```
+
+```python
+"""
+OSError: Can't load config for 'lewtun/distillbert-base-uncased-finetuned-squad-d5716d28'. Make sure that:
+
+- 'lewtun/distillbert-base-uncased-finetuned-squad-d5716d28' is a correct model identifier listed on 'https://huggingface.co/models'
+
+- or 'lewtun/distillbert-base-uncased-finetuned-squad-d5716d28' is the correct path to a directory containing a config.json file
+"""
+```
+
+啊哦，好像出了什么问题！如果你是编程新手，这类错误一开始看起来有点神秘 （甚至是一个 `OSError` ？）。其实这里显示的错误只是一个更大的错误报告中最后一部分，称为 `Python traceback` （又名堆栈跟踪）。例如，如果你在 Google Colab 上运行此代码，你应该会看到类似于以下屏幕截图的内容：
+
+![A Python traceback.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/traceback.png "A Python traceback.")
+
+这些报告中包含很多信息，让我们一起来看看关键部分。读取报告时的顺序比较特殊，应该从 `从底部到顶部` 读取回溯，如果你习惯于从上到下阅读英文文本，这可能听起来很奇怪，但它反映了一个事实：回溯显示了在下载模型和标记器时 `pipeline` 调用的函数序列。（查看第二章了解有关 `pipeline` 如何在后台工作的更多详细信息。）
+
+<div custom-style="Tip-red">
+
+🚨 看到 Google Colab 回溯中 "6 帧" 周围的蓝色框了吗？这是 Colab 的一个特殊功能，它将回溯压缩为"帧"。如果你无法找到错误的来源，可以通过单击这两个小箭头来展开完整的回溯。
+
+</div>
+
+这意味着回溯的最后一行指示最后一条错误消息并给出引发的异常名称。在这种情况下，异常类型是 `OSError` ，表示与系统相关的错误。如果我们阅读随之附着的错误消息，我们可以看到模型的 `config.json` 文件似乎有问题，这里给出两个修复的建议：
+
+```python
+"""
+确保:
+
+- 'lewtun/distillbert-base-uncased-finetuned-squad-d5716d28' is a correct model identifier listed on 'https://huggingface.co/models'
+
+- or 'lewtun/distillbert-base-uncased-finetuned-squad-d5716d28' is the correct path to a directory containing a config.json file
+"""
+```
+
+<div custom-style="Tip-green">
+
+💡 如果你遇到难以理解的错误消息，只需将该消息复制并粘贴到 Google 或 [Stack Overflow](https://stackoverflow.com)(https://stackoverflow.com) 搜索栏中。你很有可能不是第一个遇到错误的人，这可以在社区中找到其他人发布的解决方案。例如，在 Stack Overflow 上搜索 `OSError: Can't load config for` 给出了几个 [hits](https://stackoverflow.com/search?q=OSError%3A+Can%27t+load+config+for+)(https://stackoverflow.com/search?q=OSError%3A+Can%27t+load+config+for+) ，这可能是你解决问题的起点。
+
+</div>
+
+第一个建议是检查模型 ID 是否真的正确，所以首先要做的就是复制标签并将其粘贴到 Hub 的搜索栏中：
+
+![The wrong model name.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/wrong-model-id.png "The wrong model name.")
+
+嗯，看起来你同事的模型确实不在 Hub 上。但是仔细看模型名称中有一个错字！DistilBERT 的名称中只有一个 "l"，所以让我们修正后寻找 "lewtun/distilbert-base-uncased-finetuned-squad-d5716d28"：
+
+![The right model name.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/true-model-id.png "The right model name.")
+
+找到后让我们使用正确的模型 ID 再次下载模型：
+
+```python
+model_checkpoint = get_full_repo_name("distilbert-base-uncased-finetuned-squad-d5716d28")
+reader = pipeline("question-answering", model=model_checkpoint)
+```
+
+```python
+"""
+OSError: Can't load config for 'lewtun/distilbert-base-uncased-finetuned-squad-d5716d28'. Make sure that:
+
+- 'lewtun/distilbert-base-uncased-finetuned-squad-d5716d28' is a correct model identifier listed on 'https://huggingface.co/models'
+
+- or 'lewtun/distilbert-base-uncased-finetuned-squad-d5716d28' is the correct path to a directory containing a config.json file
+"""
+```
+
+啊，再次挫败。不要气馁，来到机器学习工程师的日常生活！前面我们已经修正了模型 ID，所以问题一定出在存储库本身。这里提供一种快速访问 Hub 上存储库内容的方法——通过 `huggingface_hub` 库的 `list_repo_files()` ：
+
+```python
+from huggingface_hub import list_repo_files
+
+list_repo_files(repo_id=model_checkpoint)
+```
+
+```python
+['.gitattributes', 'README.md', 'pytorch_model.bin', 'special_tokens_map.json', 'tokenizer_config.json', 'training_args.bin', 'vocab.txt']
+```
+
+ 有趣的是似乎没有配置文件存储库中的 `config.json` 文件！难怪我们的 `pipeline` 无法加载模型；你的同事一定是在微调后忘记将这个文件上传到 Hub。在这种情况下问题似乎很容易解决：要求他添加文件，或者你可以下载此模型的配置并将其上传到你们的存储库后查看是否可以解决问题。从模型 ID 中看到使用的预训练模型是 [`distilbert-base-uncased`](https://huggingface.co/distilbert-base-uncased)(https://huggingface.co/distilbert-base-uncased) ，在这里涉及到第二章中学习的技术，使用 `AutoConfig` 类下载模型的配置：
+
+```python
+from transformers import AutoConfig
+
+pretrained_checkpoint = "distilbert-base-uncased"
+config = AutoConfig.from_pretrained(pretrained_checkpoint)
+```
+
+<div custom-style="Tip-red">
+
+🚨 在这里采用的方法并不是万无一失的，因为你的同事可能在微调模型之前已经调整了 `distilbert-base-uncased` 配置。所以我们首先应该对其进行检查，但在这里我们假设使用默认配置。
+
+</div>
+
+上一步成功后可以使用配置的 `push_to_hub()` 方法将其上传到模型存储库：
+
+```python
+config.push_to_hub(model_checkpoint, commit_message="Add config.json")
+```
+
+现在可以通过从最新提交的 `main` 分支中加载模型来测试是否有效：
+
+```python
+reader = pipeline("question-answering", model=model_checkpoint, revision="main")
+
+context = r"""
+Extractive Question Answering is the task of extracting an answer from a text
+given a question. An example of a question answering dataset is the SQuAD
+dataset, which is entirely based on that task. If you would like to fine-tune a
+model on a SQuAD task, you may leverage the
+examples/pytorch/question-answering/run_squad.py script.
+
+Transformers is interoperable with the PyTorch, TensorFlow, and JAX
+frameworks, so you can use your favourite tools for a wide variety of tasks!
+"""
+
+question = "What is extractive question answering?"
+reader(question=question, context=context)
+```
+
+```python
+{'score': 0.38669535517692566,
+ 'start': 34,
+ 'end': 95,
+ 'answer': 'the task of extracting an answer from a text given a question'}
+```
+
+成功了！让我们回顾一下你刚刚学到的东西：
+
+- Python 中的错误消息称为 `tracebacks` ，注意需要从下到上阅读。错误消息的最后一行通常包含定位问题根源所需的信息。
+- 如果最后一行没有包含足够的信息，请进行回溯，看看是否可以确定源代码中发生错误的位置。
+- 如果没有任何错误消息可以帮助你调试问题，请尝试在线搜索类似问题的解决方案。
+- `huggingface_hub` 库提供了一套工具，你可以使用这些工具与 Hub 上的存储库进行交互和调试。
+
+现在你知道如何调试 `pipeline` ，让我们看一下模型本身前向传递中一个更棘手的示例。
+
+### 调试模型的前向传递 
+
+尽管 `pipeline` 对于大多数需要快速生成预测的应用程序来说非常有用，但是有时你需要访问模型的 logits （比如你有一些想要应用的自定义后处理）。为了看看在这种情况下会出现什么问题，让我们首先从 `pipeline` 中获取模型和 Tokenizers 
+
+```python
+tokenizer = reader.tokenizer
+model = reader.model
+```
+
+接下来我们需要提出一个问题，同时让我们看看这个问题是否支持我们最喜欢的框架：
+
+```python
+question = "Which frameworks can I use?"
+```
+
+正如我们在第七章中学习的，我们需要采取的步骤是对输入进行标记化，提取开始和结束标记的对数，然后解码答案范围：
+
+```python
+import torch
+
+inputs = tokenizer(question, context, add_special_tokens=True)
+input_ids = inputs["input_ids"][0]
+outputs = model(**inputs)
+answer_start_scores = outputs.start_logits
+answer_end_scores = outputs.end_logits
+## Get the most likely beginning of answer with the argmax of the score
+answer_start = torch.argmax(answer_start_scores)
+## Get the most likely end of answer with the argmax of the score
+answer_end = torch.argmax(answer_end_scores) + 1
+answer = tokenizer.convert_tokens_to_string(
+    tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
+)
+print(f"Question: {question}")
+print(f"Answer: {answer}")
+```
+
+```python
+"""
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+/var/folders/28/k4cy5q7s2hs92xq7_h89_vgm0000gn/T/ipykernel_75743/2725838073.py in <module>
+      1 inputs = tokenizer(question, text, add_special_tokens=True)
+      2 input_ids = inputs["input_ids"]
+----> 3 outputs = model(**inputs)
+      4 answer_start_scores = outputs.start_logits
+      5 answer_end_scores = outputs.end_logits
+
+~/miniconda3/envs/huggingface/lib/python3.8/site-packages/torch/nn/modules/module.py in _call_impl(self, *input, **kwargs)
+   1049         if not (self._backward_hooks or self._forward_hooks or self._forward_pre_hooks or _global_backward_hooks
+   1050                 or _global_forward_hooks or _global_forward_pre_hooks):
+-> 1051             return forward_call(*input, **kwargs)
+   1052         # Do not call functions when jit is used
+   1053         full_backward_hooks, non_full_backward_hooks = [], []
+
+~/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/models/distilbert/modeling_distilbert.py in forward(self, input_ids, attention_mask, head_mask, inputs_embeds, start_positions, end_positions, output_attentions, output_hidden_states, return_dict)
+    723         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+    724
+--> 725         distilbert_output = self.distilbert(
+    726             input_ids=input_ids,
+    727             attention_mask=attention_mask,
+
+~/miniconda3/envs/huggingface/lib/python3.8/site-packages/torch/nn/modules/module.py in _call_impl(self, *input, **kwargs)
+   1049         if not (self._backward_hooks or self._forward_hooks or self._forward_pre_hooks or _global_backward_hooks
+   1050                 or _global_forward_hooks or _global_forward_pre_hooks):
+-> 1051             return forward_call(*input, **kwargs)
+   1052         # Do not call functions when jit is used
+   1053         full_backward_hooks, non_full_backward_hooks = [], []
+
+~/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/models/distilbert/modeling_distilbert.py in forward(self, input_ids, attention_mask, head_mask, inputs_embeds, output_attentions, output_hidden_states, return_dict)
+    471             raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+    472         elif input_ids is not None:
+--> 473             input_shape = input_ids.size()
+    474         elif inputs_embeds is not None:
+    475             input_shape = inputs_embeds.size()[:-1]
+
+AttributeError: 'list' object has no attribute 'size'
+"""
+```
+
+看起来我们的代码中有一个错误！不用紧张，你可以在 Notebook 中使用 Python 调试器：
+
+或在终端中：
+
+在这里，错误消息告诉我们 `'list' object has no attribute 'size'` ，我们可以看到一个 `-->` 箭头指向 `model(**inputs)` 中出现问题的行。你可以使用 Python 调试器用交互方式来调试它，但现在我们只需打印出一部分 `inputs` ，看看我们有什么：
+
+```python
+inputs["input_ids"][:5]
+```
+
+```python
+[101, 2029, 7705, 2015, 2064]
+```
+
+这当然看起来像一个普通的 Python `list` ，但让我们仔细检查一下类型：
+
+```python
+type(inputs["input_ids"])
+```
+
+```python
+list
+```
+
+这肯定是一个 Python `list` 。那么出了什么问题呢？回忆第二章Transformers 中的 `AutoModelForXxx` 类在 `tensors` 上运行（PyTorch 或者 TensorFlow），一个常见的操作是使用 `Tensor.size()` 方法提取张量的维度。让我们再回到问题回溯中，看看哪一行触发了异常：
+
+```python
+~/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/models/distilbert/modeling_distilbert.py in forward(self, input_ids, attention_mask, head_mask, inputs_embeds, output_attentions, output_hidden_states, return_dict)
+    471             raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+    472         elif input_ids is not None:
+--> 473             input_shape = input_ids.size()
+    474         elif inputs_embeds is not None:
+    475             input_shape = inputs_embeds.size()[:-1]
+
+AttributeError: 'list' object has no attribute 'size'
+```
+
+看起来我们的代码试图调用 `input_ids.size()` ，但这显然不适用于 Python `list` ，这只是一个容器。我们如何解决这个问题呢？在 Stack Overflow 上搜索错误消息给出了很多相关的 [hits](https://stackoverflow.com/search?q=AttributeError%3A+%27list%27+object+has+no+attribute+%27size%27&s=c15ec54c-63cb-481d-a749-408920073e8f)(https://stackoverflow.com/search?q=AttributeError%3A+%27list%27+object+has+no+attribute+%27size%27&s=c15ec54c-63cb-481d-a749-408920073e8f) 。单击第一个会显示与我们类似的问题，答案如下面的屏幕截图所示：
+
+![从 Stack Overflow 上的一个答案.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/stack-overflow.png "An answer from Stack Overflow.")
+
+这里建议我们添加 `return_tensors='pt'` 到 Tokenizer，让我们测试一下是否适合：
+
+```python
+inputs = tokenizer(question, context, add_special_tokens=True, return_tensors="pt")
+input_ids = inputs["input_ids"][0]
+outputs = model(**inputs)
+answer_start_scores = outputs.start_logits
+answer_end_scores = outputs.end_logits
+## 用分数的最大值获取最可能的答案开头
+answer_start = torch.argmax(answer_start_scores)
+## 用分数的最大值获取最可能的答案结尾
+answer_end = torch.argmax(answer_end_scores) + 1
+answer = tokenizer.convert_tokens_to_string(
+    tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
+)
+print(f"Question: {question}")
+print(f"Answer: {answer}")
+```
+
+```python
+"""
+Question: Which frameworks can I use?
+Answer: pytorch, tensorflow, and jax
+"""
+```
+
+ 成功了！这是 Stack Overflow 上面一个非常有用的例子，搜索类似的问题，我们能够从社区中其他人的经验中受益。然而，像这样的搜索不总会产生相关的答案，如此我们有更好的解决办法吗？答案是有的，我们的开发者社区 [Hugging Face forums](https://discuss.huggingface.co/)(https://discuss.huggingface.co/) 可以帮助你！在下一节中，我们将看看在该平台中如何最大可能得到问题的回答。
+
+ ### 如何在Hugging Face论坛上寻求帮助？
+
+ [Hugging Face 论坛](https://discuss.huggingface.co)(https://discuss.huggingface.co) 是从开源团队和更广泛的 Hugging Face 社区获得帮助的好地方。以下是论坛某一天的主页面：
+
+![The Hugging Face forums.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forums.png "The Hugging Face forums.")
+
+在左侧，你可以看到各种主题分组的所有类别，而右侧显示了最新的主题。主题是包含标题、类别和描述的帖子；它与我们在创建自己的数据集时看到的 GitHub 问题格式非常相似 [Chapter 5](/course/chapter5)(/course/chapter5) 。顾名思义， [Beginners](https://discuss.huggingface.co/c/beginners/5)(https://discuss.huggingface.co/c/beginners/5) 类别主要面向刚开始使用 Hugging Face 库和生态系统的人。欢迎你对任何库提出任何问题，无论是调试一些代码还是寻求有关如何做某事的帮助。
+
+同样， [Intermediate](https://discuss.huggingface.co/c/intermediate/6)(https://discuss.huggingface.co/c/intermediate/6) 和 [Research](https://discuss.huggingface.co/c/research/7)(https://discuss.huggingface.co/c/research/7) 类别用于更高级的问题，例如你想讨论一些最新的 NLP 研究。
+
+当然，我们也应该提到 [Course](https://discuss.huggingface.co/c/course/20)(https://discuss.huggingface.co/c/course/20) 类别，你可以在里面提出与 Hugging Face 课程相关的任何问题！
+
+选择类别后，就可以编写第一个主题了。你可以找一些 [guidelines](https://discuss.huggingface.co/t/how-to-request-support/3128)(https://discuss.huggingface.co/t/how-to-request-support/3128) 这些论坛会探讨有关如何执行此操作，在本节中，我们将一起学习一些用来构成一个好主题的功能。
+
+#### 写一篇高质量的论坛帖子 
+
+举例，我们要从 Wikipedia 文章生成嵌入表示用来创建自定义搜索引擎。和前面处理相同，我们按如下方式加载分词器和模型：
+
+```python
+from transformers import AutoTokenizer, AutoModel
+
+model_checkpoint = "distilbert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+model = AutoModel.from_pretrained(model_checkpoint)
+```
+
+现在我们尝试将 [Transformers Of Wikipedia](https://en.wikipedia.org/wiki/Transformers)(https://en.wikipedia.org/wiki/Transformers) 的一整段进行热知识：Transformers 作为一个 Python 库被越来越多人熟知）：
+
+```python
+text = """
+Generation One is a retroactive term for the Transformers characters that
+appeared between 1984 and 1993. The Transformers began with the 1980s Japanese
+toy lines Micro Change and Diaclone. They presented robots able to transform
+into everyday vehicles, electronic items or weapons. Hasbro bought the Micro
+Change and Diaclone toys, and partnered with Takara. Marvel Comics was hired by
+Hasbro to create the backstory; editor-in-chief Jim Shooter wrote an overall
+story, and gave the task of creating the characthers to writer Dennis O'Neil.
+Unhappy with O'Neil's work (although O'Neil created the name "Optimus Prime"),
+Shooter chose Bob Budiansky to create the characters.
+
+The Transformers mecha were largely designed by Shōji Kawamori, the creator of
+the Japanese mecha anime franchise Macross (which was adapted into the Robotech
+franchise in North America). Kawamori came up with the idea of transforming
+mechs while working on the Diaclone and Macross franchises in the early 1980s
+(such as the VF-1 Valkyrie in Macross and Robotech), with his Diaclone mechs
+later providing the basis for Transformers.
+
+The primary concept of Generation One is that the heroic Optimus Prime, the
+villainous Megatron, and their finest soldiers crash land on pre-historic Earth
+in the Ark and the Nemesis before awakening in 1985, Cybertron hurtling through
+the Neutral zone as an effect of the war. The Marvel comic was originally part
+of the main Marvel Universe, with appearances from Spider-Man and Nick Fury,
+plus some cameos, as well as a visit to the Savage Land.
+
+The Transformers TV series began around the same time. Produced by Sunbow
+Productions and Marvel Productions, later Hasbro Productions, from the start it
+contradicted Budiansky's backstories. The TV series shows the Autobots looking
+for new energy sources, and crash landing as the Decepticons attack. Marvel
+interpreted the Autobots as destroying a rogue asteroid approaching Cybertron.
+Shockwave is loyal to Megatron in the TV series, keeping Cybertron in a
+stalemate during his absence, but in the comic book he attempts to take command
+of the Decepticons. The TV series would also differ wildly from the origins
+Budiansky had created for the Dinobots, the Decepticon turned Autobot Jetfire
+(known as Skyfire on TV), the Constructicons (who combine to form
+Devastator),[19][20] and Omega Supreme. The Marvel comic establishes early on
+that Prime wields the Creation Matrix, which gives life to machines. In the
+second season, the two-part episode The Key to Vector Sigma introduced the
+ancient Vector Sigma computer, which served the same original purpose as the
+Creation Matrix (giving life to Transformers), and its guardian Alpha Trion.
+"""
+
+inputs = tokenizer(text, return_tensors="pt")
+logits = model(**inputs).logits
+```
+
+```python
+IndexError: index out of range in self
+```
+
+我们遇到了一个问题——错误信息有些奇怪 [section 2](/course/chapter8/section2)(/course/chapter8/section2) ！我们无法确定完整回溯的正反向，这时我们可以转向 Hugging Face 论坛寻求帮助。那么我们如何撰写问题的主题？
+
+首先，我们需要点击右上角的“新建主题”按钮（注意，要创建主题，我们需要登录）：
+
+![Creating a new forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forums-new-topic.png "Creating a new forum topic.")
+
+这里会出现一个写作界面，我们可以在其中输入我们的主题标题，选择一个类别，并起草内容：
+
+![The interface for creating a forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic01.png "The interface for creating a forum topic.")
+
+由于错误似乎仅与 Transformers 有关，因此我们将为错误选择该类别。第一次尝试解释这个问题可能看起来像这样：
+
+![Drafting the content for a new forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic02.png "Drafting the content for a new forum topic.")
+
+尽这个主题包含这个错误消息，但撰写方式存在一些问题：
+
+1. 标题描述性不是很强，这会导致浏览论坛的人在不阅读正文的情况下无法分辨出主题的内容。
+
+2. 正文没有提供足够的信息说明错误的来源以及如何重现错误。
+
+3. 这个话题下的语气有些苛刻。
+
+像这样的主题不太可能很快得到答案，需要对其进行改进。我们将从选择一个问题的好标题开始。
+
+##### 选择描述性标题 
+
+如果你想就代码中的错误寻求帮助，经验法则是在标题中包含足够的信息，以便其他人可以快速确定他们是否可以回答你的问题。在我们的运行示例中，我们知道正在引发的异常名称，并有一些提示表示它是在模型的前向传递中触发的，所以我们调用 `model(**inputs)` 。为了传达这一点，一个可能的标题可能是：
+
+> 自动建模正向传递中的索引错误的来源？
+
+这个标题告诉读者在哪里你认为错误来自，如果他们遇到了 `IndexError` 在此之前，他们很有可能知道如何调试它。当然，标题也可以是其他变体，例如：
+
+> 为什么我的模型会产生索引错误？
+
+这种标题也是可以的。现在我们有了一个描述性的标题，让我们来看看改善主体。
+
+##### 设置代码段的格式 
+
+现在我们有了一个描述性的标题，让我们来看看如何改善代码段的格式。在 IDE 中阅读源代码已经够难的了，但是当将代码复制粘贴为纯文本时就更难了！不过 Hugging Face 论坛支持使用 Markdown，标准格式是用三个反引号 （```） 将代码块括起来。这可以让正文比我们的原始版本看起来更加美观：
+
+![Our revised forum topic, with proper code formatting.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic03.png "Our revised forum topic, with proper code formatting.")
+
+正如你在屏幕截图中看到的，将代码块括在反引号中会将原始文本转换为格式化代码，并带有颜色样式！另外，单个反引号可用于格式化内联变量，比如 `distilbert-base-uncased` 这样。此时这个问题看起来好多了，我们还有可能在社区中找到回答错误原因的是什么的人。然而，与其依靠运气，不如把完整的回溯细节包括进来，可以更好地找到问题答案。
+
+##### 包括完整的回溯 
+
+由于回溯的最后一行通常已经包含足够的代码问题信息，因此很可能在问题帖子中提供这个来“节省空间”。然而，实际上对于你以外的其他人来说很难去着手调试问题，所以提供在回溯中较上面的信息也是必要的。最好的做法是复制并粘贴所有的回溯，同时确保它的格式不被破坏。但是这些回溯可能会很长，所以可以在对源代码进行解释之后再展示它们。就这个思路现在来对我们的问题帖子进行修改，我们的帖子如下所示：
+
+![Our example forum topic, with the complete traceback.](https:/huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic04.png "Our example forum topic, with the complete traceback.")
+
+这提供了更多信息，细心的读者可能会指出问题似乎是由于回溯中的这一行而传递了一个长输入：
+
+> 令牌索引序列长度长于为此模型指定的最大序列长度 （583 > 512）。
+
+除此之外，确定问题所在还需要提供通过提供触发错误的对应代码。
+
+##### 提供可重复的示例 
+
+如果你曾经尝试过调试其他人的代码，那么你可能首先尝试重现他们报告的问题，以便可以通过回溯来查明错误。在论坛上获得（或提供）帮助时没有什么不同，如果你能提供一个重现错误的小例子真的很有帮助。这里有个示例帖子：
+
+![The final version of our forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic05.png "The final version of our forum topic.")
+
+该帖子目前包含相当多的信息，并且它的撰写格式更可能吸引社区的注意，获得有用的答案。有了这些基本指南，你现在可以创建很棒的帖子来找到遇到的 Transformers 问题的答案！
+
+### 如何提出一个好问题 
+
+当你遇到 Hugging Face 库中的一个看起来不正确的东西时，请及时告知我们以便可以修复它。如果你不能完全确定错误是在你自己的代码还是在我们的某个库中，首先可以在 [forums](https://discuss.huggingface.co)(https://discuss.huggingface.co) 社区进行搜索。社区会帮助你解决这个问题，Hugging Face 团队也会密切关注这里的讨论。
+
+当你确定是库有错误时，第一步可以构建一个最小的可重现示例。
+
+#### 创建一个最小的可重现示例 
+
+隔离产生错误的代码段非常重要。顾名思义，最小的可重现示例应该是可重现的，它不应依赖于你可能拥有的任何外部文件或数据。这代表需要用一些看起来像真实值的虚拟值替换正在使用的数据，但这仍然会产生相同的错误。
+
+<div custom-style="Tip-red">
+
+🚨Transformers 存储库中的许多问题都没有解决，因为用于复制它们的数据不可访问。
+
+</div>
+
+如果你有一些自定义的东西，尽量减少它所在的代码行，构建我们所谓的最小的可重复示例。虽然这可能需要你做更多的工作，但如果可以提供一个漂亮的、简短的错误重现器，几乎可以保证得到帮助和修复。
+
+除此之外，你也可以检查发生错误的源代码从而可能找到问题的解决方案，同时这也可以帮助维护人员在阅读你的报告时更好地理解来源。
+
+#### 填写问题模板 
+
+当你提交问题时，需要填写一个模板。可以按照这个链接 [Transformers issues](https://github.com/huggingface/transformers/issues/new/choose)(https://github.com/huggingface/transformers/issues/new/choose) 进行操作，但是如果你在另一个存储库中报告问题，需要相同类型的信息。请不要将模板留空，模板可以最大限度提高获得答案和解决问题的机会。
+
+##### 提供环境信息 
+
+Transformers 提供了一个实用程序来获取有关于你环境的所有信息。只需在终端中输入以下内容：
+
+```python
+transformers-cli env
+```
+
+将得到以下输出：
+
+```python
+Copy-and-paste the text below in your GitHub issue and FILL OUT the two last points.
+
+- `transformers` version: 4.12.0.dev0
+- Platform: Linux-5.10.61-1-MANJARO-x86_64-with-arch-Manjaro-Linux
+- Python version: 3.7.9
+- PyTorch version (GPU?): 1.8.1+cu111 (True)
+- Tensorflow version (GPU?): 2.5.0 (True)
+- Flax version (CPU?/GPU?/TPU?): 0.3.4 (cpu)
+- Jax version: 0.2.13
+- JaxLib version: 0.1.65
+- Using GPU in script?: <fill in>
+- Using distributed or parallel set-up in script?: <fill in>
+```
+
+你还可以在 `transformers-cli env` 命令开始前添加一个 `!` ，从 notebook 单元执行它，然后把结果复制在你问题帖子的开头。
+
+##### 标记人员 
+
+通过键入 `@` 后跟上 GitHub 句柄来标记他人，可以向他们发送通知，这样他们就会看到你的问题来尽可能更快地回复你。如果你标记的人与您的问题没有直接联系请谨慎使用，因为他们可能不喜欢收到通知。如果你查看了与您的错误相关的源文件，就应该标记上一次对你认为造成问题的行进行修改的人（可以在 GitHub 上查看该行，选择它然后点击 "View git blame"）。
+如果没有进行标记，那么我们的模板会自动提供要标记的人的建议。一般不要标记超过三个人。
+
+##### 包含一个可重复的示例 
+
+如果你已经创建了一个产生错误的独立示例，请键入一行包含三个反引号，后跟 `python` ，像这样：
+
+```python
+```python  
+```
+
+然后粘贴最小可重现示例并键入一个带有三个反引号的新行。这将确保你的代码格式正确。如果你没有设法创建可重现的示例，请以清晰的步骤解释你是如何解决问题的。如果可以，请包含指向错误所在的 Google Colab 笔记本的链接。你分享的信息越多，维护者就越有能力回复你。在所有情况下，你都应该复制并粘贴你收到的整个错误消息。如果你在 Colab 中工作，请记住，堆栈跟踪中的某些帧可能会自动折叠，因此请确保在复制之前展开它们。与代码示例一样，将该错误消息放在两行之间，并带有三个反引号，因此格式正确。
+
+##### 描述预期行为 
+
+用几行来解释你期望得到什么，来帮助维护人员完全掌握问题。这部分通常很明显，所以应该用一句话来形容，但在某些情况下，你可能有很多话要说。
+
+#### 提交
+
+提交你的问题后，请确保快速检查一切是否正常。如果你犯了错误，你可以编辑问题，或者如果你发现问题与你最初的想法不同，甚至可以更改其标题。如果你没有得到答案，就没有必要对人进行 ping 操作。如果几天内没有人帮助你，很可能没有人能理解你的问题。不要犹豫，回到可重现的例子。可以尽量尝试让它更短更切题？如果在一周内没有得到答复，可以留言寻求帮助，特别是如果你已经把问题编辑的包含有关该问题的更多信息了。
+
+## 8.2 调试训练过程中的调试技巧
+
+你已经遵循第七章中的建议，编写了一个漂亮的脚本来训练或微调给定任务的模型。 但是当你启动命令 `model.fit()` 时，你得到一个错误😱！ 或者更糟的是一切看似都很正常，训练运行没有错误，但生成的模型很糟糕。 在本节中，我们将向你展示如何调试此类问题。
+
+### 手动检查训练管道
+
+当你在 `model.fit()` 中遇到错误时，问题在于它可能来自多个不同的来源，因为训练通常会汇集在此之前一直在做的事情，比如有可能是你的数据集有问题，或者可能是在尝试将数据集的元素批处理在一起时出现问题，又或者模型代码、损失函数或优化器中存在问题，另外即使训练一切顺利，如果指标选取有问题，那么预测期间仍可能出现问题。
+
+所以调试 `model.fit()` 中出现的错误的最佳方法是手动检查整个管道，看看哪里出了问题。
+
+这里我们将使用以下脚本在 [MNLI 数据集](https://huggingface.co/datasets/glue)(https://huggingface.co/datasets/glue)上微调 DistilBERT 模型：
+
+```python
+from datasets import load_dataset
+from transformers import (
+    AutoTokenizer,
+    TFAutoModelForSequenceClassification,
+)
+
+raw_datasets = evaluate.load("glue", "mnli")
+
+model_checkpoint = "distilbert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+
+def preprocess_function(examples):
+    return tokenizer(examples["premise"], examples["hypothesis"], truncation=True)
+
+tokenized_datasets = raw_datasets.map(preprocess_function, batched=True)
+
+train_dataset = tokenized_datasets["train"].to_tf_dataset(
+    columns=["input_ids", "labels"], batch_size=16, shuffle=True
+)
+
+validation_dataset = tokenized_datasets["validation_matched"].to_tf_dataset(
+    columns=["input_ids", "labels"], batch_size=16, shuffle=True
+)
+
+model = TFAutoModelForSequenceClassification.from_pretrained(model_checkpoint)
+
+model.compile(loss="sparse_categorical_crossentropy", optimizer="adam")
+
+model.fit(train_dataset)
+```
+
+如果执行这段代码，在进行数据集转换时可能会收到一些“VisibleDeprecationWarning”——这是已知的 UX 问题，可以忽略。 如果你在 2021 年 11 月之后学习本书时还有这个问题，可以在推特上 @carrigmat 上发表推文敦促作者进行修复。
+
+然而更严重的问题是会得到了一个段很长的报错：
+
+```python
+ValueError: No gradients provided for any variable: ['tf_distil_bert_for_sequence_classification/distilbert/embeddings/word_embeddings/weight:0', '...']
+```
+
+这意味着什么？ 我们训练数据，但却没有梯度？ 你甚至可能不知道该如何进行调试。当你得到的错误并不能立即表明问题出在哪里时，最好的解决方法通常是按顺序检查所有内容，确保在每个阶段一切看起来都正常。
+
+#### 检查你的数据
+
+数据整个训练过程的起始，但如果数据已损坏，Keras 无法进行修复。 排查数据错误需要靠自己，可以先理清楚你的训练集中有什么。
+
+尽管查看 `raw_datasets` 和 `tokenized_datasets` 比较容易，但强烈建议你在数据将要进入模型的地方直接查看数据。 这意味着你应该从使用 `to_tf_dataset()` 函数创建的 `tf.data.Dataset` 读取输出！ 那应该怎么做呢？ `tf.data.Dataset` 对象一次给我们整个批次并且不支持索引，所以我们不能只请求 `train_dataset[0]`。 但是我们可以先向它要一批：
+
+```python
+for batch in train_dataset:
+    break
+```
+
+`break` 在一次迭代后结束循环，会抓取来自 `train_dataset` 的第一批并将其保存为 `batch`。 现在，让我们看看里面有什么：
+
+```python
+{'attention_mask': <tf.Tensor: shape=(16, 76), dtype=int64, numpy=
+ array([[1, 1, 1, ..., 0, 0, 0],
+        [1, 1, 1, ..., 0, 0, 0],
+        [1, 1, 1, ..., 0, 0, 0],
+        ...,
+        [1, 1, 1, ..., 1, 1, 1],
+        [1, 1, 1, ..., 0, 0, 0],
+        [1, 1, 1, ..., 0, 0, 0]])>,
+ 'label': <tf.Tensor: shape=(16,), dtype=int64, numpy=array([0, 2, 1, 2, 1, 1, 2, 0, 0, 0, 1, 0, 1, 2, 2, 1])>,
+ 'input_ids': <tf.Tensor: shape=(16, 76), dtype=int64, numpy=
+ array([[ 101, 2174, 1010, ...,    0,    0,    0],
+        [ 101, 3174, 2420, ...,    0,    0,    0],
+        [ 101, 2044, 2048, ...,    0,    0,    0],
+        ...,
+        [ 101, 3398, 3398, ..., 2051, 2894,  102],
+        [ 101, 1996, 4124, ...,    0,    0,    0],
+        [ 101, 1999, 2070, ...,    0,    0,    0]])>}
+```
+
+我们将 `labels` 、`attention_mask` 和 `input_ids` 传递给模型，这应该是计算输出和计算损失所需的。那么为什么没有梯度呢？仔细看：我们将单个字典作为输入传递，但训练批次通常是输入张量或字典加上标签张量。我们的标签只是我们输入字典中的一个键值。
+
+这是一个问题吗？实际上这是你在使用 TensorFlow 训练 Transformer 模型时会遇到的最常见问题之一。我们的模型都可以在内部计算损失，但要做到这一点需要在输入字典中传递标签。这是当我们没有为 `compile()` 指定损失值时使用的损失。另一方面，Keras 通常希望标签与输入字典分开传递，如果不这样做损失计算通常会失败。
+
+问题现在变得清晰：我们传递了一个“损失”参数，意味着我们要求 Keras 为我们计算损失，但我们将标签作为模型的输入传递，而没有放在 Keras 期望的地方！我们需要二选一：要么使用模型的内部损失并将标签保留在原处，要么继续使用 Keras 损失但将标签移动到 Keras 期望的位置。为了简单起见，可以采用第一种方法。将对 `compile()` 的调用更改为：
+
+```python
+model.compile(optimizer="adam")
+```
+
+现在我们可以使用模型的内部损失，这个问题解决了！
+
+<div custom-style="Tip-green">
+
+✏️ **轮到你了！** 作为解决其他问题后的可选挑战，你可以尝试回到这一步，让模型使用原始 Keras 计算的损失而不是内部损失。 你需要将 `"labels"` 添加到 `to_tf_dataset()` 的 `label_cols` 参数，确保正确输出标签来提供梯度，但这会出现学习过程会非常缓慢的情况，并且会在多次训练损失时达到稳定状态。 你能弄清楚这是为什么吗？
+
+这里有一个 ROT13 编码的提示，如果你卡住了：Vs lbh ybbx ng gur bhgchgf bs FrdhraprPynffvsvpngvba zbqryf va Genafsbezref, gurve svefg bhgchg vf `ybtvgf`. Jung ner ybtvgf?
+
+第二个提示：Jura lbh fcrpvsl bcgvzvmref, npgvingvbaf be ybffrf jvgu fgevatf, Xrenf frgf nyy gur nethzrag inyhrf gb gurve qrsnhygf. Jung nethzragf qbrf FcnefrPngrtbevpnyPebffragebcl unir, naq jung ner gurve qrsnhygf?
+
+</div>
+
+现在让我们尝试进行训练。 如今已经得到梯度，我们可以调用 `model.fit()` 一切都会正常工作！
+
+```python
+  246/24543 [..............................] - ETA: 15:52 - loss: nan
+```
+
+`nan` 不是一个正常的损失值。我们已经检查了我们的数据，看起来一切正常。那么下一步该去哪里？
+
+#### 检查你的模型
+
+`model.fit()` 是 Keras 中一个很方便的函数，但这个函数一次性做了很多事情，这使准确排查问题发生的位置变得更加棘手。 如果你正在调试模型，可以考虑只将一个批次传递给模型，并查看该批次的详细输出。 如果模型抛出错误，可以使用 `run_eagerly=True` `compile()` 模型。 这会使它训练过程变慢很多，但可以使错误消息更容易理解，因为它们会准确地指出问题发生在模型代码的哪个位置。
+
+不过目前我们还不需要 `run_eagerly`。 让我们通过模型运行之前得到的“批处理”，看看输出是什么样子的：
+
+```python
+model(batch)
+```
+
+```python
+TFSequenceClassifierOutput(loss=<tf.Tensor: shape=(16,), dtype=float32, numpy=
+array([nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
+       nan, nan, nan], dtype=float32)>, logits=<tf.Tensor: shape=(16, 2), dtype=float32, numpy=
+array([[nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan],
+       [nan, nan]], dtype=float32)>, hidden_states=None, attentions=None)
+```
+
+我们所有的 logits 怎么会变成 `nan`？ `nan` 的意思是 `不是数字`，经常出现在执行非法操作时，例如除以零。但在机器学习中有关于 `nan` 有一个重要的经验——该值倾向于 `传播`。如果将一个数字乘 `nan`，则输出也是 `nan`。如果在输出、损失或梯度的任何地方得到一个“nan”，那么它会迅速传播到整个模型中。因为当那个“nan”值通过你的网络传播回来时，会得到 `nan`梯度，当使用这些梯度计算权重更新时，将获得 `nan`权重，这些权重将计算更多的  `nan`输出！很快整个网络将只是 `nan`的一大块。一旦发生这种情况，就很难看出问题是从哪里开始的。我们如何隔离 `nan`第一次出现的地方？
+
+答案是 `重新初始化`我们的模型。一旦我们开始训练，我们就会在某个地方得到一个 `nan`，并很快就会传播到整个模型中。所以可以从检查点加载模型而不做任何权重更新，进而排查出从哪里得到一个 `nan` 值：
+
+```python
+model = TFAutoModelForSequenceClassification.from_pretrained(model_checkpoint)
+model(batch)
+```
+
+当我们运行它时，可以得到：
+
+```python
+TFSequenceClassifierOutput(loss=<tf.Tensor: shape=(16,), dtype=float32, numpy=
+array([0.6844486 ,        nan,        nan, 0.67127866, 0.7068601 ,
+              nan, 0.69309855,        nan, 0.65531296,        nan,
+              nan,        nan, 0.675402  ,        nan,        nan,
+       0.69831556], dtype=float32)>, logits=<tf.Tensor: shape=(16, 2), dtype=float32, numpy=
+array([[-0.04761693, -0.06509043],
+       [-0.0481936 , -0.04556257],
+       [-0.0040929 , -0.05848458],
+       [-0.02417453, -0.0684005 ],
+       [-0.02517801, -0.05241832],
+       [-0.04514256, -0.0757378 ],
+       [-0.02656011, -0.02646275],
+       [ 0.00766164, -0.04350497],
+       [ 0.02060014, -0.05655622],
+       [-0.02615328, -0.0447021 ],
+       [-0.05119278, -0.06928903],
+       [-0.02859691, -0.04879177],
+       [-0.02210129, -0.05791225],
+       [-0.02363213, -0.05962167],
+       [-0.05352269, -0.0481673 ],
+       [-0.08141848, -0.07110836]], dtype=float32)>, hidden_states=None, attentions=None)
+```
+
+现在我们到了 logits 中没有 `nan` 值的地方。但是我们确实在损失中看到了一些“nan”值，这些样本有什么特别之处可以导致这个问题吗？（请注意，你运行此代码时可能会得到不同的索引，因为数据集已被随机打乱）：
+
+```python
+import numpy as np
+
+loss = model(batch).loss.numpy()
+indices = np.flatnonzero(np.isnan(loss))
+indices
+```
+
+```python
+array([ 1,  2,  5,  7,  9, 10, 11, 13, 14])
+```
+
+让我们看看这些来自样本的输入id：
+
+```python
+input_ids = batch["input_ids"].numpy()
+input_ids[indices]
+```
+
+```python
+array([[  101,  2007,  2032,  2001,  1037, 16480,  3917,  2594,  4135,
+        23212,  3070,  2214, 10170,  1010,  2012,  4356,  1997,  3183,
+         6838, 12953,  2039,  2000,  1996,  6147,  1997,  2010,  2606,
+         1012,   102,  6838,  2001,  3294,  6625,  3773,  1996,  2214,
+         2158,  1012,   102,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101,  1998,  6814,  2016,  2234,  2461,  2153,  1998, 13322,
+         2009,  1012,   102,  2045,  1005,  1055,  2053,  3382,  2008,
+         2016,  1005,  2222,  3046,  8103,  2075,  2009,  2153,  1012,
+          102,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101,  1998,  2007,  1996,  3712,  4634,  1010,  2057,  8108,
+         2025,  3404,  2028,  1012,  1996,  2616, 18449,  2125,  1999,
+         1037,  9666,  1997,  4100,  8663, 11020,  6313,  2791,  1998,
+         2431,  1011,  4301,  1012,   102,  2028,  1005,  1055,  5177,
+         2110,  1998,  3977,  2000,  2832,  2106,  2025,  2689,  2104,
+         2122,  6214,  1012,   102,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101,  1045,  2001,  1999,  1037, 13090,  5948,  2007,  2048,
+         2308,  2006,  2026,  5001,  2043,  2026,  2171,  2001,  2170,
+         1012,   102,  1045,  2001,  3564,  1999,  2277,  1012,   102,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101,  2195,  4279,  2191,  2039,  1996,  2181,  2124,  2004,
+         1996,  2225,  7363,  1012,   102,  2045,  2003,  2069,  2028,
+         2451,  1999,  1996,  2225,  7363,  1012,   102,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101,  2061,  2008,  1045,  2123,  1005,  1056,  2113,  2065,
+         2009,  2428, 10654,  7347,  2030,  2009,  7126,  2256,  2495,
+         2291,   102,  2009,  2003,  5094,  2256,  2495,  2291,  2035,
+         2105,  1012,   102,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101,  2051,  1010,  2029,  3216,  2019,  2503,  3444,  1010,
+         6732,  1996,  2265,  2038, 19840,  2098,  2125,  9906,  1998,
+         2003,  2770,  2041,  1997,  4784,  1012,   102,  2051,  6732,
+         1996,  2265,  2003,  9525,  1998,  4569,  1012,   102,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101,  1996, 10556,  2140, 11515,  2058,  1010,  2010,  2162,
+         2252,  5689,  2013,  2010,  7223,  1012,   102,  2043,  1996,
+        10556,  2140, 11515,  2058,  1010,  2010,  2252,  3062,  2000,
+         1996,  2598,  1012,   102,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0],
+       [  101, 13543,  1999,  2049,  6143,  2933,  2443,   102,  2025,
+        13543,  1999,  6143,  2933,  2003,  2443,   102,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0]])
+```
+
+目前没有什么不寻常之处。 让我们检查一下标签：
+
+```python
+labels = batch['labels'].numpy()
+labels[indices]
+```
+
+```python
+array([2, 2, 2, 2, 2, 2, 2, 2, 2])
+```
+
+`nan` 样本都具有相同的标签，即标签 `2` 。这是一个非常明显的提示， 当我们的标签为 `2`时，我们会得到loss为 `nan`，这是检查模型中标签数量的好时机：
+
+```python
+model.config.num_labels
+```
+
+```python
+2
+```
+
+这表明模型认为只有两个类，但标签上升到 `2`，这意味着实际上有三个类（ 0 也是一个类）。 这就是我们得到“nan”的方式——通过计算不存在的类的损失。让我们改变它并再次拟合模型：
+
+```python
+model = TFAutoModelForSequenceClassification.from_pretrained(model_checkpoint, num_labels=3)
+model.compile(optimizer='adam')
+model.fit(train_dataset)
+```
+
+```python
+  869/24543 [>.............................] - ETA: 15:29 - loss: 1.1032
+```
+
+训练中没有更多的 `nan`，虽然我们的损失正在一点点减少，但总体还是一直居高不下。先停止训练并尝试考虑可能导致此问题的原因。在这一点上，我们很确定数据和模型都没有问题，但是我们的模型的学习效果并不是特别好。
+
+#### 检查你的超参数
+
+如果你回头看上面的代码，除了 `batch_size`可能根本看不到别的超参数。不过看不到的超参数只是意味着你不知道它们的设置是什么。这里强调一个关于 Keras 的关键点：如果使用字符串设置损失函数、优化器或激活函数，`它的所有参数都将设置为默认值`。这意味着即使使用字符串非常方便，但很容易隐藏对修正模型来说比较关键的部分。
+
+在这种情况下，我们在哪里设置了带有字符串的参数？我们最初使用字符串设置损失，但现在我们使用字符串设置优化器。让我们看看[关于优化器的一些讨论](https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam)(https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam)。
+
+这里需要注意学习率。当我们只使用字符串“adam”时，将获得默认的学习率 0.001（即 1e-3）。这对于transormer模型来说太高了，一般来说建议模型尝试 1e-5 和 1e-4 之间的学习率；这比实际使用的值小 10倍 到 100倍 之间。听起来这可能是一个可以修正的问题，可以对学习率进行减少。为此我们需要导入实际的 `优化器`对象。让我们从 `checkpoint`重新初始化模型，以防高学习率的训练损坏了权重：
+
+```python
+from tensorflow.keras.optimizers import Adam
+
+model = TFAutoModelForSequenceClassification.from_pretrained(model_checkpoint)
+model.compile(optimizer=Adam(5e-5))
+```
+
+<div custom-style="Tip-green">
+
+💡你还可以从Transformers 中导入 `create_optimizer()` 函数，这将提供具有正确的权重衰减和学习率衰减的 AdamW 优化器。 此优化器通常会比使用默认 Adam 优化器获得的结果稍好一些。
+
+</div>
+
+现在，我们可以使用改进后的学习率来拟合模型：
+
+```python
+model.fit(train_dataset)
+```
+
+```python
+319/24543 [..............................] - ETA: 16:07 - loss: 0.9718
+```
+
+现在训练终于看起来奏效了。当你的模型正在运行但损失没有下降，同时确定数据没问题时，可以检查学习率和权重衰减等超参数，其中任何一个设置得太高很可能导致训练在高损失值下“停滞”。
+
+### 其他潜在问题
+
+我们已经涵盖了上面脚本中的问题，但你可能会遇到其他几个常见的错误。
+
+#### 处理内存不足错误
+
+内存不足的迹象是 `分配张量时出现 OOM`之类的错误——OOM 是 `内存不足`的缩写。 在处理大型语言模型时，这是一个非常常见的错误。 如遇此种情况，可以将批量大小减半并重试。 但有些尺寸 `非常`大，比如全尺寸 GPT-2 的参数为 1.5B，这意味着你将需要 6 GB 的内存来存储模型，另外需要 6 GB 的内存用于梯度下降！ 无论你使用什么批量大小，训练完整的 GPT-2 模型通常需要超过 20 GB 的 VRAM，然而这只有少数 GPU 才可以做到。 像 `distilbert-base-cased`这样更轻量级的模型更容易运行，训练也更快。
+
+<div custom-style="Tip-green">
+
+在课程的下一部分中，我们将介绍更先进的技术，这些技术可以帮助你减少内存占用并微调最大的模型。
+
+</div>
+
+#### TensorFlow 🦛饿饿
+
+TensorFlow 一个与众不同的点在于它会在你加载模型或进行任何训练后立即为自己分配 `所有 ` GPU 内存，根据需要分配该内存。这与其他框架的行为不同，例如 PyTorch根据 CUDA 的需要分配内存，而不是在内部进行。 TensorFlow 方法的一个优点是当你耗尽内存时，它通常会给出有用的错误，并且可以从该状态恢复而不会导致整个 CUDA 内核崩溃。同时也代表：如果同时运行两个 TensorFlow 进程，那么**你将度过一段糟糕的时光**。
+
+如果你在 Colab 上运行则无需担心这一点，但如果在本地运行，这绝对是应该小心的事情。特别要注意，关闭Notebook选项卡并不一定会关闭该Notebook ！需要选择正在运行的 Notebook （带有绿色图标的 Notebook ）并在目录列表中手动关闭它们。任何使用 TensorFlow 的正在运行的 Notebook 仍可能占用大量 GPU 内存，这意味着你启动的任何新 Notebook 都可能会遇到一些非常奇怪的问题。
+
+如果你开始运行之前正确的代码却收到有关 CUDA、BLAS 或 cuBLAS 的错误，罪魁祸首通常是类似的。你可以使用类似 `nvidia-smi` 的命令来检查 —— 当你关闭或重新启动当前 Notebook 时，大部分内存是否空闲或者是否仍在使用中？如果它仍在使用中代表有其他东西在占用。
+
+#### 检查你的数据（再次！）
+
+在理论上，如果数据中存在可以挖掘到知识时，你的模型才会学到一些东西。 如果存在损坏数据的错误或标签是随机属性的，那么很可能不会在数据集上获得任何知识。这里一个有用的工具是 `tokenizer.decode()`， 将 `input_ids` 转换回字符串，可以通过这个函数来查看数据和训练数据是否正在教授你希望它教授的内容。 例如，像我们上面所做的那样从 `tf.data.Dataset` 中获取 `batch` 后，可以像这样解码第一个元素：
+
+```python
+input_ids = batch["input_ids"].numpy()
+tokenizer.decode(input_ids[0])
+```
+
+接着可以用第一个标签进行比较，就像这样：
+
+```python
+labels = batch["labels"].numpy()
+label = labels[0]
+```
+
+一旦可以像这样查看数据，可以按照以下问题进行检查：
+
+- 解码后的数据是否可以理解？
+- 你认同这些标签吗？
+- 有没有一个标签比其他标签更常见？
+- 如果模型预测随机的答案/总是相同的答案，那么损失/评估指标应该是多少？
+
+检查数据后，可以检查模型的一些预测并对其进行解码。 如果模型总是预测同样的事情，那可能是因为你的数据集偏向一个类别（针对分类问题）； 过采样稀有类等技术可能会对解决这种问题有帮助。
+
+如果在初始模型上获得的损失/评估指标与期望的随机预测的损失/评估指标非常不同，请仔细检查损失或评估指标的计算方式是否存在错误。 如果使用最后添加的多个损失，请确保它们具有相同的尺寸。
+
+当你确定你的数据是完美的之后，可以通过一个简单的测试来查看模型是否能够对其进行训练。
+
+#### 在一个批次上过拟合模型
+
+过拟合通常是在训练时尽量避免的事情，因为这意味着模型没有识别并学习我们想要的一般特征，而只是记住了训练样本。 但一遍又一遍地尝试在一个批次上训练模型可以检查构建的问题是否可以通过训练的模型来解决。 它还将帮助查看你的初始学习率是否太高。
+
+一旦你定义了模型，只需获取一批次训练数据，然后将该批次视为你的整个数据集，并在上面拟合大量epoch：
+
+```python
+for batch in train_dataset:
+    break
+
+## 确保已经运行了 model.compile() 并设置了优化器和损失/指标
+
+model.fit(batch, epochs=20)
+```
+
+<div custom-style="Tip-green">
+
+💡 如果训练数据不平衡，请确保构建的该批次包含所有标签的训练数据。
+
+</div>
+
+生成的模型在一个批次上应该有接近完美的结果，损失迅速下降到 0（或你正在使用的损失的最小值）。
+
+如果你没有设法让你的模型获得这样的完美结果，这意味着构建问题或数据的方式有问题。 只有当设法通过过拟合测试时，才能确定你的模型实际可以学到一些东西。
+
+<div custom-style="Tip-yellow">
+
+⚠️ 在此测试之后，你将不得不重新创建你的模型和 `Trainer`，因为获得的模型可能无法在你的完整数据集上恢复和学习有用的东西。
+
+</div>
+
+#### 在有第一个baseline之前不要调整任何东西
+
+超参数调整总是被强调为机器学习中最难的部分，但这只是帮助你在指标上获得一点点提升的最后一步。 例如将默认的 Adam 学习率 1e-3 与 Transformer 模型一起使用时，当然会使学习进行得非常缓慢或完全停止，但大多数时候合理的超参数，例如从 1e-5 到 5e-5 的学习率会很好地带来好的结果。在你获得超出数据集baseline的东西之前，不要开始进行耗时且昂贵的超参数搜索。
+
+一旦你有一个足够好的模型，就可以开始稍微调整一下。 尽量避免使用不同的超参数启动一千次运行，而是比较一个超参数的不同值的几次运行，从而了解哪个影响最大。
+
+如果你正在调整模型本身，不要尝试任何你无法合理证明的事情，确保通过过拟合测试来验证你的更改没有产生任何意外后果。
+
+#### 请求帮助
+
+希望你会在本节中找到一些可以帮助你解决问题的建议，除此之外可以随时在 [论坛](https://discuss.huggingface.co/)(https://discuss.huggingface.co/) 上向社区提问。
+
+以下是一些可能有用的额外资源：
+
+- [“作为工程最佳实践工具的再现性”](https://docs.google.com/presentation/d/1yHLPvPhUs2KGI5ZWo0sU-PKU3GimAk3iTsI38Z-B5Gw/edit#slide=id.p)(https://docs.google.com/presentation/d/1yHLPvPhUs2KGI5ZWo0sU-PKU3GimAk3iTsI38Z-B5Gw/edit#slide=id.p)，作者：Joel Grus
+- [“神经网络调试清单”](https://towardsdatascience.com/checklist-for-debugging-neural-networks-d8b2a9434f21)(https://towardsdatascience.com/checklist-for-debugging-neural-networks-d8b2a9434f21) 作者：Cecelia Shao
+- [“如何对机器学习代码进行单元测试”](https://medium.com/@keeper6928/how-to-unit-test-machine-learning-code-57cf6fd81765)(https://medium.com/@keeper6928/how-to-unit-test-machine-learning-code-57cf6fd81765) by Chase Roberts
+- [“训练神经网络的秘诀”](http://karpathy.github.io/2019/04/25/recipe)(http://karpathy.github.io/2019/04/25/recipe)作者：Andrej Karpathy
