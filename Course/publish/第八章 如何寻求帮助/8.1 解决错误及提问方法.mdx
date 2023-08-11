@@ -1,4 +1,4 @@
-## 8.1 出现报错时该怎么做？
+## 8.1 解决错误及提问方法
 
 在本节中，我们将研究当你尝试从新调整的 Transformer 模型生成预测时可能发生的一些常见错误。本节为第四节做准备，探索如何调试训练阶段本身。
 
@@ -338,3 +338,220 @@ Answer: pytorch, tensorflow, and jax
 ```
 
  成功了！这是 Stack Overflow 上面一个非常有用的例子，搜索类似的问题，我们能够从社区中其他人的经验中受益。然而，像这样的搜索不总会产生相关的答案，如此我们有更好的解决办法吗？答案是有的，我们的开发者社区 [Hugging Face forums](https://discuss.huggingface.co/)(https://discuss.huggingface.co/) 可以帮助你！在下一节中，我们将看看在该平台中如何最大可能得到问题的回答。
+
+ ### 如何在Hugging Face论坛上寻求帮助？
+
+ [Hugging Face 论坛](https://discuss.huggingface.co)(https://discuss.huggingface.co) 是从开源团队和更广泛的 Hugging Face 社区获得帮助的好地方。以下是论坛某一天的主页面：
+
+![The Hugging Face forums.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forums.png "The Hugging Face forums.")
+
+在左侧，你可以看到各种主题分组的所有类别，而右侧显示了最新的主题。主题是包含标题、类别和描述的帖子；它与我们在创建自己的数据集时看到的 GitHub 问题格式非常相似 [Chapter 5](/course/chapter5)(/course/chapter5) 。顾名思义， [Beginners](https://discuss.huggingface.co/c/beginners/5)(https://discuss.huggingface.co/c/beginners/5) 类别主要面向刚开始使用 Hugging Face 库和生态系统的人。欢迎你对任何库提出任何问题，无论是调试一些代码还是寻求有关如何做某事的帮助。
+
+同样， [Intermediate](https://discuss.huggingface.co/c/intermediate/6)(https://discuss.huggingface.co/c/intermediate/6) 和 [Research](https://discuss.huggingface.co/c/research/7)(https://discuss.huggingface.co/c/research/7) 类别用于更高级的问题，例如你想讨论一些最新的 NLP 研究。
+
+当然，我们也应该提到 [Course](https://discuss.huggingface.co/c/course/20)(https://discuss.huggingface.co/c/course/20) 类别，你可以在里面提出与 Hugging Face 课程相关的任何问题！
+
+选择类别后，就可以编写第一个主题了。你可以找一些 [guidelines](https://discuss.huggingface.co/t/how-to-request-support/3128)(https://discuss.huggingface.co/t/how-to-request-support/3128) 这些论坛会探讨有关如何执行此操作，在本节中，我们将一起学习一些用来构成一个好主题的功能。
+
+#### 写一篇高质量的论坛帖子 
+
+举例，我们要从 Wikipedia 文章生成嵌入表示用来创建自定义搜索引擎。和前面处理相同，我们按如下方式加载分词器和模型：
+
+```python
+from transformers import AutoTokenizer, AutoModel
+
+model_checkpoint = "distilbert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+model = AutoModel.from_pretrained(model_checkpoint)
+```
+
+现在我们尝试将 [Transformers Of Wikipedia](https://en.wikipedia.org/wiki/Transformers)(https://en.wikipedia.org/wiki/Transformers) 的一整段进行热知识：Transformers 作为一个 Python 库被越来越多人熟知）：
+
+```python
+text = """
+Generation One is a retroactive term for the Transformers characters that
+appeared between 1984 and 1993. The Transformers began with the 1980s Japanese
+toy lines Micro Change and Diaclone. They presented robots able to transform
+into everyday vehicles, electronic items or weapons. Hasbro bought the Micro
+Change and Diaclone toys, and partnered with Takara. Marvel Comics was hired by
+Hasbro to create the backstory; editor-in-chief Jim Shooter wrote an overall
+story, and gave the task of creating the characthers to writer Dennis O'Neil.
+Unhappy with O'Neil's work (although O'Neil created the name "Optimus Prime"),
+Shooter chose Bob Budiansky to create the characters.
+
+The Transformers mecha were largely designed by Shōji Kawamori, the creator of
+the Japanese mecha anime franchise Macross (which was adapted into the Robotech
+franchise in North America). Kawamori came up with the idea of transforming
+mechs while working on the Diaclone and Macross franchises in the early 1980s
+(such as the VF-1 Valkyrie in Macross and Robotech), with his Diaclone mechs
+later providing the basis for Transformers.
+
+The primary concept of Generation One is that the heroic Optimus Prime, the
+villainous Megatron, and their finest soldiers crash land on pre-historic Earth
+in the Ark and the Nemesis before awakening in 1985, Cybertron hurtling through
+the Neutral zone as an effect of the war. The Marvel comic was originally part
+of the main Marvel Universe, with appearances from Spider-Man and Nick Fury,
+plus some cameos, as well as a visit to the Savage Land.
+
+The Transformers TV series began around the same time. Produced by Sunbow
+Productions and Marvel Productions, later Hasbro Productions, from the start it
+contradicted Budiansky's backstories. The TV series shows the Autobots looking
+for new energy sources, and crash landing as the Decepticons attack. Marvel
+interpreted the Autobots as destroying a rogue asteroid approaching Cybertron.
+Shockwave is loyal to Megatron in the TV series, keeping Cybertron in a
+stalemate during his absence, but in the comic book he attempts to take command
+of the Decepticons. The TV series would also differ wildly from the origins
+Budiansky had created for the Dinobots, the Decepticon turned Autobot Jetfire
+(known as Skyfire on TV), the Constructicons (who combine to form
+Devastator),[19][20] and Omega Supreme. The Marvel comic establishes early on
+that Prime wields the Creation Matrix, which gives life to machines. In the
+second season, the two-part episode The Key to Vector Sigma introduced the
+ancient Vector Sigma computer, which served the same original purpose as the
+Creation Matrix (giving life to Transformers), and its guardian Alpha Trion.
+"""
+
+inputs = tokenizer(text, return_tensors="pt")
+logits = model(**inputs).logits
+```
+
+```python
+IndexError: index out of range in self
+```
+
+我们遇到了一个问题——错误信息有些奇怪 [section 2](/course/chapter8/section2)(/course/chapter8/section2) ！我们无法确定完整回溯的正反向，这时我们可以转向 Hugging Face 论坛寻求帮助。那么我们如何撰写问题的主题？
+
+首先，我们需要点击右上角的“新建主题”按钮（注意，要创建主题，我们需要登录）：
+
+![Creating a new forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forums-new-topic.png "Creating a new forum topic.")
+
+这里会出现一个写作界面，我们可以在其中输入我们的主题标题，选择一个类别，并起草内容：
+
+![The interface for creating a forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic01.png "The interface for creating a forum topic.")
+
+由于错误似乎仅与 Transformers 有关，因此我们将为错误选择该类别。第一次尝试解释这个问题可能看起来像这样：
+
+![Drafting the content for a new forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic02.png "Drafting the content for a new forum topic.")
+
+尽这个主题包含这个错误消息，但撰写方式存在一些问题：
+
+1. 标题描述性不是很强，这会导致浏览论坛的人在不阅读正文的情况下无法分辨出主题的内容。
+
+2. 正文没有提供足够的信息说明错误的来源以及如何重现错误。
+
+3. 这个话题下的语气有些苛刻。
+
+像这样的主题不太可能很快得到答案，需要对其进行改进。我们将从选择一个问题的好标题开始。
+
+##### 选择描述性标题 
+
+如果你想就代码中的错误寻求帮助，经验法则是在标题中包含足够的信息，以便其他人可以快速确定他们是否可以回答你的问题。在我们的运行示例中，我们知道正在引发的异常名称，并有一些提示表示它是在模型的前向传递中触发的，所以我们调用 `model(**inputs)` 。为了传达这一点，一个可能的标题可能是：
+
+> 自动建模正向传递中的索引错误的来源？
+
+这个标题告诉读者在哪里你认为错误来自，如果他们遇到了 `IndexError` 在此之前，他们很有可能知道如何调试它。当然，标题也可以是其他变体，例如：
+
+> 为什么我的模型会产生索引错误？
+
+这种标题也是可以的。现在我们有了一个描述性的标题，让我们来看看改善主体。
+
+##### 设置代码段的格式 
+
+现在我们有了一个描述性的标题，让我们来看看如何改善代码段的格式。在 IDE 中阅读源代码已经够难的了，但是当将代码复制粘贴为纯文本时就更难了！不过 Hugging Face 论坛支持使用 Markdown，标准格式是用三个反引号 （```） 将代码块括起来。这可以让正文比我们的原始版本看起来更加美观：
+
+![Our revised forum topic, with proper code formatting.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic03.png "Our revised forum topic, with proper code formatting.")
+
+正如你在屏幕截图中看到的，将代码块括在反引号中会将原始文本转换为格式化代码，并带有颜色样式！另外，单个反引号可用于格式化内联变量，比如 `distilbert-base-uncased` 这样。此时这个问题看起来好多了，我们还有可能在社区中找到回答错误原因的是什么的人。然而，与其依靠运气，不如把完整的回溯细节包括进来，可以更好地找到问题答案。
+
+##### 包括完整的回溯 
+
+由于回溯的最后一行通常已经包含足够的代码问题信息，因此很可能在问题帖子中提供这个来“节省空间”。然而，实际上对于你以外的其他人来说很难去着手调试问题，所以提供在回溯中较上面的信息也是必要的。最好的做法是复制并粘贴所有的回溯，同时确保它的格式不被破坏。但是这些回溯可能会很长，所以可以在对源代码进行解释之后再展示它们。就这个思路现在来对我们的问题帖子进行修改，我们的帖子如下所示：
+
+![Our example forum topic, with the complete traceback.](https:/huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic04.png "Our example forum topic, with the complete traceback.")
+
+这提供了更多信息，细心的读者可能会指出问题似乎是由于回溯中的这一行而传递了一个长输入：
+
+> 令牌索引序列长度长于为此模型指定的最大序列长度 （583 > 512）。
+
+除此之外，确定问题所在还需要提供通过提供触发错误的对应代码。
+
+##### 提供可重复的示例 
+
+如果你曾经尝试过调试其他人的代码，那么你可能首先尝试重现他们报告的问题，以便可以通过回溯来查明错误。在论坛上获得（或提供）帮助时没有什么不同，如果你能提供一个重现错误的小例子真的很有帮助。这里有个示例帖子：
+
+![The final version of our forum topic.](https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic05.png "The final version of our forum topic.")
+
+该帖子目前包含相当多的信息，并且它的撰写格式更可能吸引社区的注意，获得有用的答案。有了这些基本指南，你现在可以创建很棒的帖子来找到遇到的 Transformers 问题的答案！
+
+### 如何提出一个好问题 
+
+当你遇到 Hugging Face 库中的一个看起来不正确的东西时，请及时告知我们以便可以修复它。如果你不能完全确定错误是在你自己的代码还是在我们的某个库中，首先可以在 [forums](https://discuss.huggingface.co)(https://discuss.huggingface.co) 社区进行搜索。社区会帮助你解决这个问题，Hugging Face 团队也会密切关注这里的讨论。
+
+当你确定是库有错误时，第一步可以构建一个最小的可重现示例。
+
+#### 创建一个最小的可重现示例 
+
+隔离产生错误的代码段非常重要。顾名思义，最小的可重现示例应该是可重现的，它不应依赖于你可能拥有的任何外部文件或数据。这代表需要用一些看起来像真实值的虚拟值替换正在使用的数据，但这仍然会产生相同的错误。
+
+<div custom-style="Tip-red">
+
+🚨Transformers 存储库中的许多问题都没有解决，因为用于复制它们的数据不可访问。
+
+</div>
+
+如果你有一些自定义的东西，尽量减少它所在的代码行，构建我们所谓的最小的可重复示例。虽然这可能需要你做更多的工作，但如果可以提供一个漂亮的、简短的错误重现器，几乎可以保证得到帮助和修复。
+
+除此之外，你也可以检查发生错误的源代码从而可能找到问题的解决方案，同时这也可以帮助维护人员在阅读你的报告时更好地理解来源。
+
+#### 填写问题模板 
+
+当你提交问题时，需要填写一个模板。可以按照这个链接 [Transformers issues](https://github.com/huggingface/transformers/issues/new/choose)(https://github.com/huggingface/transformers/issues/new/choose) 进行操作，但是如果你在另一个存储库中报告问题，需要相同类型的信息。请不要将模板留空，模板可以最大限度提高获得答案和解决问题的机会。
+
+##### 提供环境信息 
+
+Transformers 提供了一个实用程序来获取有关于你环境的所有信息。只需在终端中输入以下内容：
+
+```python
+transformers-cli env
+```
+
+将得到以下输出：
+
+```python
+Copy-and-paste the text below in your GitHub issue and FILL OUT the two last points.
+
+- `transformers` version: 4.12.0.dev0
+- Platform: Linux-5.10.61-1-MANJARO-x86_64-with-arch-Manjaro-Linux
+- Python version: 3.7.9
+- PyTorch version (GPU?): 1.8.1+cu111 (True)
+- Tensorflow version (GPU?): 2.5.0 (True)
+- Flax version (CPU?/GPU?/TPU?): 0.3.4 (cpu)
+- Jax version: 0.2.13
+- JaxLib version: 0.1.65
+- Using GPU in script?: <fill in>
+- Using distributed or parallel set-up in script?: <fill in>
+```
+
+你还可以在 `transformers-cli env` 命令开始前添加一个 `!` ，从 notebook 单元执行它，然后把结果复制在你问题帖子的开头。
+
+##### 标记人员 
+
+通过键入 `@` 后跟上 GitHub 句柄来标记他人，可以向他们发送通知，这样他们就会看到你的问题来尽可能更快地回复你。如果你标记的人与您的问题没有直接联系请谨慎使用，因为他们可能不喜欢收到通知。如果你查看了与您的错误相关的源文件，就应该标记上一次对你认为造成问题的行进行修改的人（可以在 GitHub 上查看该行，选择它然后点击 "View git blame"）。
+如果没有进行标记，那么我们的模板会自动提供要标记的人的建议。一般不要标记超过三个人。
+
+##### 包含一个可重复的示例 
+
+如果你已经创建了一个产生错误的独立示例，请键入一行包含三个反引号，后跟 `python` ，像这样：
+
+```python
+```python  
+```
+
+然后粘贴最小可重现示例并键入一个带有三个反引号的新行。这将确保你的代码格式正确。如果你没有设法创建可重现的示例，请以清晰的步骤解释你是如何解决问题的。如果可以，请包含指向错误所在的 Google Colab 笔记本的链接。你分享的信息越多，维护者就越有能力回复你。在所有情况下，你都应该复制并粘贴你收到的整个错误消息。如果你在 Colab 中工作，请记住，堆栈跟踪中的某些帧可能会自动折叠，因此请确保在复制之前展开它们。与代码示例一样，将该错误消息放在两行之间，并带有三个反引号，因此格式正确。
+
+##### 描述预期行为 
+
+用几行来解释你期望得到什么，来帮助维护人员完全掌握问题。这部分通常很明显，所以应该用一句话来形容，但在某些情况下，你可能有很多话要说。
+
+#### 提交
+
+提交你的问题后，请确保快速检查一切是否正常。如果你犯了错误，你可以编辑问题，或者如果你发现问题与你最初的想法不同，甚至可以更改其标题。如果你没有得到答案，就没有必要对人进行 ping 操作。如果几天内没有人帮助你，很可能没有人能理解你的问题。不要犹豫，回到可重现的例子。可以尽量尝试让它更短更切题？如果在一周内没有得到答复，可以留言寻求帮助，特别是如果你已经把问题编辑的包含有关该问题的更多信息了。
