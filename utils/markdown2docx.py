@@ -1,6 +1,6 @@
 import os
 import subprocess
-chapter='test'
+chapter='第八章 掌握主要的 NLP 任务'
 # Specify the source and destination folders
 source_folder = f'Course\publish/{chapter}'
 destination_folder = 'Course\docx_output'
