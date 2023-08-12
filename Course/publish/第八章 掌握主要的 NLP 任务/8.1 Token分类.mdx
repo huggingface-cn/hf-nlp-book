@@ -430,9 +430,9 @@ import tensorflow as tf
 ## 在混合精度 float16 中进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
-## 训练步数是数据集中的样本数量,除以 batch 大小,然后乘以总的 epoch 数。
-## 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset,
-## 而不是原始的 Hugging Face Dataset ,所以使用 len() 计算它的长度已经是 num_samples // batch_size。
+# 训练步数是数据集中的样本数量,除以 batch 大小,然后乘以总的 epoch 数。
+# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset,
+# 而不是原始的 Hugging Face Dataset ,所以使用 len() 计算它的长度已经是 num_samples // batch_size。
 num_epochs = 3
 num_train_steps = len(tf_train_dataset) * num_epochs
 
