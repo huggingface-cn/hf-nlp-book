@@ -842,9 +842,9 @@ torch.Size([1, 66]) torch.Size([1, 66])
 import torch
 
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除context之外的所有内容
+## 屏蔽除 context 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 不屏蔽 [CLS]  token 
+## 不屏蔽 [CLS] token 
 mask[0] = False
 mask = torch.tensor(mask)[None]
 
@@ -858,9 +858,9 @@ end_logits[mask] = -10000
 import tensorflow as tf
 
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除context之外的所有内容
+## 屏蔽除 context 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 不屏蔽 [CLS]  token 
+## 不屏蔽 [CLS] token 
 mask[0] = False
 mask = tf.constant(mask)[None]
 
@@ -1181,11 +1181,11 @@ torch.Size([2, 384]) torch.Size([2, 384])
 
 ```python
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除上下文tokens之外的所有内容
+## 屏蔽除上下文 tokens 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 取消对[CLS] token的屏蔽
+## 取消对[CLS] token 的屏蔽
 mask[0] = False
-## 屏蔽所有的[PAD] tokens
+## 屏蔽所有的 [PAD] tokens
 mask = torch.logical_or(torch.tensor(mask)[None], (inputs["attention_mask"] == 0))
 
 start_logits[mask] = -10000
@@ -1196,11 +1196,11 @@ end_logits[mask] = -10000
 
 ```python
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除上下文tokens之外的所有内容
+## 屏蔽除上下文 tokens 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 取消对[CLS] token的屏蔽
+## 取消对[CLS] token 的屏蔽
 mask[0] = False
-## 屏蔽所有的[PAD] tokens
+## 屏蔽所有的 [PAD] tokens
 mask = tf.math.logical_or(tf.constant(mask)[None], inputs["attention_mask"] == 0)
 
 start_logits = tf.where(mask, -10000, start_logits)

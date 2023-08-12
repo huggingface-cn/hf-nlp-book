@@ -8,7 +8,7 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/chapter9/section4.ipynb"},
 ]} />
 
-现在你已经构建了一个演示，你可能希望与其他人分享它。Gradio演示可以通过两种方式进行分享：使用 **临时共享链接** 或 **在Spaces上永久托管**。
+现在你已经构建了一个演示，你可能希望与其他人分享它。Gradio 演示可以通过两种方式进行分享：使用 **临时共享链接** 或 **在 Spaces 上永久托管**。
 
 我们将很快介绍这两种方法。但在分享演示之前，你可能需要完善它 💅。
 
@@ -21,13 +21,13 @@
 
 为了给你的演示添加额外的内容， `Interface` 类支持一些可选参数：
     - `title` ：你可以给你的演示一个标题，它出现在输入和输出组件的上方。
-    - `description` ：你可以为界面提供描述（以文本、Markdown或HTML形式），显示在输入和输出组件的上方和标题下方。
-    - `article` ：你还可以编写扩展文章（以文本、Markdown或HTML形式）来解释界面。如果提供，它会出现在输入和输出组件的_下方。
+    - `description` ：你可以为界面提供描述（以文本、Markdown 或 HTML 形式），显示在输入和输出组件的上方和标题下方。
+    - `article` ：你还可以编写扩展文章（以文本、Markdown 或 HTML 形式）来解释界面。如果提供，它会出现在输入和输出组件的下方。
     - `theme` ：不喜欢默认颜色？主题可以设置为 `default` 、 `huggingface` 、 `grass` 、 `peach` 之一。你还可以添加 `dark-` 前缀，例如 `dark-peach` 用于深色主题（或者仅使用 `dark` 表示默认的深色主题）。
     - `examples` ：为了让你的演示更易于使用，你可以为函数提供一些示例输入。它们出现在 UI 组件下方，可用于填充界面。示例应该作为多层的列表提供，外层列表包含每个示例，每个内层的列表包含与每个输入组件对应的输入。
-    - `live` ：如果你想使你的演示“实时”反馈，即每次输入更改时模型重新运行，你可以设置`live=True`。这对运行比较快的模型很有意义（我们将在本节末尾看到一个示例）
+    - `live` ：如果你想使你的演示“实时”反馈，即每次输入更改时模型重新运行，你可以设置 `live=True` 。这对运行比较快的模型很有意义（我们将在本节末尾看到一个示例）
 
-使用上述选项，我们得到了一个更完整的界面。运行以下代码，你可以与Rick和Morty进行对话：
+使用上述选项，我们得到了一个更完整的界面。运行以下代码，你可以与 Rick 和 Morty 进行对话：
 
 ```py
 title = "Ask Rick a Question"
@@ -70,7 +70,7 @@ gr.Interface(classify_image, "image", "label").launch(share=True)
 
 可以传递给同事的共享链接很酷，但是如何永久托管你的演示并使其在互联网上具有自己的“space”呢？
 
-Hugging Face Spaces提供了在互联网上永久托管你的Gradio模型的基础设施，**完全免费**！你可以将你创建 Space 推送到（公共或私有）仓库，在其中，你的Gradio界面代码将存在于一个`app.py`文件中。[阅读分步教程](https://huggingface.co/blog/gradio-spaces) 以开始使用，或观看下面的示例视频。
+Hugging Face Spaces 提供了在互联网上永久托管你的 Gradio 模型的基础设施，**完全免费**！你可以将你创建 Space 推送到（公共或私有）仓库，在其中，你的 Gradio 界面代码将存在于一个 `app.py` 文件中。 [阅读分步教程](https://huggingface.co/blog/gradio-spaces) 以开始使用，或观看下面的示例视频。
 
 <Youtube id="LS9Y2wDVI0k" />
 
@@ -78,7 +78,7 @@ Hugging Face Spaces提供了在互联网上永久托管你的Gradio模型的基�
 
 使用到目前为止我们在各节中学到的知识，让我们创建我们在 [本章第一节](/course/chapter9/1) 中看到的草图识别演示。让我们为我们的界面添加一些自定义并设置 `share=True` 以创建一个我们可以传递的公共链接。
 
-根据我们在前面章节中学到的内容，让我们创建一个在[本章第一节](/course/chapter9/1)中看到的手写草图识别演示。我们可以对界面进行一些自定义，并设置`share=True`以创建一个可以共享给他人的公共链接。
+根据我们在前面章节中学到的内容，让我们创建一个在 [本章第一节](/course/chapter9/1) 中看到的手写草图识别演示。我们可以对界面进行一些自定义，并设置 `share=True` 以创建一个可以共享给他人的公共链接。
 
 我们可以从 [class_names.txt](https://huggingface.co/spaces/dawood/Sketch-Recognition/blob/main/class_names.txt) 加载标签，并从 [pytorch_model.bin](https://huggingface.co/spaces/dawood/Sketch-Recognition/blob/main/pytorch_model.bin) 加载预训练的 pytorch 模型。通过点击链接并单击文件预览左上角的下载来下载这些文件。让我们看看下面的代码，看看我们如何使用这些文件来加载模型并创建一个 `predict()` 函数：
 ```py
@@ -118,7 +118,7 @@ def predict(im):
     return {LABELS[i]: v.item() for i, v in zip(indices, values)}
 ```
 
-现在我们有了一个 `predict()` 函数。下一步是定义并启动我们的gradio 界面：
+现在我们有了一个 `predict()` 函数。下一步是定义并启动我们的 gradio 界面：
 
 ```py
 interface = gr.Interface(

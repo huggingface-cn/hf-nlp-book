@@ -7,18 +7,18 @@
     {label: "Aws Studio", value: "https://studiolab.sagemaker.aws/import/github/huggingface/notebooks/blob/master/course/chapter9/section7.ipynb"},
 ]} />
 
-在之前的章节中，我们已经探索并使用 `Interface` 类创建了一些演示。在本章中，我们将介绍我们新开发的低级 API，名为 `gradio.Blocks`。
+在之前的章节中，我们已经探索并使用 `Interface` 类创建了一些演示。在本章中，我们将介绍我们新开发的低级 API，名为 `gradio.Blocks` 。
 
 现在， `Interface` 和 `Blocks` 之间有什么区别？
 
 - ⚡ `Interface` ：一个高级 API，你只需提供输入和输出列表即可创建完整的机器学习演示。
 
-- 🧱 `Blocks` ：一个低级的 API，你可以使用它来完全控制你的应用程序的数据流和布局。你可以使用 `Blocks` （类似于"构建的砖块"）构建非常复杂的多步骤应用程序。
+- 🧱 `Blocks` ：一个低级的 API，你可以使用它来完全控制你的应用程序的数据流和布局。你可以使用 `Blocks` （类似于“构建的砖块”）构建非常复杂的多步骤应用程序。
 
 
 ### 为什么要使用 Blocks 🧱？[[ 为什么要使用 Blocks 🧱]]
 
-正如我们在前几节中看到的，通过`Interface` 类你使用几行代码轻松创建成熟的机器学习 demo。 `Interface` API 非常易于使用，但缺乏 `Blocks` API 提供的灵活性。例如，你可能想要：
+正如我们在前几节中看到的，通过 `Interface` 类你使用几行代码轻松创建成熟的机器学习 demo。 `Interface` API 非常易于使用，但缺乏 `Blocks` API 提供的灵活性。例如，你可能想要：
 
 - 将相关演示组合为一个 web 应用程序中的多个选项卡
 - 更改 demo 的布局，例如指定输入和输出的位置
@@ -128,7 +128,7 @@ demo.launch()
 
 ### 探索事件和状态 [[探索事件和状态]]
 
-正如你可以控制布局一样，`Blocks` 可以让你对触发函数调用的事件进行细粒度控制。每个组件和许多布局都有它们支持的特定事件。
+正如你可以控制布局一样， `Blocks` 可以让你对触发函数调用的事件进行细粒度控制。每个组件和许多布局都有它们支持的特定事件。
 
 例如， `Textbox` 组件有两个事件： `change()` （当文本框内的值发生变化时），和 `submit()` （当用户在文本框上输入并按下回车键时）。更复杂的组件可以有更多的事件：例如， `Audio` 组件还具有播放音频文件、清除音频文件、暂停等各种独立事件。请参阅每个组件支持的事件的文档。
 
@@ -164,7 +164,7 @@ demo.launch()
 
 ### 创建多步骤 demo [[创建多步骤 demo]]
 
-在某些情况下，你可能需要一个多步骤演示, 其中重用一个函数的输出作为下一个函数的输入。使用 `Blocks` 很容易做到这一点，因为你可以使用一个组件作为一个事件触发器的输入，但又作为另一个事件触发器的输出。看一下下面的示例，文本组件的值是语音转文本模型的结果，但也被传递到情感分析模型中：
+在某些情况下，你可能需要一个多步骤演示，其中重用一个函数的输出作为下一个函数的输入。使用 `Blocks` 很容易做到这一点，因为你可以使用一个组件作为一个事件触发器的输入，但又作为另一个事件触发器的输出。看一下下面的示例，文本组件的值是语音转文本模型的结果，但也被传递到情感分析模型中：
 
 ```py
 from transformers import pipeline
@@ -233,4 +233,4 @@ with gr.Blocks() as block:
 
 <iframe src="https://course-demos-blocks-update-component-properti-833c723.hf.space" frameBorder="0" height="300" title="Gradio app" class="container p-0 flex-grow space-iframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"></iframe>
 
-我们刚刚探索了 `Blocks` 的所有核心概念！就像 `Interfaces`一样 ，你可以创建很酷的 demo，可以通过在 `launch()` 方法中使用 `share=True` 选项来共享，或者部署在 [Hugging Face Spaces](https://huggingface.co/spaces) 上。
+我们刚刚探索了 `Blocks` 的所有核心概念！就像 `Interfaces` 一样 你可以创建很酷的 demo，可以通过在 `launch()` 方法中使用 `share=True` 选项来共享，或者部署在 [Hugging Face Spaces](https://huggingface.co/spaces) 上。

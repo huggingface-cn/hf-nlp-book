@@ -1,8 +1,8 @@
 import os
 import subprocess
-chapter='第八章 掌握主要的 NLP 任务'
+chapter='all'
 # Specify the source and destination folders
-source_folder = f'Course\publish/{chapter}'
+source_folder = f'Course\publish\{chapter}'
 destination_folder = 'Course\docx_output'
 
 # Specify the path to the filter and the reference doc

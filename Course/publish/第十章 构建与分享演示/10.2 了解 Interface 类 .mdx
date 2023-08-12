@@ -1,0 +1,140 @@
+## 10.2 了解 `Interface` 类
+
+在这一节中，我们将更详细地了解 `Interface` 类，并理解创建 `Interface` 时使用的主要参数。
+
+### 如何创建 `Interface`
+
+你会注意到 `Interface` 类有 3 个必需参数： `Interface(fn, inputs, outputs, ...)` 
+
+这些参数是：
+
+- `fn` ：由 Gradio 包装的预测函数。该函数可以接受一个或多个参数并返回一个或多个值
+- `inputs` ：输入组件类型。Gradio 提供了许多预构建的组件，例如 `image` 或 `mic` 。
+- `outputs` ：输出组件类型。同样，Gradio 提供了许多预构建的组件，例如 `image` 或 `label` 。
+
+有关组件的完整列表请参阅 [Gradio 文档](https://gradio.app/docs)(https://gradio.app/docs) 。每个预构建的组件都可以通过实例化该组件对应的类来定制。
+
+例如，正如我们在前一小节中看到的，你可以将一个 `Textbox(lines=7, label="Prompt")` 组件传递给 `inputs` 参数，而不是将 `"textbox"` 传递进去，这样就可以创建一个包含 7 行和一个标签的文本框。
+
+让我们看另一个例子，这次是一个 `Audio` 组件。
+
+### 一个带音频的简单示例
+
+如前所述，Gradio 提供了许多不同的输入和输出组件。因此，让我们构建一个适用于音频的 `Interface` 。
+
+在这个例子中，我们将构建一个音频到音频的函数，它需要一个音频文件并简单地反转它。
+
+我们将使用 `Audio` 组件作为输入。使用 `Audio` 组件时，你可以指定希望音频的 `source` 是用户上传的文件还是用户录制声音的麦克风。在个例子中，让我们将其设置为“麦克风”。只是为了好玩，我们会在我们的 `Audio` 上添加一个标签，上面写着“Speak here.”。
+
+此外，我们希望将音频作为 numpy 数组接收，以便我们可以轻松地“反转”它。所以我们将 `"type"` 设置为 `"numpy"` ，它会传递输入 data 作为 `(sample_rate,data)` 的元组进入我们的函数。
+
+我们还将使用 `Audio` 输出组件，它可以自动将具有采样率和音频数据的 numpy 数组渲染为可播放的音频文件。在这种情况下，我们不需要进行任何自定义，所以我们将传递一个字符串 `"audio"` 。
+
+```python
+import numpy as np
+import gradio as gr
+
+def reverse_audio(audio):
+    sr, data = audio
+    reversed_audio = (sr, np.flipud(data))
+    return reversed_audio
+
+mic = gr.Audio(source="microphone", type="numpy", label="Speak here...")
+gr.Interface(reverse_audio, mic, "audio").launch()
+```
+
+上面的代码将生成一个如下所示的界面（如果你的浏览器没有要求你授权麦克风权限，请在 <a href="https://huggingface.co/spaces/course-demos/audio-reverse" target="_blank">新标签页中打开演示</a>。）
+
+现在你可以录制你的声音并听到自己说话的倒放了 - 神奇 👻！
+
+### 处理多个输入和输出
+
+假设我们有一个更复杂的函数，有多个输入和输出。在下面的示例中，我我们有一个函数，它接收一个下拉框索引、一个滑块值和一个数字，并返回一个音乐音调的音频样本。
+
+看看我们如何传递输入和输出组件列表，看看你能不能理解正在发生的事情。
+
+关键在于当你传递：
+
+* 输入组件列表，每个组件依次对应一个参数。
+* 输出组件列表，每个组件对应一个返回值。
+
+下面的代码片段显示了三个输入组件如何与 `generate_tone()` 函数的三个参数对齐：
+
+```python
+import numpy as np
+import gradio as gr
+
+notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
+def generate_tone(note, octave, duration):
+    sr = 48000
+    a4_freq, tones_from_a4 = 440, 12 * (octave - 4) + (note - 9)
+    frequency = a4_freq * 2 ** (tones_from_a4 / 12)
+    duration = int(duration)
+    audio = np.linspace(0, duration, duration * sr)
+    audio = (20000 * np.sin(audio * (2 * np.pi * frequency))).astype(np.int16)
+    return (sr, audio)
+
+gr.Interface(
+    generate_tone,
+    [
+        gr.Dropdown(notes, type="index"),
+        gr.Slider(minimum=4, maximum=6, step=1),
+        gr.Textbox(type="number", value=1, label="Duration in seconds"),
+    ],
+    "audio",
+).launch()
+```
+
+#### `launch()` 方法
+
+到目前为止，我们已经使用了 `launch()` 方法来启动界面，但是我们
+还没有真正讨论过它的作用。
+
+默认情况下， `launch()` 方法将在本地运行一个 Web 服务器来启动演示。如果你在 Jupyter 或 Colab Notebook 中运行代码，那么 Gradio 会将演示 GUI 嵌入到 Notebook 中，以便你轻松使用它。
+
+你可以通过不同的参数自定义 `launch()` 的行为：
+
+  - `inline` ——  是否在 Python Notebook 中内联显示接口。
+  - `inbrowser` —— 是否在默认浏览器的新标签页中自动启动接口．
+  - `share` ——  是否为接口从你的计算机创建一个公开可共享的链接。有点像 Google Drive 的链接！
+
+我们将在下一节中更详细地介绍 `share` 参数！
+
+### ✏️ 让我们实践一下！
+
+让我们构建一个演示语音识别模型的界面。为了让它变得有趣，我们将接受麦克风输入或上传的文件。
+
+像往常一样，我们将使用 Transformers 中的 `pipeline()` 函数加载我们的语音识别模型。如果你需要快速复习回顾，你可以返回第二章。接下来，我们将实现一个 `transcribe_audio()` 函数来处理音频并返回转录。最后，我们将把这个函数包装在一个 `Interface` 中，其中 `Audio` 组件用于输入，只有文本用于输出。总而言之，此应用程序的代码如下：
+
+```python
+from transformers import pipeline
+import gradio as gr
+
+model = pipeline("automatic-speech-recognition")
+
+def transcribe_audio(mic=None, file=None):
+    if mic is not None:
+        audio = mic
+    elif file is not None:
+        audio = file
+    else:
+        return "You must either provide a mic recording or a file"
+    transcription = model(audio)["text"]
+    return transcription
+
+gr.Interface(
+    fn=transcribe_audio,
+    inputs=[
+        gr.Audio(source="microphone", type="filepath", optional=True),
+        gr.Audio(source="upload", type="filepath", optional=True),
+    ],
+    outputs="text",
+).launch()
+```
+
+如果你的浏览器没有要求你授权麦克风权限，请在<a href="https://huggingface.co/spaces/course-demos/audio-reverse" target="_blank">新标签页中打开演示</a>。
+
+就是这样！现在你可以使用这个界面来转录音频了。请注意，通过将 `optional` 参数设置为 `True` ，用户就可以提供麦克风的实时录音或音频文件（或两者都不提供，但这将返回错误消息）。
+
+继续阅读，了解如何与他人分享你的接口！

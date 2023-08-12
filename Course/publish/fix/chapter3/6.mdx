@@ -1,0 +1,233 @@
+### 章末测试 
+
+#####  1. “emotion”数据集包含带有情绪标记的 Twitter 消息。请在 [ Hub ]( https://huggingface.co/datasets)( https://huggingface.co/datasets)( https://huggingface.co/datasets) 中进行搜索并读取数据集的数据卡片。判断哪一个基本情感不在这个数据集中？
+
+1. Joy
+2. Love
+3. Confusion
+4. Surprise
+
+####  2. 在 [ Hub ]( https://huggingface.co/datasets)( https://huggingface.co/datasets)( https://huggingface.co/datasets) 中搜索`ar_sarcasm`数据集，该数据集支持哪个任务？
+
+1. 情绪分类
+2. 机器翻译
+3. 命名实体识别
+4. 回答问题
+
+####  3. 当输入一对句子时 BERT 模型会需要进行怎么样的预处理？
+
+1. Tokens_of_sentence_1 [ SEP ] Tokens_of_sentence_2
+2. [CLS] Tokens_of_sentence_1 Tokens_of_sentence_2
+3. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2 [SEP]
+4. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2
+
+####  4. `Dataset.map ()`方法的好处是什么？
+
+1. 该函数执行后的结果被缓存，重新执行代码时不会花费多余时间。
+2. 它可以进行并行化处理，比在数据集的每个元素上依次使用函数进行处理更快。
+3. 它不会将整个数据集加载到内存中，而是在处理一个元素后立即保存结果。
+
+####  5. 什么是动态填充？
+
+1. 就是将每个批处理的输入填充到整个数据集中的最大长度。
+2. 这是当你在创建 batch 时将输入填充到该 batch 内句子的最大长度。
+3. 当你将每个句子填充到与数据集中的前一个句子相同数量的 token 时。
+
+####  6. collate 函数的用途是什么？
+
+1. 它确保数据集中的所有序列具有相同的长度。
+2. 它把所有的样本地放在一个 batch 里。
+3. 它预处理整个数据集。
+4. 它截断数据集中的序列。
+
+####  7. 当你用一个预先训练过的语言模型（例如 `bert-base-uncased`）实例化一个`AutoModelForXxx`类，这个类与它所被训练的任务不匹配时会发生什么？
+
+1. 什么都没有，但会出现一个警告。
+2. 丢弃预训练模型的头部，取而代之的是一个适合该任务的新头部。
+3. 丢弃预先训练好的模型头部。
+4. 没有，因为模型仍然可以针对不同的任务进行微调。
+
+####  8．`TrainingArguments`的用途是什么？
+
+1. 它包含了所有用于训练和评估的超参数。
+2. 它指定模型的大小。
+3. 它只包含用于评估的超参数。
+
+####  9．为什么要使用Accelerate 库？
+
+1. 它可以对更快地访问的模型。
+2. 它提供了一个高级 API，因此我不必实现自己的训练循环。
+3. 它使我们的训练循环运行在分布式架构上
+4. 它提供了更多的优化功能。
+
+####  4．当模型与预训练的任务不匹配时，例如使用预训练的语言模型（例如“`bert-base-uncased`”）实例化“`TFAutoModelForXxx`”类时会发生什么？
+
+1. 什么都不会发生，但是你会得到一个警告。
+2. 丢弃预训练模型的头部，并插入一个新的头部以适应新的任务。
+3. 丢弃预先训练好的模型头部。
+4. 没有，因为模型仍然可以针对不同的任务进行微调。
+
+####  5．来自 `transformers` 的 TensorFlow 模型已经是 Keras 模型，这有什么好处？
+
+1. 这些模型可在开箱即用的 TPU 上运行。
+2. 你可以利用现有方法，例如 <code>compile()</code>、<code>fit()</code> 和 <code>predict()</code>。
+3. 你可以学习 Keras 以及 Transformer。
+4. 你可以轻松计算与数据集相关的指标。
+
+####  6．如何定义自己的自定义指标？
+
+1. 使用子类化 tf.keras.metrics.Metric。
+2. 使用 Keras 函数 API。
+3. 使用使用带有签名的 <code>metric_fn(y_true, y_pred)</code> 函数。
+4. 使用谷歌搜索。
+
+### 解析
+
+####  1. “emotion”数据集包含带有情绪标记的 Twitter 消息。请在 [ Hub ]( https://huggingface.co/datasets)( https://huggingface.co/datasets)( https://huggingface.co/datasets) 中进行搜索并读取数据集的数据卡片。判断哪一个基本情感不在这个数据集中？
+
+正确选项: 3. Confusion
+
+1. Joy    
+解析: 再试一次——这种情绪在这个数据集中！
+2. Love    
+解析: 再试一次——这种情绪在这个数据集中！
+3. Confusion    
+解析: 正确! Confusion 不是六种基本情绪之一。
+4. Surprise    
+解析: Surprise! 再试一次！
+
+####  2. 在 [ Hub ](https://huggingface.co/datasets)(https://huggingface.co/datasets)( https://huggingface.co/datasets) 中搜索`ar_sarcasm`数据集，该数据集支持哪个任务？
+
+正确选项: 1. 情绪分类
+
+1. 情绪分类    
+解析: 没错! 多亏这些标签。
+2. 机器翻译    
+解析: 不对，请再看看[数据卡片](https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm)！
+3. 命名实体识别    
+解析: 不对，请再看看[数据卡片](https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm) ！
+4. 回答问题    
+解析: 不对， 再试一次！
+
+####  3. 当输入一对句子时 BERT 模型会需要进行怎么样的预处理？
+
+正确选项: 3. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2 [SEP]
+
+1. Tokens_of_sentence_1 [ SEP ] Tokens_of_sentence_2    
+解析: 需要使用一个特殊的 `[SEP]` token 来分隔两个句子，但是只有这一个还不够。
+2. [CLS] Tokens_of_sentence_1 Tokens_of_sentence_2    
+解析: 需要一个特殊的 `[CLS]` token 来指示句子的开头，但是只有这一个还不够。
+3. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2 [SEP]    
+解析: 正确！
+4. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2    
+解析: 需要一个特殊的 `[CLS]` token 来指示句子的开头，还需要一个特殊的 `[SEP]` token 来分隔两个句子，但这还不是需要全部的预处理。
+
+####  4. `Dataset.map ()`方法的好处是什么？
+
+正确选项: 1. 该函数执行后的结果被缓存，重新执行代码时不会花费多余时间。
+
+正确选项: 2. 它可以进行并行化处理，比在数据集的每个元素上依次使用函数进行处理更快。
+
+正确选项: 3. 它不会将整个数据集加载到内存中，而是在处理一个元素后立即保存结果。
+
+1. 该函数执行后的结果被缓存，重新执行代码时不会花费多余时间。    
+解析: 这确实是这种方法的优点之一! 不过还有别的优点...
+2. 它可以进行并行化处理，比在数据集的每个元素上依次使用函数进行处理更快。    
+解析: 这是该方法一个比较优雅的特点！ 不过还有别的优点...
+3. 它不会将整个数据集加载到内存中，而是在处理一个元素后立即保存结果。    
+解析: 这是这种方法的一个优点！ 不过还有别的优点...
+
+####  5. 什么是动态填充？
+
+正确选项: 2. 这是当你在创建 batch 时将输入填充到该 batch 内句子的最大长度。
+
+1. 就是将每个批处理的输入填充到整个数据集中的最大长度。    
+解析: 它确实意味着创建 batch 时进行填充，但不是整个数据集中的最大长度。
+2. 这是当你在创建 batch 时将输入填充到该 batch 内句子的最大长度。    
+解析: 没错！“动态”部分即每个 batch 的大小是在创建时确定的，因此不同的 batch 可能具有不同的形状。
+3. 当你将每个句子填充到与数据集中的前一个句子相同数量的 token 时。    
+解析: 错误，而且由于我们在训练过程中对数据集进行了随机的打乱，因此数据集中的顺序是没有意义的。
+
+####  6. collate 函数的用途是什么？
+
+1. 它确保数据集中的所有序列具有相同的长度。    
+解析: collate 函数用于处理单个 batch 处理，而不是整个数据集。此外，我们讨论的是所有 collate 函数通常的用途，而不是特定的  <code>DataCollatorWithPadding</code> 
+2. 它把所有的样本地放在一个 batch 里。    
+解析: 正确！你可将 collate 函数作为 <code>DataLoader</code>函数的一个参数。 我们使用了 <code>DataCollatorWithPadding</code> 函数
+3. 它预处理整个数据集。    
+解析: 预处理函数（preprocessing）用于预处理整个数据集，而不是 collate 函数。
+4. 它截断数据集中的序列。    
+解析: collate 函数用于处理单个 batch 的处理，而不是整个数据集。如果你对截断感兴趣，可以使用 <code> tokenizer </code> 的<code> truncate </code> 参数。
+
+####  7. 当你用一个预先训练过的语言模型（例如 `bert-base-uncased`）实例化一个`AutoModelForXxx`类，这个类与它所被训练的任务不匹配时会发生什么？
+
+正确选项: 2. 丢弃预训练模型的头部，取而代之的是一个适合该任务的新头部。
+
+1. 什么都没有，但会出现一个警告。    
+解析: 确实出现警告，但这还不是全部！
+2. 丢弃预训练模型的头部，取而代之的是一个适合该任务的新头部。    
+解析: 正确的。 例如，当我们将 AutoModelForSequenceClassification 与 bert-base-uncased 结合使用时，我们在实例化模型时将收到警告。 预训练的头不用于序列分类任务，因此它被丢弃，并使用随机初始化权重的用于序列分类任务的头。
+3. 丢弃预先训练好的模型头部。    
+解析: 还需要做其他事情，再试一次！
+4. 没有，因为模型仍然可以针对不同的任务进行微调。    
+解析: 这个经过训练的模特的头没有经过训练来解决这个问题，所以我们应该丢弃该头部！
+
+####  8．`TrainingArguments`的用途是什么？
+
+正确选项: 1. 它包含了所有用于训练和评估的超参数。
+
+1. 它包含了所有用于训练和评估的超参数。    
+解析: 正确！
+2. 它指定模型的大小。    
+解析: 模型大小是由模型配置定义的，而不是由 `TrainingArguments` 类 。
+3. 它只包含用于评估的超参数。    
+解析: 在示例中，我们还指定了模型的超参数及其检查点的保存位置。 再试一次！
+
+####  9．为什么要使用Accelerate 库？
+
+正确选项: 3. 它使我们的训练循环运行在分布式架构上
+
+1. 它可以对更快地访问的模型。    
+解析: 不，Accelerate 库不提供任何模型。
+2. 它提供了一个高级 API，因此我不必实现自己的训练循环。    
+解析: 这是我们使用 <code>Trainer</code> 所做的事情，而不是 Accelerate 库。 再试一次
+3. 它使我们的训练循环运行在分布式架构上    
+解析: 正确! 使用Accelerate 库，你的训练循环可以在多个 GPU 和 TPUs 上运行。
+4. 它提供了更多的优化功能。    
+解析: 不，Accelerate 库不提供任何优化功能。
+
+####  4．当模型与预训练的任务不匹配时，例如使用预训练的语言模型（例如“`bert-base-uncased`”）实例化“`TFAutoModelForXxx`”类时会发生什么？
+
+正确选项: 2. 丢弃预训练模型的头部，并插入一个新的头部以适应新的任务。
+
+1. 什么都不会发生，但是你会得到一个警告。    
+解析: 你确实得到了警告，但这还不是全部！
+2. 丢弃预训练模型的头部，并插入一个新的头部以适应新的任务。    
+解析: 正确的。 例如，当我们将 `TFAutoModelForSequenceClassification `与 `bert-base-uncased` 结合使用时，我们在实例化模型时收到警告。 预训练的头不用于序列分类任务，因此它被丢弃，使用新的头并且随机初始化权重。
+3. 丢弃预先训练好的模型头部。    
+解析: 除此之外还有一些事情会发生， 再试一次！
+4. 没有，因为模型仍然可以针对不同的任务进行微调。    
+解析: 这个经过训练的模特的头没有经过训练来解决这个问题，所以我们应该丢掉这个头！
+
+####  5．来自 `transformers` 的 TensorFlow 模型已经是 Keras 模型，这有什么好处？
+
+正确选项: 2. 你可以利用现有方法，例如 <code>compile()</code>、<code>fit()</code> 和 <code>predict()</code>。
+
+正确选项: 3. 你可以学习 Keras 以及 Transformer。
+
+1. 这些模型可在开箱即用的 TPU 上运行。    
+解析: 差不多！但是还需要进行一些小的额外修改。例如，你需要在 <code>TPUStrategy</code> 范围内运行所有内容，包括模型的初始化。
+2. 你可以利用现有方法，例如 <code>compile()</code>、<code>fit()</code> 和 <code>predict()</code>。    
+解析: 正确! 一旦你有了数据，只需要很少的工作就可以在这些数据上进行训练。
+3. 你可以学习 Keras 以及 Transformer。    
+解析: 没错，但我们要找的是别的东西:)
+4. 你可以轻松计算与数据集相关的指标。    
+解析: Keras 帮助我们训练和评估模型，而不是计算与数据集相关的指标。
+
+####  6．如何定义自己的自定义指标？
+
+正确选项: 1. 使用子类化 tf.keras.metrics.Metric。
+
+正确选项: 3. 使用使用带有签名的 <code>metric_fn(y_true, y_pred)</code> 函数。
+
+正确选项: 4. 使用谷歌搜索。

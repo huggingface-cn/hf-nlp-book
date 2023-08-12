@@ -1,0 +1,1319 @@
+# 第四章 微调一个预训练模型
+
+在第三章我们探索了如何使用 Tokenizer 和预训练模型进行预测。那么如何使用自己的数据集微调预训练模型呢？本章将解决这个问题！你将学到：
+
+{#if fw === 'pt'}
+
+* 如何从模型中心（hub）准备大型数据集
+* 如何使用高级的 `Trainer` API 微调一个模型
+* 如何使用自定义训练过程
+* 如何利用Accelerate 库在所有分布式设备上轻松运行自定义训练过程
+
+{:else}
+
+* 如何从模型中心（hub）准备大型数据集
+* 如何使用 Keras 微调模型
+* 如何使用 Keras 进行预测
+* 如何使用自定义指标
+
+{/if}
+
+为了将经过训练的参数上传到 Hugging Face Hub，你需要一个 huggingface.co 帐户： [创建一个账户](https://huggingface.co/join)(https://huggingface.co/join) 
+
+
+
+## 4.1 处理数据 
+
+在这一小节你将学习第一小节中提到的“如何使用模型中心（hub）大型数据集”，下面是用模型中心的数据在 PyTorch 上训练句子分类器的一个例子：
+
+```python
+import torch
+from transformers import AdamW, AutoTokenizer, AutoModelForSequenceClassification
+
+# 和之前一样
+checkpoint = "bert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
+sequences = [
+    "I've been waiting for a HuggingFace course my whole life.",
+    "This course is amazing!",
+]
+batch = tokenizer(sequences, padding=True, truncation=True, return_tensors="pt")
+
+# 新增部分
+batch["labels"] = torch.tensor([1, 1])
+
+optimizer = AdamW(model.parameters())
+loss = model(**batch).loss
+loss.backward()
+optimizer.step()
+```
+
+{:else}
+
+在这一小节你将学习第一小节中提到的“如何使用模型中心（hub）大型数据集”，下面是用模型中心的数据在 TensorFlow 上训练句子分类器的一个例子：
+
+```python
+import tensorflow as tf
+import numpy as np
+from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
+
+# 和之前一样
+checkpoint = "bert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+model = TFAutoModelForSequenceClassification.from_pretrained(checkpoint)
+sequences = [
+    "I've been waiting for a HuggingFace course my whole life.",
+    "This course is amazing!",
+]
+batch = dict(tokenizer(sequences, padding=True, truncation=True, return_tensors="tf"))
+
+# 新增部分
+model.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
+labels = tf.convert_to_tensor([1, 1])
+model.train_on_batch(batch, labels)
+```
+
+{/if}
+
+然而仅用两句话训练模型不会产生很好的效果，你需要准备一个更大的数据集才能得到更好的训练结果。
+
+在本节中，我们以 MRPC（微软研究院释义语料库）数据集为例，该数据集由威廉·多兰和克里斯·布罗克特在这篇文章发布，由 5801 对句子组成，每个句子对带有一个标签来指示它们是否为同义（即两个句子的意思相同）。在本章选择该数据集的原因是它的数据体量小，容易对其进行训练。
+
+### 从模型中心（Hub）加载数据集 
+
+{#if fw === 'pt'}
+
+{:else}
+
+{/if}
+
+模型中心（hub）不仅仅包含模型，还有许多别的语言的数据集。访问 [Datasets](https://huggingface.co/datasets)(https://huggingface.co/datasets) 的链接即可进行浏览。我们建议你在完成本节的学习后阅读一下 [加载和处理新的数据集](https://huggingface.co/docs/datasets/loading_datasets.html#from-the-huggingface-hub)(https://huggingface.co/docs/datasets/loading_datasets.html#from-the-huggingface-hub) 这篇文章，这会让你对 huggingface 的数据集理解更加清晰。现在让我们使用 MRPC 数据集中的 [GLUE 基准测试数据集](https://gluebenchmark.com)(https://gluebenchmark.com) ，它是构成 MRPC 数据集的 10 个数据集之一，作为一个用于衡量机器学习模型在 10 个不同文本分类任务中性能的学术基准。
+
+Datasets 库提供了一条非常便捷的命令，可以在模型中心（hub）上下载和缓存数据集。你可以以下代码下载 MRPC 数据集：
+
+```python
+from datasets import load_dataset
+
+raw_datasets = load_dataset("glue", "mrpc")
+raw_datasets
+```
+
+```python
+DatasetDict({
+    train: Dataset({
+        features: ['sentence1', 'sentence2', 'label', 'idx'],
+        num_rows: 3668
+    })
+    validation: Dataset({
+        features: ['sentence1', 'sentence2', 'label', 'idx'],
+        num_rows: 408
+    })
+    test: Dataset({
+        features: ['sentence1', 'sentence2', 'label', 'idx'],
+        num_rows: 1725
+    })
+})
+```
+
+现在我们获得了一个 `DatasetDict` 对象，这个对象包含训练集、验证集和测试集。每一个集合都包含 4 个列（ `sentence1` ， `sentence2` ， `label` 和 `idx` ）以及一个代表行数的变量（每个集合中的行的个数）。运行结果显示该训练集中有 3668 对句子，验证集中有 408 对，测试集中有 1725 对。
+
+默认情况下，该命令会下载数据集并缓存到 `~/.cache/huggingface/datasets` 。回想在第 2 章中学到的我们可以通过设置 `HF_HOME` 环境变量来自定义缓存的文件夹。
+
+我们可以访问该数据集中的每一个 `raw_train_dataset` 对象，例如使用字典：
+
+```python
+raw_train_dataset = raw_datasets["train"]
+raw_train_dataset[0]
+```
+
+```python
+{'idx': 0,
+ 'label': 1,
+ 'sentence1': 'Amrozi accused his brother , whom he called " the witness " , of deliberately distorting his evidence .',
+ 'sentence2': 'Referring to him as only " the witness " , Amrozi accused his brother of deliberately distorting his evidence .'}
+```
+
+现在可以看到标签已经是整数了，因此不需要对标签做任何预处理。如果想要知道哪个数字对应于哪个标签，我们可以查看 `raw_train_dataset` 的 `features` 。这告诉我们每列的类型：
+
+```python
+raw_train_dataset.features
+```
+
+```python
+{'sentence1': Value(dtype='string', id=None),
+ 'sentence2': Value(dtype='string', id=None),
+ 'label': ClassLabel(num_classes=2, names=['not_equivalent', 'equivalent'], names_file=None, id=None),
+ 'idx': Value(dtype='int32', id=None)}
+```
+
+在上面的例子之中， `Label（标签）` 是一种 `ClassLabel（分类标签）` ，也就是使用整数建立起类别标签的映射关系。 `0` 对应于 `not_equivalent（非同义）` ， `1` 对应于 `equivalent（同义）` 。
+
+<div custom-style="Tip-green">
+
+✏️ **试试看！** 查看训练集的第 15 行元素和验证集的 87 行元素。他们的标签是什么？
+
+</div>
+
+### 预处理数据集 
+
+为了预处理数据集，我们需要将文本转换为模型能够理解的数字。在第三章我们已经学习过。这是通过一个 Tokenizer 完成的，我们可以向 Tokenizer 输入一个句子或一个句子列表。以下代码表示对每对句子中的所有第一句和所有第二句进行 tokenize：
+
+```python
+from transformers import AutoTokenizer
+
+checkpoint = "bert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+tokenized_sentences_1 = tokenizer(raw_datasets["train"]["sentence1"])
+tokenized_sentences_2 = tokenizer(raw_datasets["train"]["sentence2"])
+```
+
+不过在将两句话传递给模型，预测这两句话是否是同义之前，我们需要给这两句话依次进行适当的预处理。Tokenizer 不仅仅可以输入单个句子，还可以输入一组句子，并按照 BERT 模型所需要的输入进行处理：
+
+```python
+inputs = tokenizer("This is the first sentence.", "This is the second one.")
+inputs
+```
+
+```python
+{ 
+  'input_ids': [101, 2023, 2003, 1996, 2034, 6251, 1012, 102, 2023, 2003, 1996, 2117, 2028, 1012, 102],
+  'token_type_ids': [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+  'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+}
+```
+
+我们在第三章讨论了 `输入词id(input_ids)` 和 `注意力遮罩(attention_mask)` ，但尚未讨论 `类型标记ID(token_type_ids)` 。在本例中， `类型标记ID(token_type_ids)` 的作用就是告诉模型输入的哪一部分是第一句，哪一部分是第二句。
+
+<div custom-style="Tip-green">
+
+✏️ ** 试试看！** 选取训练集中的第 15 个元素，将两句话分别标记为一对。结果和上方的例子有什么不同？
+
+</div>
+
+如果将 `input_ids` 中的 id 转换回文字：
+
+```python
+tokenizer.convert_ids_to_tokens(inputs["input_ids"])
+```
+
+将得到：
+
+```python
+['[CLS]', 'this', 'is', 'the', 'first', 'sentence', '.', '[SEP]', 'this', 'is', 'the', 'second', 'one', '.', '[SEP]']
+```
+
+所以我们看到模型需要输入的形式是 `[CLS] sentence1 [SEP] sentence2 [SEP]` 。所以当有两句话的时候， `类型标记ID(token_type_ids)` 的值是：
+
+```python
+['[CLS]', 'this', 'is', 'the', 'first', 'sentence', '.', '[SEP]', 'this', 'is', 'the', 'second', 'one', '.', '[SEP]']
+[      0,      0,    0,     0,       0,          0,   0,       0,      1,    1,     1,        1,     1,   1,       1]
+```
+
+现在输入中 `[CLS] sentence1 [SEP]` 它们的 `token_type_ids` 均为 `0` ，而其他部分对应 `sentence2 [SEP]` ，所有的 `token_type_ids` 均为 `1` 。
+
+请注意，如果选择其他的 checkpoint，不一定具有 `token_type_ids` ，比如，DistilBERT 模型就不会返回。只有当 tokenizer 在预训练期间使用过这一层，也就是模型在构建时依赖它们时，才会返回 `token_type_ids` 类型。
+
+在这里，BERT 使用了带有 `token_type_ids` 的预训练 tokenizer，除了我们在第二章中讨论的掩码语言建模，还有一个额外的应用类型称为“下一句预测”。这个任务的目标是对句子对之间的关系进行建模。
+
+在下一句预测任务中，会给模型输入成对的句子（带有随机遮罩的 token），并要求预测第二个句子是否紧跟第一个句子。为了使任务具有挑战性，提高模型的泛化能力，数据集中一有一半句子对中的句子在原始文档中顺序排列，另一半句子对中的两个句子来自两个不同的文档。
+
+一般来说无需要担心在你的输入中是否需要有 `token_type_ids` 。只要你使用相同的 checkpoint 的 Tokenizer 和模型，Tokenizer 就会知道向模型提供什么，一切都会顺利进行。
+
+现在我们已经了解了 Tokenizer 如何处理一对句子，我们可以用它来处理整个数据集：就像在第三章中一样，我们可以给 Tokenizer 提供一对句子，第一个参数是它第一个句子的列表，第二个参数是第二个句子的列表。这也与我们在第三章中看到的填充和截断选项兼容。因此预处理训练数据集的一种方法是：
+
+```python
+tokenized_dataset = tokenizer(
+    raw_datasets["train"]["sentence1"],
+    raw_datasets["train"]["sentence2"],
+    padding=True,
+    truncation=True,
+)
+```
+
+这种方法虽然有效，但有一个缺点是它返回的是一个字典（字典的键是 `输入词id(input_ids)` ， `注意力遮罩(attention_mask)` 和 `类型标记ID(token_type_ids)` ，字典的值是键所对应值的列表）。这意味着在转换过程中要有足够的内存来存储整个数据集才不会出错。不过来自Datasets 库中的数据集是以 [Apache Arrow](https://arrow.apache.org)(https://arrow.apache.org) 格式存储在磁盘上的，因此你只需将接下来要用的数据加载在内存中，这对内存容量的需求比较友好。
+
+我们将使用 [Dataset.map()](https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.map)(https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.map) 方法将数据保存为 dataset 格式，如果我们需要做更多的预处理而不仅仅是 tokenization 它还支持了一些额外的自定义的方法。 `map()` 方法的工作原理是使用一个函数处理数据集的每个元素。让我们定义一个对输入进行 tokenize 的函数：
+
+```python
+def tokenize_function(example):
+    return tokenizer(example["sentence1"], example["sentence2"], truncation=True)
+```
+
+该函数接收一个字典（与 dataset 的项类似）并返回一个包含 `输入词id(input_ids)` ， `注意力遮罩(attention_mask)` 和 `token_type_ids` 键的新字典。请注意，如果 `example` 字典所对应的值包含多个句子（每个键作为一个句子列表），那么它依然可以运行，就像前面的例子一样， `tokenizer` 可以处理成对的句子列表，这样的话我们可以在调用 `map()` 时使用该选项 `batched=True` ，这将显著加快处理的速度。 `tokenizer` 来自 [Tokenizers](https://github.com/huggingface/tokenizers)(https://github.com/huggingface/tokenizers) 库，由 Rust 编写而成。当一次给它很多输入时，这个 `tokenizer` 可以处理地非常快。
+
+请注意，我们暂时在 `tokenize_function` 中省略了 padding 参数。这是因为将所有的样本填充到最大长度并不高效。一个更好的做法是：在构建 batch 的时候。这样我们只需要填充到每个 batch 中的最大长度，而不是整个数据集的最大长度。当输入长度不稳定时，这可以节省大量时间和处理能力！
+
+下面是我们如何使用一次性 `tokenize_function` 处理整个数据集。我们在调用 `map` 时使用了 `batch =True` ，这样函数就可以同时处理数据集的多个元素，而不是分别处理每个元素，这样可以更快进行预处理。
+
+以下是如何使用 tokenization 函数处理我们的整个数据集的方法。我们在调用 map 时使用了 `batched=True` ，因此该函数会一次性处理数据集的多个元素，而不是单独处理每个元素。这样可以实现更快的预处理。
+
+```python
+tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)
+tokenized_datasets
+```
+
+Datasets 库进行这种处理的方式是向数据集添加新的字段，每个字段对应预处理函数返回的字典中的每个键：
+
+```python
+DatasetDict({
+    train: Dataset({
+        features: ['attention_mask', 'idx', 'input_ids', 'label', 'sentence1', 'sentence2', 'token_type_ids'],
+        num_rows: 3668
+    })
+    validation: Dataset({
+        features: ['attention_mask', 'idx', 'input_ids', 'label', 'sentence1', 'sentence2', 'token_type_ids'],
+        num_rows: 408
+    })
+    test: Dataset({
+        features: ['attention_mask', 'idx', 'input_ids', 'label', 'sentence1', 'sentence2', 'token_type_ids'],
+        num_rows: 1725
+    })
+})
+```
+
+在使用预处理函数 `map()` 时，甚至可以通过传递 `num_proc` 参数并行处理。我们在这里没有这样做，因为在这个例子中Tokenizers 库已经使用多线程来更快地对样本 tokenize，但是如果没有使用该库支持的快速 tokenizer，使用 `num_proc` 可能会加快预处理。
+
+我们的 `tokenize_function` 返回包含 `输入词id(input_ids)` ， `注意力遮罩(attention_mask)` 和 `token_type_ids` 键的字典，这三个字段被添加到数据集的三个集合里（训练集、验证集和测试集）。请注意，如果预处理函数 `map()` 为现有键返回一个新值，我们可以通过使用 `map()` 函数返回的新值修改现有的字段。
+
+我们最后需要做的是将所有示例填充到该 batch 中最长元素的长度，这种技术被称为动态填充。
+
+### 动态填充 
+
+{#if fw === 'pt'}
+
+负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数` 。这是一个可以在构建 `DataLoader` 时传递的一个参数，默认是一个将你的数据集转换为 PyTorch 张量并将它们拼接起来的函数（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例子中下是不可行的，因为我们的输入的大小可能是不相同的。我们特意推迟了填充的时间，只在每个 batch 上进行必要的填充，以避免出现有大量填充的过长输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
+
+{:else}
+
+负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数` 。默认的拼合函数只会将你的样本转换为 `tf.Tensor` 并将它们拼接起来（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例中是不可行的，因为我们的输入不是都是相同大小的。我们特意推迟了填充时间，只在每个 batch 上进行填充，以避免有太多填充的过长的输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
+
+{/if}
+
+为了解决句子长度不统一的问题，我们必须定义一个 collate 函数，该函数会将每个 batch 句子填充到正确的长度。幸运的是，transformer 库通过 `DataCollatorWithPadding` 为我们提供了这样一个函数。当你实例化它时，它需要一个 tokenizer （用来知道使用哪种填充 token 以及模型期望在输入的左边填充还是右边填充），然后它会自动完成所有需要的操作：
+
+{#if fw === 'pt'}
+
+```python
+from transformers import DataCollatorWithPadding
+
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+```
+
+{:else}
+
+```python
+from transformers import DataCollatorWithPadding
+
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="tf")
+```
+
+{/if}
+
+为了测试这个新玩具，让我们从我们的训练集中抽取几个样本，在这里，我们删除列 `idx` ， `sentence1` 和 `sentence2` ，因为不需要它们，而且删除包含字符串的列（我们不能用字符串创建张量），然后查看一个 batch 中每个条目的长度：
+
+```python
+samples = tokenized_datasets["train"][:8]
+samples = {k: v for k, v in samples.items() if k not in ["idx", "sentence1", "sentence2"]}
+[len(x) for x in samples["input_ids"]]
+```
+
+```python
+[50, 59, 47, 67, 59, 50, 62, 32]
+```
+
+不出所料，我们得到了不同长度的样本，从 32 到 67。动态填充意味着这个 batch 都应该填充到长度为 67，这是这个 batch 中的最大长度。如果没有动态填充，所有的样本都必须填充到整个数据集中的最大长度，或者模型可以接受的最大长度。让我们再次检查 `data_collator` 是否正确地动态填充了这批样本：
+
+```python
+batch = data_collator(samples)
+{k: v.shape for k, v in batch.items()}
+```
+{#if fw === 'tf'}
+
+```python
+{'attention_mask': TensorShape([8, 67]),
+ 'input_ids': TensorShape([8, 67]),
+ 'token_type_ids': TensorShape([8, 67]),
+ 'labels': TensorShape([8])}
+```
+
+{:else}
+
+```python
+{'attention_mask': torch.Size([8, 67]),
+ 'input_ids': torch.Size([8, 67]),
+ 'token_type_ids': torch.Size([8, 67]),
+ 'labels': torch.Size([8])}
+```
+
+看起来不错！现在，我们已经从原始文本转化为了模型可以处理的数据，我们准备好对其进行微调。
+
+{/if}
+
+<div custom-style="Tip-green">
+
+✏️ ** 试试看！** 在 GLUE SST-2 数据集上复刻上述预处理。它有点不同，因为它是由单句而不是成对的句子组成的，但是我们所做的其他事情看起来应该是一样的。另一个进阶的挑战是尝试编写一个可用于任何 GLUE 任务的预处理函数。
+
+</div>
+
+{#if fw === 'tf'}
+
+现在我们有了 dataset 和 data collator，我们需要使用 data collator 批量地处理 dataset。我们可以手动加载批次并进行整合，但这需要大量工作，性能也有可能不好。相反，有一个简单的方法为这个问题提供高效的解决方案： `to_tf_dataset()` 。它将把你的数据集包装一个 `tf.data.Dataset` 类中，这个方法带有一个可选的 data collator 功能。 `tf.data.Dataset` 是 TensorFlow 的本地格式，Keras 可以直接用它来进行 `model.fit()` ，因此这种方法会立即将Dataset 转换为可用于训练的格式。让我们用我们的数据集演示一下这个方法！
+
+```py
+tf_train_dataset = tokenized_datasets["train"].to_tf_dataset(
+    columns=["attention_mask", "input_ids", "token_type_ids"],
+    label_cols=["labels"],
+    shuffle=True,
+    collate_fn=data_collator,
+    batch_size=8,
+)
+
+tf_validation_dataset = tokenized_datasets["validation"].to_tf_dataset(
+    columns=["attention_mask", "input_ids", "token_type_ids"],
+    label_cols=["labels"],
+    shuffle=False,
+    collate_fn=data_collator,
+    batch_size=8,
+)
+```
+
+就是这样！我们可以把这些数据集带入下一节，在经过所有艰苦的数据预处理工作之后，训练将变得非常简单和愉快。
+
+{/if}
+
+## 4.2 使用 Trainer API 微调模型 
+
+
+Transformers 提供了一个 `Trainer` 类，以帮助你在自己的数据集上微调它提供的任何预训练模型。完成上一节中的所有数据预处理工作后，你只需要执行几个步骤来创建 `Trainer` 最难的部分可能是准备运行 `Trainer.train()` 配置环境，因为它在 CPU 上运行速度会非常慢。如果你没有设置 GPU，可以访问免费的 GPU 或 TPU 
+
+Transformers 提供了一个 `Trainer` 类，可以帮助你在数据集上微调任何预训练模型。在上一节中完成所有数据预处理工作后，你只需完成几个步骤来定义 `Trainer` 。最困难的部分可能是准备运行 `Trainer.train()` 所需的环境，因为在 CPU 上运行速度非常慢。如果你没有设置 GPU，可以使用 [Google Colab](https://colab.research.google.com/)(https://colab.research.google.com/) （国内网络无法使用） 上获得免费的 GPU 或 TPU。
+
+下面的示例假设你已经执行了上一节中的示例。下面是在开始学习这一节之前你需要运行的代码：
+
+```python
+from datasets import load_dataset
+from transformers import AutoTokenizer, DataCollatorWithPadding
+
+raw_datasets = load_dataset("glue", "mrpc")
+checkpoint = "bert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+def tokenize_function(example):
+    return tokenizer(example["sentence1"], example["sentence2"], truncation=True)
+
+tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+```
+
+#### Training 
+
+在我们定义 `Trainer` 之前第一步要定义一个 `TrainingArguments` 类，它包含 `Trainer` 在训练和评估中使用的所有超参数。你只需要提供的参数是一个用于保存训练后的模型以及训练过程中的 checkpoint 的目录。对于其余的参数你可以保留默认值，这对于简单的微调应该效果就很好了。
+
+```python
+from transformers import TrainingArguments
+
+training_args = TrainingArguments("test-trainer")
+```
+
+<div custom-style="Tip-green">
+
+💡 如果你想在训练期间自动将模型上传到 Hub，请将 `push_to_hub=True` 添加到 TrainingArguments 之中。我们将在第五章中详细介绍这部分。
+
+</div>
+
+第二步是定义我们的模型。与前一章一样，我们将使用 `AutoModelForSequenceClassification` 类，它有两个参数：
+
+```python
+from transformers import AutoModelForSequenceClassification
+
+model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+```
+
+你会注意到，和第三章不同的是，在实例化此预训练模型后会收到警告。这是因为 BERT 没有在句子对分类方面进行过预训练，所以预训练模型的 head 已经被丢弃，而是添加了一个适合句子序列分类的新头部。这些警告表明一些权重没有使用（对应于被放弃的预训练头的权重），而有些权重被随机初始化（对应于新 head 的权重）。
+
+一旦有了我们的模型，我们就可以定义一个 `Trainer` 把到目前为止构建的所有对象—— `model`  `training_args` 训练和验证数据集， `data_collator` 和 `tokenizer` 传递给 `Trainer` ：
+
+```python
+from transformers import Trainer
+
+trainer = Trainer(
+    model,
+    training_args,
+    train_dataset=tokenized_datasets["train"],
+    eval_dataset=tokenized_datasets["validation"],
+    data_collator=data_collator,
+    tokenizer=tokenizer,
+)
+```
+
+请注意，当你在这里传递 `tokenizer` 时， `Trainer` 默认使用的 `data_collator` 是之前预定义的 `DataCollatorWithPadding` 所以你可以在本例中可以跳过 `data_collator=data_collator` 一行。在第 2 节中向你展示这部分处理过程仍然很重要！
+
+要在我们的数据集上微调模型，我们只需调用 `Trainer` 的 `train()` 方法：
+
+```python
+trainer.train()
+```
+
+开始微调（在 GPU 上应该需要几分钟），每 500 步报告一次训练损失。然而它不会告诉你模型的性能（或质量）如何。这是因为：
+
+1. 我们没有告诉 Trainer 在训练过程中进行评估，比如将 `evaluation_strategy` 设置为“ `step` ”（在每个 `eval_steps` 步骤评估一次）或“ `epoch` ”（在每个 epoch 结束时评估）。
+2. 我们没有为 `Trainer` 提供一个 `compute_metrics()` 函数来计算上述评估过程的指标（否则评估将只输出 loss，但这不是一个非常直观的数字）。
+
+#### 评估 
+
+让我们看看如何构建一个有用的 `compute_metrics()` 函数，并在下次训练时使用它。该函数必须接收一个 `EvalPrediction` 对象（它是一个带有 `predictions` 和 `label_ids` 字段的参数元组），并将返回一个字符串映射到浮点数的字典（字符串是返回的指标名称，而浮点数是其值）。为了从我们的模型中获得预测结果，可以使用 `Trainer.predict()` 命令：
+
+```python
+predictions = trainer.predict(tokenized_datasets["validation"])
+print(predictions.predictions.shape, predictions.label_ids.shape)
+```
+
+```python
+(408, 2) (408,)
+```
+
+`predict()` 方法的输出另一个带有三个字段的命名元组: `predictions`  `label_ids` 和 `metrics`  `metrics` 字段将只包含所传递的数据集的损失,以及一些时间指标(总共花费的时间和平均预测时间)。当我们定义了自己的 `compute_metrics()` 函数并将其传递给 `Trainer` 该字段还将包含 `compute_metrics()` 返回的结果。`predict()` 是一个二维数组,形状为 408 × 2(408 是我们使用的数据集中的元素数量),这是我们传递给 `pprdict()` 的数据集中每个元素的 logits(正如在前一章中看到的,所有 Transformer 模型都返回 logits)。为了将它们转化为可以与我们的标签进行比较的预测值,我们需要在第二轴上取值最大的索引:
+
+```python
+import numpy as np
+
+preds = np.argmax(predictions.predictions, axis=-1)
+```
+
+我们现在可以将这些 `preds` 与标签进行比较。为了构建我们的 `compute_metric()` 函数，我们将使用 [Evaluate](https://github.com/huggingface/evaluate/)(https://github.com/huggingface/evaluate/) 库中的指标。我们可以像加载数据集一样轻松地加载与 MRPC 数据集关联的指标，这次是使用 `evaluate.load()` 函数。返回的对象有一个 `compute()` 方法，我们可以用它来进行指标的计算：
+
+```python
+import evaluate
+
+metric = evaluate.load("glue", "mrpc")
+metric.compute(predictions=preds, references=predictions.label_ids)
+```
+
+```python
+{'accuracy': 0.8578431372549019, 'f1': 0.8996539792387542}
+```
+
+你得到的确切结果可能会有所不同，因为模型头部的随机初始化可能会改变其指标。在这里，我们可以看到我们的模型在验证集上的准确率为 85.78％，F1 分数为 89.97。这是用于评估 MRPC 数据集在 GLUE 基准测试中的结果的两个指标。在 BERT 论文中的表格中，基础模型的 F1 分数为 88.9。那是 uncased 模型，而我们现在正在使用 cased 模型，这解释了为什么我们得到了更好的结果。
+
+最后把所有东西打包在一起，我们就得到了 `compute_metrics()` 函数：
+
+```python
+def compute_metrics(eval_preds):
+    metric = evaluate.load("glue", "mrpc")
+    logits, labels = eval_preds
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
+```
+
+为了查看模型在每个训练周期结束时的好坏，下面是我们如何使用 `compute_metrics()` 函数定义一个新的 `Trainer` 
+
+```python
+training_args = TrainingArguments("test-trainer", evaluation_strategy="epoch")
+model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+
+trainer = Trainer(
+    model,
+    training_args,
+    train_dataset=tokenized_datasets["train"],
+    eval_dataset=tokenized_datasets["validation"],
+    data_collator=data_collator,
+    tokenizer=tokenizer,
+    compute_metrics=compute_metrics,
+)
+```
+
+请注意，我们设置了一个新的 `TrainingArguments` ，其 `evaluation_strategy` 设置为 `epoch` 并且创建了一个新模型。如果不创建新的模型就直接训练，就只会继续训练我们已经训练过的模型。为了启动新的训练，我们执行：
+
+```python
+trainer.train()
+```
+
+这一次，它将在每个 epoch 结束时在训练损失的基础上报告验证损失和指标。同样，由于模型的随机头部初始化，达到的准确率/F1 分数可能与我们发现的略有不同，这是由于模型头部的随机初始化造成的，但应该相差不多。 `Trainer` 可以在多个 GPU 或 TPU 上运行，并提供许多选项，例如混合精度训练（在训练的参数中使用 `fp16 = True` ）。我们将在第十章讨论它支持的所有内容。
+
+使用 `Trainer` API 微调的介绍到此结束。在第八章中会给出一个对大多数常见的 NLP 任务进行训练的例子，但现在让我们看看如何在 PyTorch 中做相同的操作。
+
+<div custom-style="Tip-green">
+
+✏️ **试试看！** 使用你在第 2 节中进行的数据处理，在 GLUE SST-2 数据集上对模型进行微调。
+
+</div>
+
+
+### 一个完整的训练 
+
+
+现在，我们将了解如何在不使用 `Trainer` 类的情况下实现与上一节相同的结果。同样，我们假设你已经完成了第 2 节中的数据处理。下面是一个简短的总结，涵盖了你需要在本节之前运行的所有内容：
+
+```python
+from datasets import load_dataset
+from transformers import AutoTokenizer, DataCollatorWithPadding
+
+raw_datasets = load_dataset("glue", "mrpc")
+checkpoint = "bert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+def tokenize_function(example):
+    return tokenizer(example["sentence1"], example["sentence2"], truncation=True)
+
+tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+```
+
+#### 训练前的准备 
+
+在实际编写我们的训练循环之前，我们需要定义一些对象。首先是我们将用于迭代批次的数据加载器。但在定义这些数据加载器之前，我们需要对我们的 `tokenized_datasets` 进行一些后处理，以处理一些 Trainer 自动为我们处理的内容。具体来说，我们需要：
+
+- 删除与模型不需要的列（如 `sentence1` 和 `sentence2` 列）。
+- 将列名 `label` 重命名为 `labels` （因为模型默认的参数是 `labels` ）。
+- 设置数据集的格式，使其返回 PyTorch 张量而不是列表。
+
+针对上面的每个步骤，我们的 `tokenized_datasets` 都有一个方法：
+
+```python
+tokenized_datasets = tokenized_datasets.remove_columns(["sentence1", "sentence2", "idx"])
+tokenized_datasets = tokenized_datasets.rename_column("label", "labels")
+tokenized_datasets.set_format("torch")
+tokenized_datasets["train"].column_names
+```
+
+然后，我们可以检查结果中是否只有模型能够接受的列：
+
+```python
+["attention_mask", "input_ids", "labels", "token_type_ids"]
+```
+
+至此，我们可以轻松定义数据加载器：
+
+```python
+from torch.utils.data import DataLoader
+
+train_dataloader = DataLoader(
+    tokenized_datasets["train"], shuffle=True, batch_size=8, collate_fn=data_collator
+)
+eval_dataloader = DataLoader(
+    tokenized_datasets["validation"], batch_size=8, collate_fn=data_collator
+)
+```
+
+为了快速检验数据处理中没有错误，我们可以这样检验其中的一个 batch：
+
+```python
+for batch in train_dataloader:
+    break
+{k: v.shape for k, v in batch.items()}
+```
+
+```python
+{'attention_mask': torch.Size([8, 65]),
+ 'input_ids': torch.Size([8, 65]),
+ 'labels': torch.Size([8]),
+ 'token_type_ids': torch.Size([8, 65])}
+```
+
+请注意，实际的形状可能与你略有不同，因为我们为训练数据加载器设置了 `shuffle=True` ，并且模型会将句子填充到 `batch` 中的最大长度。
+
+现在我们已经完全完成了数据预处理（对于任何 ML 从业者来说都是一个令人满意但难以实现的目标），让我们将注意力转向模型。我们会像在上一节中所做的那样实例化它：
+
+```python
+from transformers import AutoModelForSequenceClassification
+
+model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+```
+
+为了确保训练过程中一切顺利，我们将 `batch` 传递给这个模型：
+
+```python
+outputs = model(**batch)
+print(outputs.loss, outputs.logits.shape)
+```
+
+```python
+tensor(0.5441, grad_fn=<NllLossBackward>) torch.Size([8, 2])
+```
+
+当我们提供 `labels` 时，Transformers 模型都将返回这个 `batch` 的 `loss` ，我们还得到了 `logits` （ `batch` 中的每个输入有两个，所以张量大小为 8 x 2）。
+
+我们几乎准备好编写我们的训练循环了！我们只是缺少两件事：优化器和学习率调度器。由于我们试图手动实现 `Trainer` 的功能，我们将使用相同的优化器和学习率调度器。 `Trainer` 使用的优化器是 `AdamW` ，它与 `Adam` 相同，但加入了权重衰减正则化的一点变化（参见 Ilya Loshchilov 和 Frank Hutter 的 [“Decoupled Weight Decay Regularization”](https://arxiv.org/abs/1711.05101)(https://arxiv.org/abs/1711.05101) ）：
+
+```python
+from transformers import AdamW
+
+optimizer = AdamW(model.parameters(), lr=5e-5)
+```
+
+最后，默认使用的学习率调度器只是从最大值 （5e-5） 到 0 的线性衰减。为了定义它，我们需要知道我们训练的次数，即所有数据训练的次数（epochs）乘以的 batch 的数量（即我们训练数据加载器的长度）。 `Trainer` 默认情况下使用三个 `epochs` ，因此我们定义训练过程如下：
+
+```python
+from transformers import get_scheduler
+
+num_epochs = 3
+num_training_steps = num_epochs * len(train_dataloader)
+lr_scheduler = get_scheduler(
+    "linear",
+    optimizer=optimizer,
+    num_warmup_steps=0,
+    num_training_steps=num_training_steps,
+)
+print(num_training_steps)
+```
+
+```python
+1377
+```
+
+#### 训练循环 
+
+最后一件事：如果我们可以访问 GPU，我们将希望使用 GPU（在 CPU 上，训练可能需要几个小时而不是几分钟）。为此，我们定义了一个 `device` ，它在 GPU 可用的情况下指向 GPU 我们将把我们的模型和 `batch` 放在 `device` 上：
+
+```python
+import torch
+
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+model.to(device)
+device
+```
+
+```python
+device(type='cuda')
+```
+
+我们现在准备好训练了！为了知道训练何时结束，我们使用 `tqdm` 库，在训练步骤数上添加了一个进度条：
+
+```python
+from tqdm.auto import tqdm
+
+progress_bar = tqdm(range(num_training_steps))
+
+model.train()
+for epoch in range(num_epochs):
+    for batch in train_dataloader:
+        batch = {k: v.to(device) for k, v in batch.items()}
+        outputs = model(**batch)
+        loss = outputs.loss
+        loss.backward()
+
+        optimizer.step()
+        lr_scheduler.step()
+        optimizer.zero_grad()
+        progress_bar.update(1)
+```
+
+你可以看到训练循环的核心与介绍中的非常相似。我们没有要求任何检验，所以这个训练循环不会告诉我们任何关于模型目前的状态。我们需要为此添加一个评估循环。
+
+#### 评估循环 
+
+正如我们之前所做的那样，我们将使用 Evaluate 库提供的指标。我们已经了解了 `metric.compute()` 方法，当我们使用 `add_batch()` 方法进行预测循环时，实际上该指标可以为我们累积所有 `batch` 的结果。一旦我们累积了所有 `batch` ，我们就可以使用 `metric.compute()` 得到最终结果。以下是如何在评估循环中实现所有这些的方法：
+
+```python
+import evaluate
+
+metric = evaluate.load("glue", "mrpc")
+model.eval()
+for batch in eval_dataloader:
+    batch = {k: v.to(device) for k, v in batch.items()}
+    with torch.no_grad():
+        outputs = model(**batch)
+
+    logits = outputs.logits
+    predictions = torch.argmax(logits, dim=-1)
+    metric.add_batch(predictions=predictions, references=batch["labels"])
+
+metric.compute()
+```
+
+```python
+{'accuracy': 0.8431372549019608, 'f1': 0.8907849829351535}
+```
+
+同样，由于模型头部初始化和数据打乱的随机性，你的结果会略有不同，但应该相差不多。
+
+<div custom-style="Tip-green">
+
+✏️ **试试看！** 修改之前的训练循环以在 SST-2 数据集上微调你的模型。
+
+</div>
+
+#### 使用Accelerate 加速你的训练循环 
+
+我们之前定义的训练循环在单个 CPU 或 GPU 上运行良好。但是使用 [Accelerate](https://github.com/huggingface/accelerate)(https://github.com/huggingface/accelerate) 库，只需进行一些调整，我们就可以在多个 GPU 或 TPU 上启用分布式训练。从创建训练和验证数据加载器开始，我们的手动训练循环如下所示：
+
+```python
+from transformers import AdamW, AutoModelForSequenceClassification, get_scheduler
+
+model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+optimizer = AdamW(model.parameters(), lr=3e-5)
+
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+model.to(device)
+
+num_epochs = 3
+num_training_steps = num_epochs * len(train_dataloader)
+lr_scheduler = get_scheduler(
+    "linear",
+    optimizer=optimizer,
+    num_warmup_steps=0,
+    num_training_steps=num_training_steps,
+)
+
+progress_bar = tqdm(range(num_training_steps))
+
+model.train()
+for epoch in range(num_epochs):
+    for batch in train_dataloader:
+        batch = {k: v.to(device) for k, v in batch.items()}
+        outputs = model(**batch)
+        loss = outputs.loss
+        loss.backward()
+
+        optimizer.step()
+        lr_scheduler.step()
+        optimizer.zero_grad()
+        progress_bar.update(1)
+```
+
+以下是更改的部分：
+
+```diff
++ from accelerate import Accelerator
+  from transformers import AdamW, AutoModelForSequenceClassification, get_scheduler
+
++ accelerator = Accelerator()
+
+  model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+  optimizer = AdamW(model.parameters(), lr=3e-5)
+
+- device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+- model.to(device)
+
++ train_dataloader, eval_dataloader, model, optimizer = accelerator.prepare(
++     train_dataloader, eval_dataloader, model, optimizer
++ )
+
+  num_epochs = 3
+  num_training_steps = num_epochs * len(train_dataloader)
+  lr_scheduler = get_scheduler(
+      "linear",
+      optimizer=optimizer,
+      num_warmup_steps=0,
+      num_training_steps=num_training_steps
+  )
+
+  progress_bar = tqdm(range(num_training_steps))
+
+  model.train()
+  for epoch in range(num_epochs):
+      for batch in train_dataloader:
+-         batch = {k: v.to(device) for k, v in batch.items()}
+          outputs = model(**batch)
+          loss = outputs.loss
+-         loss.backward()
++         accelerator.backward(loss)
+
+          optimizer.step()
+          lr_scheduler.step()
+          optimizer.zero_grad()
+          progress_bar.update(1)
+```
+
+要添加的第一行是导入 `Accelerator` 。第二行实例化一个 `Accelerator` 对象 它将查看环境并初始化适当的分布式设置。Accelerate 为你处理数据在设备间的传递，因此你可以删除将模型放在设备上的那行代码（或者，如果你愿意，可使用 `accelerator.device` 代替 `device` ）。
+
+然后大部分工作会在将数据加载器、模型和优化器发送到的 `accelerator.prepare()` 中完成。这将会把这些对象包装在适当的容器中，以确保你的分布式训练按预期工作。要进行的其余更改是删除将 `batch` 放在 `device` 的那行代码（同样，如果你想保留它，你可以将其更改为使用 `accelerator.device` ） 并将 `loss.backward()` 替换为 `accelerator.backward(loss)` 。
+
+<div custom-style="Tip-yellow">
+
+⚠️ 为了使云端 TPU 提供的加速中发挥最大的效益，我们建议使用 tokenizer 的 `padding=max_length` 和 `max_length` 参数将你的样本填充到固定长度。
+
+</div>
+
+如果你想复制并粘贴来直接运行，以下是 Accelerate 的完整训练循环：
+
+```python
+from accelerate import Accelerator
+from transformers import AdamW, AutoModelForSequenceClassification, get_scheduler
+
+accelerator = Accelerator()
+
+model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+optimizer = AdamW(model.parameters(), lr=3e-5)
+
+train_dl, eval_dl, model, optimizer = accelerator.prepare(
+    train_dataloader, eval_dataloader, model, optimizer
+)
+
+num_epochs = 3
+num_training_steps = num_epochs * len(train_dl)
+lr_scheduler = get_scheduler(
+    "linear",
+    optimizer=optimizer,
+    num_warmup_steps=0,
+    num_training_steps=num_training_steps,
+)
+
+progress_bar = tqdm(range(num_training_steps))
+
+model.train()
+for epoch in range(num_epochs):
+    for batch in train_dl:
+        outputs = model(**batch)
+        loss = outputs.loss
+        accelerator.backward(loss)
+
+        optimizer.step()
+        lr_scheduler.step()
+        optimizer.zero_grad()
+        progress_bar.update(1)
+```
+
+把这个放在 `train.py` 文件中，可以让它在任何类型的分布式设置上运行。要在分布式设置中试用它，请运行以下命令：
+
+```python
+accelerate config
+```
+
+这将询问你几个配置的问题并将你的回答保存到此命令使用的配置文件中：
+
+```python
+accelerate launch train.py
+```
+
+这将启动分布式训练
+
+这将启动分布式训练。如果你想在 Notebook 中尝试此操作（例如，在 Colab 上使用 TPU 进行测试），只需将代码粘贴到一个 `training_function()` 函数中，并在最后一个单元格中运行：
+
+```python
+from accelerate import notebook_launcher
+
+notebook_launcher(training_function)
+```
+
+你可以在 [Accelerate repo](https://github.com/huggingface/accelerate/tree/main/examples)(https://github.com/huggingface/accelerate/tree/main/examples) 找到更多的示例。
+
+
+## 4.3 使用 Keras 微调模型 
+
+一旦完成上一节中的所有数据预处理工作后，你只剩下最后的几个步骤来训练模型。 但是请注意，`model.fit()` 命令在 CPU 上运行会非常缓慢。 如果你没有GPU，你可以在 [Google Colab](https://colab.research.google.com)(https://colab.research.google.com)（国内网络无法使用） 上使用免费的 GPU 或 TPU。
+
+下面的代码示例假设你已经运行了上一节中的代码示例。 下面是在开始学习这一节之前你需要运行的代码：
+
+```python
+from datasets import load_dataset
+from transformers import AutoTokenizer, DataCollatorWithPadding
+import numpy as np
+
+raw_datasets = load_dataset("glue", "mrpc")
+checkpoint = "bert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+def tokenize_function(example):
+    return tokenizer(example["sentence1"], example["sentence2"], truncation=True)
+
+tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)
+
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="tf")
+
+tf_train_dataset = tokenized_datasets["train"].to_tf_dataset(
+    columns=["attention_mask", "input_ids", "token_type_ids"],
+    label_cols=["labels"],
+    shuffle=True,
+    collate_fn=data_collator,
+    batch_size=8,
+)
+
+tf_validation_dataset = tokenized_datasets["validation"].to_tf_dataset(
+    columns=["attention_mask", "input_ids", "token_type_ids"],
+    label_cols=["labels"],
+    shuffle=False,
+    collate_fn=data_collator,
+    batch_size=8,
+)
+```
+
+### 训练模型 
+
+从Transformers 导入的 TensorFlow 模型已经是 Keras 模型。
+
+这意味着一旦我们有了数据，只需要很少的工作就可以开始对其进行训练。
+
+和第三章使用的方法一样, 我们将使用二分类的 `TFAutoModelForSequenceClassification`类，我们将有两个标签: 
+
+```python
+from transformers import TFAutoModelForSequenceClassification
+
+model = TFAutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+```
+
+你会注意到，与第三章不同的是，在实例化这个预训练的模型后会收到警告。 这是因为 BERT 没有对句子对的分类进行预训练，所以预训练模型的 head 已经被丢弃，并且插入了一个适合序列分类的新 head。 警告表明，这些权重没有使用（对应于丢弃的预训练 head 权重），而其他一些权重是随机初始化的（对应于新 head 的权重）。 最后它建议你训练模型，这正是我们现在要做的。
+
+为了在我们的数据集上微调模型，我们只需要在我们的模型上调用 `compile()` 方法，然后将我们的数据传递给 `fit()` 方法。 这将启动微调过程（在 GPU 上应该需要几分钟）并输出训练损失，以及每个 epoch 结束时的验证损失。
+
+<div custom-style="Tip-green">
+
+请注意Transformers 模型具有大多数 Keras 模型所没有的特殊能力——它们可以自动使用内部计算的损失。 如果你没有在 `compile()` 中设置损失参数，它们可以自动使用适当的损失函数，并在内部计算。 请注意，要使用内部损失，你需要将标签作为输入的一部分传入模型，而不是作为单独的标签（这是在 Keras 模型中使用标签的常规方式）。 你将在课程的第 2 部分中看到这方面的示例，正确定义损失函数可能会有些棘手。 然而对于序列分类来说，标准的 Keras 损失函数效果很好，因此我们将在这里使用它。
+
+</div>
+
+```python
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
+
+model.compile(
+    optimizer="adam",
+    loss=SparseCategoricalCrossentropy(from_logits=True),
+    metrics=["accuracy"],
+)
+model.fit(
+    tf_train_dataset,
+    validation_data=tf_validation_dataset,
+)
+```
+
+<div custom-style="Tip-green">
+
+请注意这里有一个非常常见的陷阱——你可以把损失的名称作为一个字符串传递给 Keras，但默认情况下，Keras 会假设你已经对输出进行了 softmax。 然而，许多模型在经过 softmax 函数之前输出的是被称为 `logits` 的值。 我们需要告诉损失函数，我们的模型是否已经使用 softmax 函数进行了处理，唯一的方法是传递一个损失函数并且在参数的部分告诉模型，而不是只传递一个字符串。
+
+</div>
+
+### 改善训练的效果 
+
+如果你尝试上述代码，它的确可以运行，但你会发现损失下降得很慢或者不规律。 主要原因是`学习率`。 与损失一样，当我们把优化器的名称作为字符串传递给 Keras 时，Keras 会初始化该优化器具有所有参数的默认值，包括学习率。 不过根据长期经验，我们知道Transformer 模型的通常的最佳学习率比 Adam 的默认值（即1e-3，也写成为 10 的 -3 次方，或 0.001）低得多。 5e-5（0.00005），是一个更好的起始点。
+
+除了降低学习率之外，我们还有第二个技巧：我们可以在训练过程中慢慢降低学习率。在文献中，你有时会看到这被称为 学习率的`衰减（decaying）` 或 `退火（annealing）`。 在 Keras 中，最好的方法是使用 `学习率调度器（learning rate scheduler）`。 一个好用的调度器是`PolynomialDecay`——尽管它的名字叫`PolynomialDecay（多项式衰减）`，但在默认设置下，它只是简单将学习率从初始值线性衰减到最终值，这正是我们想要的。不过为了正确使用调度程序，我们需要告诉它训练的次数。我们可以通过下面的`num_train_steps`计算得到。
+
+```python
+from tensorflow.keras.optimizers.schedules import PolynomialDecay
+
+batch_size = 8
+num_epochs = 3
+
+# 训练步数是数据集中的样本数量,除以 batch 大小,然后乘以总的 epoch 数。
+# 注意这里的 tf_train_dataset 是 batch 形式的 tf.data.Dataset,
+# 而不是原始的 Hugging Face Dataset ,所以使用 len() 计算它的长度已经是 num_samples // batch_size。
+num_train_steps = len(tf_train_dataset) * num_epochs
+lr_scheduler = PolynomialDecay(
+    initial_learning_rate=5e-5, end_learning_rate=0.0, decay_steps=num_train_steps
+)
+from tensorflow.keras.optimizers import Adam
+
+opt = Adam(learning_rate=lr_scheduler)
+```
+
+<div custom-style="Tip-green">
+
+Transformers 库还有一个 `create_optimizer()` 函数，它将创建一个具有学习率衰减的 `AdamW` 优化器。 这是一个快捷的方式，你将在本课程的后续部分中详细了解。
+
+</div>
+
+现在我们有了全新的优化器，我们可以尝试使用它进行训练。 首先，让我们重新加载模型，重新设置刚刚训练时的权重，然后我们可以使用新的优化器对其进行编译：
+
+```python
+import tensorflow as tf
+
+model = TFAutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
+loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+model.compile(optimizer=opt, loss=loss, metrics=["accuracy"])
+```
+
+现在，我们再次进行fit：
+
+```python
+model.fit(tf_train_dataset, validation_data=tf_validation_dataset, epochs=3)
+```
+
+<div custom-style="Tip-green">
+
+💡 如果你想在训练期间自动将模型上传到 Hub，你可以在 `model.fit()` 方法中传递一个 `PushToHubCallback`。 我们将在第五章中进一步了解这个问题。
+
+</div>
+
+### 模型预测 
+
+
+训练和观察损失的下降都是非常好，但如果我们想从训练后的模型中得到输出，或者计算一些指标，或者在生产中使用模型，该怎么办呢？为此，我们可以使用`predict()` 方法。 这将返回模型的输出头的`logits`数值，每个类一个。
+
+```python
+preds = model.predict(tf_validation_dataset)["logits"]
+```
+
+我们可以通过使用 argmax 将这些 logits 转换为模型的类别预测，最高的 logits，对应于最有可能的类别
+
+```python
+class_preds = np.argmax(preds, axis=1)
+print(preds.shape, class_preds.shape)
+```
+
+```python
+(408, 2) (408,)
+```
+
+现在，让我们使用这些 `preds` 来计算一些指标！ 我们可以像加载数据集一样轻松地加载与 MRPC 数据集相关的指标，这次使用的是 `evaluate.load()` 函数。 返回的对象有一个 `compute()` 方法，我们可以使用它来进行指标的计算：
+
+```python
+import evaluate
+
+metric = evaluate.load("glue", "mrpc")
+metric.compute(predictions=class_preds, references=raw_datasets["validation"]["label"])
+```
+
+```python
+{'accuracy': 0.8578431372549019, 'f1': 0.8996539792387542}
+```
+
+由于模型头的随机初始化可能会改变模型达到的指标，因此你得到的最终结果可能会有所不同。在这里，我们可以看到我们的模型在验证集上的准确率为85.78%，F1分数为89.97。 这就是用于评估 GLUE 基准的 MRPC 数据集上的结果两个指标。 [BERT 论文](https://arxiv.org/pdf/1810.04805.pdf)(https://arxiv.org/pdf/1810.04805.pdf) 中的表格报告了基本模型的 F1 分数为 88.9。 那是 `uncased` 模型，而我们目前使用的是 `cased` 模型，这解释了为什么我们会得到了更好的结果。
+
+关于使用 Keras API 进行微调的介绍到此结束。 在第八章将给出对大多数常见 NLP 任务微调或训练的示例。如果你想在 Keras API 上磨练自己的技能，请尝试使第2节所学的的数据处理技巧在 GLUE SST-2 数据集上微调模型。
+
+## 4.4 章末总结及章末测试
+
+这是非常令人高兴的！在前两章中，你了解了模型和 Tokenizer，现在你知道如何针对你自己的数据对它们进行微调。回顾一下，在本章中，你：
+
+{#if fw === 'pt'}
+
+* 了解了 [Hub](https://huggingface.co/datasets)(https://huggingface.co/datasets)(https://huggingface.co/datasets) 中的数据集
+* 学习了如何加载和预处理数据集，包括使用动态填充和数据整理器
+* 实现你自己的模型微调和评估
+* 实现了一个较为底层的训练循环
+* 使用 Accelerate 轻松调整你的训练循环，使其适用于多个 GPU 或 TPU
+
+{:else}
+
+* 了解了 [Hub](https://huggingface.co/datasets)(https://huggingface.co/datasets)(https://huggingface.co/datasets) 中的数据集
+* 学习了如何加载和预处理数据集
+* 学习了如何使用 Keras 微调和评估模型
+* 实现了自定义指标
+
+{/if}
+
+
+### 章末测试 
+
+####  1. “emotion”数据集包含带有情绪标记的 Twitter 消息。请在 [ Hub ]( https://huggingface.co/datasets)( https://huggingface.co/datasets)( https://huggingface.co/datasets) 中进行搜索并读取数据集的数据卡片。判断哪一个基本情感不在这个数据集中？
+
+1. Joy
+2. Love
+3. Confusion
+4. Surprise
+
+####  2. 在 [ Hub ]( https://huggingface.co/datasets)( https://huggingface.co/datasets)( https://huggingface.co/datasets) 中搜索`ar_sarcasm`数据集，该数据集支持哪个任务？
+
+1. 情绪分类
+2. 机器翻译
+3. 命名实体识别
+4. 回答问题
+
+####  3. 当输入一对句子时 BERT 模型会需要进行怎么样的预处理？
+
+1. Tokens_of_sentence_1 [ SEP ] Tokens_of_sentence_2
+2. [CLS] Tokens_of_sentence_1 Tokens_of_sentence_2
+3. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2 [SEP]
+4. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2
+
+####  4. `Dataset.map ()`方法的好处是什么？
+
+1. 该函数执行后的结果被缓存，重新执行代码时不会花费多余时间。
+2. 它可以进行并行化处理，比在数据集的每个元素上依次使用函数进行处理更快。
+3. 它不会将整个数据集加载到内存中，而是在处理一个元素后立即保存结果。
+
+####  5. 什么是动态填充？
+
+1. 就是将每个批处理的输入填充到整个数据集中的最大长度。
+2. 这是当你在创建 batch 时将输入填充到该 batch 内句子的最大长度。
+3. 当你将每个句子填充到与数据集中的前一个句子相同数量的 token 时。
+
+####  6. collate 函数的用途是什么？
+
+1. 它确保数据集中的所有序列具有相同的长度。
+2. 它把所有的样本地放在一个 batch 里。
+3. 它预处理整个数据集。
+4. 它截断数据集中的序列。
+
+####  7. 当你用一个预先训练过的语言模型（例如 `bert-base-uncased`）实例化一个`AutoModelForXxx`类，这个类与它所被训练的任务不匹配时会发生什么？
+
+1. 什么都没有，但会出现一个警告。
+2. 丢弃预训练模型的头部，取而代之的是一个适合该任务的新头部。
+3. 丢弃预先训练好的模型头部。
+4. 没有，因为模型仍然可以针对不同的任务进行微调。
+
+####  8．`TrainingArguments`的用途是什么？
+
+1. 它包含了所有用于训练和评估的超参数。
+2. 它指定模型的大小。
+3. 它只包含用于评估的超参数。
+
+####  9．为什么要使用Accelerate 库？
+
+1. 它可以对更快地访问的模型。
+2. 它提供了一个高级 API，因此我不必实现自己的训练循环。
+3. 它使我们的训练循环运行在分布式架构上
+4. 它提供了更多的优化功能。
+
+####  4．当模型与预训练的任务不匹配时，例如使用预训练的语言模型（例如“`bert-base-uncased`”）实例化“`TFAutoModelForXxx`”类时会发生什么？
+
+1. 什么都不会发生，但是你会得到一个警告。
+2. 丢弃预训练模型的头部，并插入一个新的头部以适应新的任务。
+3. 丢弃预先训练好的模型头部。
+4. 没有，因为模型仍然可以针对不同的任务进行微调。
+
+####  5．来自 `transformers` 的 TensorFlow 模型已经是 Keras 模型，这有什么好处？
+
+1. 这些模型可在开箱即用的 TPU 上运行。
+2. 你可以利用现有方法，例如 <code>compile()</code>、<code>fit()</code> 和 <code>predict()</code>。
+3. 你可以学习 Keras 以及 Transformer。
+4. 你可以轻松计算与数据集相关的指标。
+
+####  6．如何定义自己的自定义指标？
+
+1. 使用子类化 tf.keras.metrics.Metric。
+2. 使用 Keras 函数 API。
+3. 使用使用带有签名的 <code>metric_fn(y_true, y_pred)</code> 函数。
+4. 使用谷歌搜索。
+
+### 解析
+
+####  1. “emotion”数据集包含带有情绪标记的 Twitter 消息。请在 [ Hub ]( https://huggingface.co/datasets)( https://huggingface.co/datasets)( https://huggingface.co/datasets) 中进行搜索并读取数据集的数据卡片。判断哪一个基本情感不在这个数据集中？
+
+正确选项: 3. Confusion
+
+1. Joy    
+解析: 再试一次——这种情绪在这个数据集中！
+2. Love    
+解析: 再试一次——这种情绪在这个数据集中！
+3. Confusion    
+解析: 正确! Confusion 不是六种基本情绪之一。
+4. Surprise    
+解析: Surprise! 再试一次！
+
+####  2. 在 [ Hub ](https://huggingface.co/datasets)(https://huggingface.co/datasets)( https://huggingface.co/datasets) 中搜索`ar_sarcasm`数据集，该数据集支持哪个任务？
+
+正确选项: 1. 情绪分类
+
+1. 情绪分类    
+解析: 没错! 多亏这些标签。
+2. 机器翻译    
+解析: 不对，请再看看[数据卡片](https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm)！
+3. 命名实体识别    
+解析: 不对，请再看看[数据卡片](https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm)(https://huggingface.co/datasets/ar_sarcasm) ！
+4. 回答问题    
+解析: 不对， 再试一次！
+
+####  3. 当输入一对句子时 BERT 模型会需要进行怎么样的预处理？
+
+正确选项: 3. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2 [SEP]
+
+1. Tokens_of_sentence_1 [ SEP ] Tokens_of_sentence_2    
+解析: 需要使用一个特殊的 `[SEP]` token 来分隔两个句子，但是只有这一个还不够。
+2. [CLS] Tokens_of_sentence_1 Tokens_of_sentence_2    
+解析: 需要一个特殊的 `[CLS]` token 来指示句子的开头，但是只有这一个还不够。
+3. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2 [SEP]    
+解析: 正确！
+4. [CLS] Tokens_of_sentence_1 [SEP] Tokens_of_sentence_2    
+解析: 需要一个特殊的 `[CLS]` token 来指示句子的开头，还需要一个特殊的 `[SEP]` token 来分隔两个句子，但这还不是需要全部的预处理。
+
+####  4. `Dataset.map ()`方法的好处是什么？
+
+正确选项: 1. 该函数执行后的结果被缓存，重新执行代码时不会花费多余时间。
+
+正确选项: 2. 它可以进行并行化处理，比在数据集的每个元素上依次使用函数进行处理更快。
+
+正确选项: 3. 它不会将整个数据集加载到内存中，而是在处理一个元素后立即保存结果。
+
+1. 该函数执行后的结果被缓存，重新执行代码时不会花费多余时间。    
+解析: 这确实是这种方法的优点之一! 不过还有别的优点...
+2. 它可以进行并行化处理，比在数据集的每个元素上依次使用函数进行处理更快。    
+解析: 这是该方法一个比较优雅的特点！ 不过还有别的优点...
+3. 它不会将整个数据集加载到内存中，而是在处理一个元素后立即保存结果。    
+解析: 这是这种方法的一个优点！ 不过还有别的优点...
+
+####  5. 什么是动态填充？
+
+正确选项: 2. 这是当你在创建 batch 时将输入填充到该 batch 内句子的最大长度。
+
+1. 就是将每个批处理的输入填充到整个数据集中的最大长度。    
+解析: 它确实意味着创建 batch 时进行填充，但不是整个数据集中的最大长度。
+2. 这是当你在创建 batch 时将输入填充到该 batch 内句子的最大长度。    
+解析: 没错！“动态”部分即每个 batch 的大小是在创建时确定的，因此不同的 batch 可能具有不同的形状。
+3. 当你将每个句子填充到与数据集中的前一个句子相同数量的 token 时。    
+解析: 错误，而且由于我们在训练过程中对数据集进行了随机的打乱，因此数据集中的顺序是没有意义的。
+
+####  6. collate 函数的用途是什么？
+
+1. 它确保数据集中的所有序列具有相同的长度。    
+解析: collate 函数用于处理单个 batch 处理，而不是整个数据集。此外，我们讨论的是所有 collate 函数通常的用途，而不是特定的  <code>DataCollatorWithPadding</code> 
+2. 它把所有的样本地放在一个 batch 里。    
+解析: 正确！你可将 collate 函数作为 <code>DataLoader</code>函数的一个参数。 我们使用了 <code>DataCollatorWithPadding</code> 函数
+3. 它预处理整个数据集。    
+解析: 预处理函数（preprocessing）用于预处理整个数据集，而不是 collate 函数。
+4. 它截断数据集中的序列。    
+解析: collate 函数用于处理单个 batch 的处理，而不是整个数据集。如果你对截断感兴趣，可以使用 <code> tokenizer </code> 的<code> truncate </code> 参数。
+
+####  7. 当你用一个预先训练过的语言模型（例如 `bert-base-uncased`）实例化一个`AutoModelForXxx`类，这个类与它所被训练的任务不匹配时会发生什么？
+
+正确选项: 2. 丢弃预训练模型的头部，取而代之的是一个适合该任务的新头部。
+
+1. 什么都没有，但会出现一个警告。    
+解析: 确实出现警告，但这还不是全部！
+2. 丢弃预训练模型的头部，取而代之的是一个适合该任务的新头部。    
+解析: 正确的。 例如，当我们将 AutoModelForSequenceClassification 与 bert-base-uncased 结合使用时，我们在实例化模型时将收到警告。 预训练的头不用于序列分类任务，因此它被丢弃，并使用随机初始化权重的用于序列分类任务的头。
+3. 丢弃预先训练好的模型头部。    
+解析: 还需要做其他事情，再试一次！
+4. 没有，因为模型仍然可以针对不同的任务进行微调。    
+解析: 这个经过训练的模特的头没有经过训练来解决这个问题，所以我们应该丢弃该头部！
+
+####  8．`TrainingArguments`的用途是什么？
+
+正确选项: 1. 它包含了所有用于训练和评估的超参数。
+
+1. 它包含了所有用于训练和评估的超参数。    
+解析: 正确！
+2. 它指定模型的大小。    
+解析: 模型大小是由模型配置定义的，而不是由 `TrainingArguments` 类 。
+3. 它只包含用于评估的超参数。    
+解析: 在示例中，我们还指定了模型的超参数及其检查点的保存位置。 再试一次！
+
+####  9．为什么要使用Accelerate 库？
+
+正确选项: 3. 它使我们的训练循环运行在分布式架构上
+
+1. 它可以对更快地访问的模型。    
+解析: 不，Accelerate 库不提供任何模型。
+2. 它提供了一个高级 API，因此我不必实现自己的训练循环。    
+解析: 这是我们使用 <code>Trainer</code> 所做的事情，而不是 Accelerate 库。 再试一次
+3. 它使我们的训练循环运行在分布式架构上    
+解析: 正确! 使用Accelerate 库，你的训练循环可以在多个 GPU 和 TPUs 上运行。
+4. 它提供了更多的优化功能。    
+解析: 不，Accelerate 库不提供任何优化功能。
+
+####  4．当模型与预训练的任务不匹配时，例如使用预训练的语言模型（例如“`bert-base-uncased`”）实例化“`TFAutoModelForXxx`”类时会发生什么？
+
+正确选项: 2. 丢弃预训练模型的头部，并插入一个新的头部以适应新的任务。
+
+1. 什么都不会发生，但是你会得到一个警告。    
+解析: 你确实得到了警告，但这还不是全部！
+2. 丢弃预训练模型的头部，并插入一个新的头部以适应新的任务。    
+解析: 正确的。 例如，当我们将 `TFAutoModelForSequenceClassification `与 `bert-base-uncased` 结合使用时，我们在实例化模型时收到警告。 预训练的头不用于序列分类任务，因此它被丢弃，使用新的头并且随机初始化权重。
+3. 丢弃预先训练好的模型头部。    
+解析: 除此之外还有一些事情会发生， 再试一次！
+4. 没有，因为模型仍然可以针对不同的任务进行微调。    
+解析: 这个经过训练的模特的头没有经过训练来解决这个问题，所以我们应该丢掉这个头！
+
+####  5．来自 `transformers` 的 TensorFlow 模型已经是 Keras 模型，这有什么好处？
+
+正确选项: 2. 你可以利用现有方法，例如 <code>compile()</code>、<code>fit()</code> 和 <code>predict()</code>。
+
+正确选项: 3. 你可以学习 Keras 以及 Transformer。
+
+1. 这些模型可在开箱即用的 TPU 上运行。    
+解析: 差不多！但是还需要进行一些小的额外修改。例如，你需要在 <code>TPUStrategy</code> 范围内运行所有内容，包括模型的初始化。
+2. 你可以利用现有方法，例如 <code>compile()</code>、<code>fit()</code> 和 <code>predict()</code>。    
+解析: 正确! 一旦你有了数据，只需要很少的工作就可以在这些数据上进行训练。
+3. 你可以学习 Keras 以及 Transformer。    
+解析: 没错，但我们要找的是别的东西:)
+4. 你可以轻松计算与数据集相关的指标。    
+解析: Keras 帮助我们训练和评估模型，而不是计算与数据集相关的指标。
+
+####  6．如何定义自己的自定义指标？
+
+正确选项: 1. 使用子类化 tf.keras.metrics.Metric。
+
+正确选项: 3. 使用使用带有签名的 <code>metric_fn(y_true, y_pred)</code> 函数。
+
+正确选项: 4. 使用谷歌搜索。

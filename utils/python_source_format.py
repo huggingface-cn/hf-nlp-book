@@ -1,6 +1,6 @@
 import os
 import re
-fix_path='Course/publish//chapter7//'
+fix_path='Course/publish//chapter9//'
 for mdx_file in os.listdir(fix_path):
     if mdx_file.endswith('.mdx'):
         with open(fix_path+mdx_file,'r',encoding='utf-8') as f:

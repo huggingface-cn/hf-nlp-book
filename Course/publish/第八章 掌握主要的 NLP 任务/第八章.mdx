@@ -2330,6 +2330,7 @@ tf_eval_dataset = model.prepare_tf_dataset(
 #### 评估指标 
 
 {#if fw === 'pt'}
+
 `Seq2SeqTrainer` 对其超类 `Trainer` 的增强功能是在评估或预测时使用 `generate()` 方法。在训练过程中，模型会使用 `decoder_input_ids` ，并通过一个注意力掩码确保它不使用在预测的 token 之后的 token，以加速训练。在推理过程中，我们无法使用这些标签。因此，使用同样的设置评估我们的模型是一个好主意。
 
 正如我们在第二章看到的，解码器通过一个一个地预测 token 来执行推理——这是Transformers 在幕后通过 `generate()` 方法实现的。 `Seq2SeqTrainer` 将允许我们在设置 `predict_with_generate=True` 时，使用该方法进行评估。

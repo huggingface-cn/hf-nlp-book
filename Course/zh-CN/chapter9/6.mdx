@@ -12,13 +12,13 @@
 
 ### 使用状态保存数据 [[使用状态保存数据]]
 
-Gradio支持会话状态，在页面加载期间跨多次提交保留数据。会话状态对于构建聊天机器人等需要在用户与模型交互时保持数据的演示非常有用。请注意，会话状态不会在不同用户之间共享数据。
+Gradio 支持会话状态，在页面加载期间跨多次提交保留数据。会话状态对于构建聊天机器人等需要在用户与模型交互时保持数据的演示非常有用。请注意，会话状态不会在不同用户之间共享数据。
 
 要将数据存储在会话状态中，你需要做三件事：
 
-1. 向函数中传递一个额外的参数, 该参数表示接口的状态。
+1. 向函数中传递一个额外的参数，该参数表示接口的状态。
 2. 在函数结束时，将状态的更新值作为额外的返回值返回。
-3. 在创建 `Interface` 时添加 'state' 输入和 'state' 输出组件。
+3. 在创建 `Interface` 时添加 `state` 输入和 `state` 输出组件。
 
 请参考下面的聊天机器人示例：
 
@@ -59,7 +59,7 @@ iface.launch()
 
 ### 通过解释来理解预测 [[通过解释来理解预测]]
 
-大多数机器学习模型都是黑盒子，函数的内部逻辑对终端用户是隐藏的。为了提高透明度，我们设计了一个功能使得为模型添加解释非常简单，只需将Interface类中的interpretation关键字设置为`default`即可。这样，你的用户就可以理解输入的哪些部分对输出有影响。请看下面的简单界面示例，它显示了一个带有解释功能的图像分类器：
+大多数机器学习模型都是黑盒子，函数的内部逻辑对终端用户是隐藏的。为了提高透明度，我们设计了一个功能使得为模型添加解释非常简单，只需将 Interface 类中的 interpretation 关键字设置为 `default` 即可。这样，你的用户就可以理解输入的哪些部分对输出有影响。请看下面的简单界面示例，它显示了一个带有解释功能的图像分类器：
 
 ```py
 import requests
@@ -94,6 +94,6 @@ gr.Interface(
 
 <iframe src="https://course-demos-gradio-image-interpretation.hf.space" frameBorder="0" height="570" title="Gradio app" class="container p-0 flex-grow space-iframe" allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"></iframe>
 
-除了 Gradio 提供的默认解释方法之外，你还可以在 `interpretation` 参数中指定 `shap` ，并设置 `num_shap` 参数。这将使用基于 Shapley 的解释方法，你可以在 [这里](https://christophm.github.io/interpretable-ml-book/shap.html) 阅读更多信息。最后，还可以将自己的解释函数传入 `interpretation` 参数。在 Gradio 的[入门页面](https://gradio.app/getting_started/) 中可以看到一个例子。
+除了 Gradio 提供的默认解释方法之外，你还可以在 `interpretation` 参数中指定 `shap` ，并设置 `num_shap` 参数。这将使用基于 Shapley 的解释方法，你可以在 [这里](https://christophm.github.io/interpretable-ml-book/shap.html) 阅读更多信息。最后，还可以将自己的解释函数传入 `interpretation` 参数。在 Gradio 的 [入门页面](https://gradio.app/getting_started/) 中可以看到一个例子。
 
-这就是我们对 Gradio 的 `Interface` 类的深入研究。正如我们所看到的，这个类使得用几行 Python 代码创建机器学习演示变得简单。然而，有时你会想通过改变布局或将多个预测函数链接在一起来定制你的 demo。如果我们能以某种方式将 `Interface` 拆分可定制的 "块"，那不是很好吗？幸运的是，我们可以做到！这是最后一节的主题。
+这就是我们对 Gradio 的 `Interface` 类的深入研究。正如我们所看到的，这个类使得用几行 Python 代码创建机器学习演示变得简单。然而，有时你会想通过改变布局或将多个预测函数链接在一起来定制你的 demo。如果我们能以某种方式将 `Interface` 拆分可定制的 “块”，那不是很好吗？幸运的是，我们可以做到！这是最后一节的主题。

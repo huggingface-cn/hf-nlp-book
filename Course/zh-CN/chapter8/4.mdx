@@ -414,7 +414,7 @@ trainer.model.config.num_labels
 2
 ```
 
-有两个标签，只有 0 和 1 作为目标，但是根据错误信息我们得到一个 2。得到一个 2 实际上是正常的：如果我们记得我们之前提取的标签名称，有三个，所以在我们的数据集中我们有索引 0、1 和 2 。问题是我们没有告诉我们的模型，它应该创建三个标签。让我们解决这个问题！
+有两个标签，只有 0 和 1 作为目标，但是根据错误信息我们得到一个 2。得到一个 2 实际上是正常的：如果我们记得我们之前提取的标签名称，有三个，所以在我们的数据集中我们有索引 0、1 和 2 问题是我们没有告诉我们的模型，它应该创建三个标签。让我们解决这个问题！
 
 ```py
 from datasets import load_dataset
@@ -531,7 +531,7 @@ trainer.optimizer.step()
 现在我们已经解决了代码的所有问题，一切都很完美，训练应该可以顺利进行，对吧？没那么快！如果你运行 `trainer.train()` 命令，一开始一切看起来都不错，但过一会儿你会得到以下信息：
 
 ```py
-# 这将花费很长时间并且会出错，所以不要直接运行这个单元
+# 这将花费很长时间并且会出错,所以不要直接运行这个单元
 trainer.train()
 ```
 
@@ -541,7 +541,7 @@ TypeError: only size-1 arrays can be converted to Python scalars
 
 你将意识到此错误出现在评估阶段，因此这是我们需要调试的最后一件事。
 
-你可以独立于训练运行Trainer的评估循环，如下所示：
+你可以独立于训练运行 Trainer 的评估循环，如下所示：
 
 ```py
 trainer.evaluate()
@@ -557,7 +557,7 @@ TypeError: only size-1 arrays can be converted to Python scalars
 
 </Tip>
 
-在尝试调试评估循环中的问题之前，你应该首先确保你已经查看了数据，能够正确地形成了 batch ，并且可以在其上运行你的模型。我们已经完成了所有这些步骤，因此可以执行以下代码而不会出错：
+在尝试调试评估循环中的问题之前，你应该首先确保你已经查看了数据，能够正确地形成了 batch 并且可以在其上运行你的模型。我们已经完成了所有这些步骤，因此可以执行以下代码而不会出错：
 
 ```py
 for batch in trainer.get_eval_dataloader():
@@ -763,13 +763,13 @@ compute_metrics((preds.cpu().numpy(), labels.cpu().numpy()))
 
 <Tip warning={true}>
 
-⚠️ 在此测试之后，你需要创建模型和`Trainer`，因为获得的模型可能无法在你的完整数据集上恢复和学习有用的东西。
+⚠️ 在此测试之后，你需要创建模型和 `Trainer` ，因为获得的模型可能无法在你的完整数据集上恢复和学习有用的东西。
 
 </Tip>
 
-### 在你有第一个baseline 模型之前不要调整任何东西 [[在你有第一个baseline 模型之前不要调整任何东西]]
+### 在你有第一个 baseline 模型之前不要调整任何东西 [[在你有第一个baseline 模型之前不要调整任何东西]]
 
-超参数调优总是被强调为机器学习中最难的部分，但这只是帮助你在指标上有所收获的最后一步。大多数情况下， `Trainer` 的默认超参数可以很好地为你提供良好的结果，因此在你拥有数据集上的baseline 模型之前，不要急于进行耗时和昂贵的超参数搜索。
+超参数调优总是被强调为机器学习中最难的部分，但这只是帮助你在指标上有所收获的最后一步。大多数情况下， `Trainer` 的默认超参数可以很好地为你提供良好的结果，因此在你拥有数据集上的 baseline 模型之前，不要急于进行耗时和昂贵的超参数搜索。
 
 一旦你有一个足够好的模型，你就可以开始稍微调整一下。不要尝试使用不同的超参数启动一千次运行，而是比较一个超参数的不同值的几次运行，以了解哪个超参数对指标影响最大。
 
@@ -781,9 +781,9 @@ compute_metrics((preds.cpu().numpy(), labels.cpu().numpy()))
 
 以下是一些可能有用的额外资源：
 
--Joel Grus 的 [“作为工程最佳实践工具的再现性”](https://docs.google.com/presentation/d/1yHLPvPhUs2KGI5ZWo0sU-PKU3GimAk3iTsI38Z-B5Gw/edit#slide=id.p)
+-Joel Grus 的 [“作为工程最佳实践工具的再现性”](https://docs.google.com/presentation/d/1yHLPvPhUs2KGI5ZWo0sU-PKU3GimAk3iTsI38Z-B5Gw/edit#slide=id.p) 
 - Cecelia Shao 的 [“神经网络调试清单”](https://towardsdatascience.com/checklist-for-debugging-neural-networks-d8b2a9434f21) 
 - Chase Roberts 的 [“如何对机器学习代码进行单元测试”](https://medium.com/@keeper6928/how-to-unit-test-machine-learning-code-57cf6fd81765) 
-- Andrej Karpathy 的 [“训练神经网络的秘诀”](http://karpathy.github.io/2019/04/25/recipe)
+- Andrej Karpathy 的 [“训练神经网络的秘诀”](http://karpathy.github.io/2019/04/25/recipe) 
 
-当然，并不是你在训练神经网络时遇到的每个问题都是你自己的错！如果你在🤗 Transformers或🤗 Datasets库中遇到了似乎不正确的东西，你可能遇到了一个错误。你应该告诉我们所有这些问题，在下一节中，我们将详细解释如何做到这一点。
+当然，并不是你在训练神经网络时遇到的每个问题都是你自己的错！如果你在🤗 Transformers 或🤗 Datasets 库中遇到了似乎不正确的东西，你可能遇到了一个错误。你应该告诉我们所有这些问题，在下一节中，我们将详细解释如何做到这一点。

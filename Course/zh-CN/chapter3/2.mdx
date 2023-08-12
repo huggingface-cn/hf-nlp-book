@@ -118,7 +118,7 @@ DatasetDict({
 
 现在我们获得了一个 `DatasetDict` 对象，这个对象包含训练集、验证集和测试集。每一个集合都包含 4 个列（ `sentence1` ， `sentence2` ， `label` 和 `idx` ）以及一个代表行数的变量（每个集合中的行的个数）。运行结果显示该训练集中有 3668 对句子，验证集中有 408 对，测试集中有 1725 对。
 
-默认情况下，该命令会下载数据集并缓存到 `~/.cache/huggingface/datasets`。回想在第 2 章中学到的我们可以通过设置 `HF_HOME` 环境变量来自定义缓存的文件夹。
+默认情况下，该命令会下载数据集并缓存到 `~/.cache/huggingface/datasets` 。回想在第 2 章中学到的我们可以通过设置 `HF_HOME` 环境变量来自定义缓存的文件夹。
 
 我们可以访问该数据集中的每一个 `raw_train_dataset` 对象，例如使用字典：
 
@@ -174,7 +174,7 @@ tokenized_sentences_1 = tokenizer(raw_datasets["train"]["sentence1"])
 tokenized_sentences_2 = tokenizer(raw_datasets["train"]["sentence2"])
 ```
 
-不过在将两句话传递给模型，预测这两句话是否是同义之前，我们需要给这两句话依次进行适当的预处理。 Tokenizer 不仅仅可以输入单个句子，还可以输入一组句子，并按照 BERT 模型所需要的输入进行处理：
+不过在将两句话传递给模型，预测这两句话是否是同义之前，我们需要给这两句话依次进行适当的预处理。Tokenizer 不仅仅可以输入单个句子，还可以输入一组句子，并按照 BERT 模型所需要的输入进行处理：
 
 ```py
 inputs = tokenizer("This is the first sentence.", "This is the second one.")
@@ -218,12 +218,12 @@ tokenizer.convert_ids_to_tokens(inputs["input_ids"])
 
 现在输入中 `[CLS] sentence1 [SEP]` 它们的 `token_type_ids` 均为 `0` ，而其他部分对应 `sentence2 [SEP]` ，所有的 `token_type_ids` 均为 `1` 。
 
-请注意，如果选择其他的 checkpoint，不一定具有 `token_type_ids` ，比如，DistilBERT 模型就不会返回。只有当 tokenizer 在预训练期间使用过这一层，也就是模型在构建时依赖它们时，才会返回类型 token_type_ids。
+请注意，如果选择其他的 checkpoint，不一定具有 `token_type_ids` ，比如，DistilBERT 模型就不会返回。只有当 tokenizer 在预训练期间使用过这一层，也就是模型在构建时依赖它们时，才会返回 `token_type_ids` 类型。
 
 在这里，BERT 使用了带有 `token_type_ids` 的预训练 tokenizer，除了我们在 [第一章](/course/chapter1) 中讨论的掩码语言建模，还有一个额外的应用类型称为“下一句预测”。这个任务的目标是对句子对之间的关系进行建模。
 
 
-在下一句预测任务中，会给模型输入成对的句子（带有随机遮罩的token），并要求预测第二个句子是否紧跟第一个句子。为了使任务具有挑战性，提高模型的泛化能力，数据集中一有一半句子对中的句子在原始文档中顺序排列，另一半句子对中的两个句子来自两个不同的文档。
+在下一句预测任务中，会给模型输入成对的句子（带有随机遮罩的 token），并要求预测第二个句子是否紧跟第一个句子。为了使任务具有挑战性，提高模型的泛化能力，数据集中一有一半句子对中的句子在原始文档中顺序排列，另一半句子对中的两个句子来自两个不同的文档。
 
 一般来说无需要担心在你的输入中是否需要有 `token_type_ids` 。只要你使用相同的 checkpoint 的 Tokenizer 和模型，Tokenizer 就会知道向模型提供什么，一切都会顺利进行。
 
@@ -238,9 +238,9 @@ tokenized_dataset = tokenizer(
 )
 ```
 
-这种方法虽然有效，但有一个缺点是它返回的是一个字典（字典的键是 `输入词id(input_ids)` ， `注意力遮罩(attention_mask)` 和 `类型标记ID(token_type_ids)` ，字典的值是键所对应值的列表）。这意味着在转换过程中要有足够的内存来存储整个数据集才不会出错。不过来自🤗 Datasets库中的数据集是以 [Apache Arrow](https://arrow.apache.org) 格式存储在磁盘上的，因此你只需将接下来要用的数据加载在内存中，这对内存容量的需求比较友好。
+这种方法虽然有效，但有一个缺点是它返回的是一个字典（字典的键是 `输入词id(input_ids)` ， `注意力遮罩(attention_mask)` 和 `类型标记ID(token_type_ids)` ，字典的值是键所对应值的列表）。这意味着在转换过程中要有足够的内存来存储整个数据集才不会出错。不过来自🤗 Datasets 库中的数据集是以 [Apache Arrow](https://arrow.apache.org) 格式存储在磁盘上的，因此你只需将接下来要用的数据加载在内存中，这对内存容量的需求比较友好。
 
-我们将使用 [Dataset.map()](https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.map) 方法将数据保存为 dataset 格式，如果我们需要做更多的预处理而不仅仅是 tokenization ，它还支持了一些额外的自定义的方法。 `map()` 方法的工作原理是使用一个函数处理数据集的每个元素。让我们定义一个对输入进行 tokenize 的函数：
+我们将使用 [Dataset.map()](https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.map) 方法将数据保存为 dataset 格式，如果我们需要做更多的预处理而不仅仅是 tokenization 它还支持了一些额外的自定义的方法。 `map()` 方法的工作原理是使用一个函数处理数据集的每个元素。让我们定义一个对输入进行 tokenize 的函数：
 
 ```py
 def tokenize_function(example):
@@ -251,9 +251,9 @@ def tokenize_function(example):
 
 请注意，我们暂时在 `tokenize_function` 中省略了 padding 参数。这是因为将所有的样本填充到最大长度并不高效。一个更好的做法是：在构建 batch 的时候。这样我们只需要填充到每个 batch 中的最大长度，而不是整个数据集的最大长度。当输入长度不稳定时，这可以节省大量时间和处理能力！
 
-下面是我们如何使用一次性`tokenize_function`处理整个数据集。我们在调用 `map` 时使用了 `batch =True` ，这样函数就可以同时处理数据集的多个元素，而不是分别处理每个元素，这样可以更快进行预处理。
+下面是我们如何使用一次性 `tokenize_function` 处理整个数据集。我们在调用 `map` 时使用了 `batch =True` ，这样函数就可以同时处理数据集的多个元素，而不是分别处理每个元素，这样可以更快进行预处理。
 
-以下是如何使用 tokenization 函数处理我们的整个数据集的方法。我们在调用 map 时使用了 `batched=True`，因此该函数会一次性处理数据集的多个元素，而不是单独处理每个元素。这样可以实现更快的预处理。
+以下是如何使用 tokenization 函数处理我们的整个数据集的方法。我们在调用 map 时使用了 `batched=True` ，因此该函数会一次性处理数据集的多个元素，而不是单独处理每个元素。这样可以实现更快的预处理。
 
 ```py
 tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)
@@ -291,15 +291,15 @@ DatasetDict({
 
 {#if fw === 'pt'}
 
-负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数`。这是一个可以在构建 `DataLoader` 时传递的一个参数，默认是一个将你的数据集转换为 PyTorch 张量并将它们拼接起来的函数（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例子中下是不可行的，因为我们的输入的大小可能是不相同的。我们特意推迟了填充的时间，只在每个 batch 上进行必要的填充，以避免出现有大量填充的过长输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
+负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数` 。这是一个可以在构建 `DataLoader` 时传递的一个参数，默认是一个将你的数据集转换为 PyTorch 张量并将它们拼接起来的函数（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例子中下是不可行的，因为我们的输入的大小可能是不相同的。我们特意推迟了填充的时间，只在每个 batch 上进行必要的填充，以避免出现有大量填充的过长输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
 
 {:else}
 
-负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数`。默认的拼合函数只会将你的样本转换为 tf.Tensor 并将它们拼接起来（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例中是不可行的，因为我们的输入不是都是相同大小的。我们特意推迟了填充时间，只在每个 batch 上进行填充，以避免有太多填充的过长的输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
+负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数` 。默认的拼合函数只会将你的样本转换为 `tf.Tensor` 并将它们拼接起来（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例中是不可行的，因为我们的输入不是都是相同大小的。我们特意推迟了填充时间，只在每个 batch 上进行填充，以避免有太多填充的过长的输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
 
 {/if}
 
-为了解决句子长度不统一的问题，我们必须定义一个 collate 函数，该函数会将每个 batch 句子填充到正确的长度。幸运的是，🤗transformer 库通过 `DataCollatorWithPadding` 为我们提供了这样一个函数。当你实例化它时，它需要一个 tokenizer （用来知道使用哪种填充 token ，以及模型期望在输入的左边填充还是右边填充），然后它会自动完成所有需要的操作：
+为了解决句子长度不统一的问题，我们必须定义一个 collate 函数，该函数会将每个 batch 句子填充到正确的长度。幸运的是，🤗transformer 库通过 `DataCollatorWithPadding` 为我们提供了这样一个函数。当你实例化它时，它需要一个 tokenizer （用来知道使用哪种填充 token 以及模型期望在输入的左边填充还是右边填充），然后它会自动完成所有需要的操作：
 
 {#if fw === 'pt'}
 
@@ -370,7 +370,7 @@ batch = data_collator(samples)
 
 {#if fw === 'tf'}
 
-现在我们有了 dataset 和 data collator，我们需要使用 data collator 批量地处理 dataset。我们可以手动加载批次并进行整合，但这需要大量工作，性能也有可能不好。相反，有一个简单的方法为这个问题提供高效的解决方案： `to_tf_dataset()` 。它将把你的数据集包装一个 `tf.data.Dataset` 类中，这个方法带有一个可选的 data collator 功能。 `tf.data.Dataset` 是 TensorFlow 的本地格式，Keras 可以直接用它来进行 `model.fit()`，因此这种方法会立即将🤗 Dataset 转换为可用于训练的格式。让我们用我们的数据集演示一下这个方法！
+现在我们有了 dataset 和 data collator，我们需要使用 data collator 批量地处理 dataset。我们可以手动加载批次并进行整合，但这需要大量工作，性能也有可能不好。相反，有一个简单的方法为这个问题提供高效的解决方案： `to_tf_dataset()` 。它将把你的数据集包装一个 `tf.data.Dataset` 类中，这个方法带有一个可选的 data collator 功能。 `tf.data.Dataset` 是 TensorFlow 的本地格式，Keras 可以直接用它来进行 `model.fit()` ，因此这种方法会立即将🤗 Dataset 转换为可用于训练的格式。让我们用我们的数据集演示一下这个方法！
 
 ```py
 tf_train_dataset = tokenized_datasets["train"].to_tf_dataset(

@@ -1,0 +1,21 @@
+<svg width="1816.0000000000002" height="501.00000000000006" xmlns="http://www.w3.org/2000/svg" fill="none">
+
+ <g>
+  <title>Layer 1</title>
+  <rect id="svg_1" fill="white" height="501" width="1816"/>
+  <rect id="svg_2" fill="#F6F3FF" rx="40" height="495" width="380" y="3"/>
+  <rect id="svg_4" fill="#FFF6DF" rx="40" height="495" width="380" y="3" x="1435"/>
+  <path id="svg_6" fill="#B4B4B4" d="m1436.06,251.061c0.59,-0.586 0.59,-1.536 0,-2.122l-9.55,-9.546c-0.58,-0.585 -1.53,-0.585 -2.12,0c-0.58,0.586 -0.58,1.536 0,2.122l8.49,8.485l-8.49,8.485c-0.58,0.586 -0.58,1.536 0,2.122c0.59,0.585 1.54,0.585 2.12,0l9.55,-9.546zm-1056.06,0.439l1055,0l0,-3l-1055,0l0,3z"/>
+  <rect id="svg_7" fill="#FFF3EB" rx="11.5" height="85" width="289" y="3.5" x="762.5"/>
+  <path id="svg_10" fill="#B4B4B4" d="m905.939,240.061c0.586,0.585 1.536,0.585 2.122,0l9.546,-9.546c0.585,-0.586 0.585,-1.536 0,-2.122c-0.586,-0.585 -1.536,-0.585 -2.122,0l-8.485,8.486l-8.485,-8.486c-0.586,-0.585 -1.536,-0.585 -2.122,0c-0.585,0.586 -0.585,1.536 0,2.122l9.546,9.546zm-0.439,-147.061l0,146l3,0l0,-146l-3,0z"/>
+  <rect id="svg_11" fill="#FFF3EB" rx="11.5" height="123" width="379" y="379.5" x="504.5"/>
+  <rect id="svg_14" fill="#FFF3EB" rx="11.5" height="123" width="379" y="375.5" x="934.5"/>
+  <path id="svg_17" fill="#B4B4B4" d="m691.061,259.939c-0.586,-0.585 -1.536,-0.585 -2.122,0l-9.546,9.546c-0.585,0.586 -0.585,1.536 0,2.122c0.586,0.585 1.536,0.585 2.122,0l8.485,-8.486l8.485,8.486c0.586,0.585 1.536,0.585 2.122,0c0.585,-0.586 0.585,-1.536 0,-2.122l-9.546,-9.546zm0.439,100.061l0,-99l-3,0l0,99l3,0z"/>
+  <path id="svg_18" fill="#B4B4B4" d="m1125.06,259.939c-0.59,-0.585 -1.53,-0.585 -2.12,0l-9.55,9.546c-0.58,0.586 -0.58,1.536 0,2.122c0.59,0.585 1.54,0.585 2.12,0l8.49,-8.486l8.49,8.486c0.58,0.585 1.53,0.585 2.12,0c0.58,-0.586 0.58,-1.536 0,-2.122l-9.55,-9.546zm0.44,100.061l0,-99l-3,0l0,99l3,0z"/>
+  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="40" id="svg_19" y="266.7" x="101.60002" fill="black">基础模型</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_20" y="449.69999" x="577.4625" fill="black">非常大的语料库</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_21" y="455.69999" x="1026.4625" fill="black">很多天的训练</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="28" id="svg_22" y="55.69999" x="779.4625" fill="black">花费很多的钱￥￥￥</text>
+  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_23" y="267.69999" x="1506.4625" fill="black">预训练后的语言模型</text>
+ </g>
+</svg>

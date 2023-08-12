@@ -1,0 +1,128 @@
+
+## 10.3 与他人分享演示 
+
+
+现在你已经构建了一个演示，你可能希望与其他人分享它。Gradio 演示可以通过两种方式进行分享：使用 **临时共享链接** 或 **在 Spaces 上永久托管**。
+
+我们将很快介绍这两种方法。但在分享演示之前，你可能需要完善它 💅。
+
+#### 打磨你的 Gradio 演示：
+
+![gradio 界面的预览](./assets/gradio-demo-overview.png "Overview of a gradio interface")
+
+为了给你的演示添加额外的内容， `Interface` 类支持一些可选参数：
+    - `title` ：你可以给你的演示一个标题，它出现在输入和输出组件的上方。
+    - `description` ：你可以为界面提供描述（以文本、Markdown 或 HTML 形式），显示在输入和输出组件的上方和标题下方。
+    - `article` ：你还可以编写扩展文章（以文本、Markdown 或 HTML 形式）来解释界面。如果提供，它会出现在输入和输出组件的下方。
+    - `theme` ：不喜欢默认颜色？主题可以设置为 `default` 、 `huggingface` 、 `grass` 、 `peach` 之一。你还可以添加 `dark-` 前缀，例如 `dark-peach` 用于深色主题（或者仅使用 `dark` 表示默认的深色主题）。
+    - `examples` ：为了让你的演示更易于使用，你可以为函数提供一些示例输入。它们出现在 UI 组件下方，可用于填充界面。示例应该作为多层的列表提供，外层列表包含每个示例，每个内层的列表包含与每个输入组件对应的输入。
+    - `live` ：如果你想使你的演示“实时”反馈，即每次输入更改时模型重新运行，你可以设置 `live=True` 。这对运行比较快的模型很有意义（我们将在本节末尾看到一个示例）
+
+使用上述选项，我们得到了一个更完整的界面。运行以下代码，你可以与 Rick 和 Morty 进行对话：
+
+```python
+title = "Ask Rick a Question"
+description = """
+The bot was trained to answer questions based on Rick and Morty dialogues. Ask Rick anything!
+<img src="https://huggingface.co/spaces/course-demos/Rick_and_Morty_QA/resolve/main/rick.png" width=200px>
+"""
+
+article = "Check out [the original Rick and Morty Bot](https://huggingface.co/spaces/kingabzpro/Rick_and_Morty_Bot)(https://huggingface.co/spaces/kingabzpro/Rick_and_Morty_Bot) that this demo is based off of."
+
+gr.Interface(
+    fn=predict,
+    inputs="textbox",
+    outputs="text",
+    title=title,
+    description=description,
+    article=article,
+    examples=[["What are you doing?"], ["Where should we time travel to?"]],
+).launch()
+```
+
+使用上面的选项，我们最终得到了一个更完整的界面。试试下面的界面：
+
+#### 使用临时链接分享你的演示 
+
+现在我们已经有了机器学习模型的工作演示，让我们学习如何轻松共享指向我们界面的链接。
+通过在 `launch()` 方法中设置 `share=True` 可以轻松地公开共享接口：
+
+```python
+gr.Interface(classify_image, "image", "label").launch(share=True)
+```
+
+这会生成一个公开的、可共享的链接，你可以将其发送给任何人！当你发送此链接时，另一方的用户可以在浏览器中试用该模型，时间长达 72 小时。因为处理发生在你的设备上（只要你的设备保持开启！），你不必担心打包任何依赖项。如果你使用 Google Colab 笔记本工作，则始终会自动创建共享链接。它通常看起来像这样：**XXXXX.gradio.app**。虽然链接是通过 Gradio 链接提供的，但我们只是你本地服务器的代理，不会存储通过接口发送的任何数据。
+
+但是请记住，这些链接是可公开访问的，这意味着任何人都可以使用你的模型进行预测！因此，请确保不要使用你编写的函数公开任何敏感信息，也不要允许其中的代码对你的设备进行任何重要更改。如果设置 `share=False` （默认值），则仅创建本地链接。
+
+#### 在 Hugging Face Spaces 上托管你的演示 
+
+可以传递给同事的共享链接很酷，但是如何永久托管你的演示并使其在互联网上具有自己的“space”呢？
+
+Hugging Face Spaces 提供了在互联网上永久托管你的 Gradio 模型的基础设施，**完全免费**！你可以将你创建 Space 推送到（公共或私有）仓库，在其中，你的 Gradio 界面代码将存在于一个 `app.py` 文件中。 [阅读分步教程](https://huggingface.co/blog/gradio-spaces)(https://huggingface.co/blog/gradio-spaces) 以开始使用。
+
+### ✏️ 让我们实现它！
+
+使用到目前为止我们在各节中学到的知识，让我们创建我们在本章第一节中看到的草图识别演示。让我们为我们的界面添加一些自定义并设置 `share=True` 以创建一个我们可以传递的公共链接。
+
+根据我们在前面章节中学到的内容，让我们创建一个在本章第一节中看到的手写草图识别演示。我们可以对界面进行一些自定义，并设置 `share=True` 以创建一个可以共享给他人的公共链接。
+
+我们可以从 [class_names.txt](https://huggingface.co/spaces/dawood/Sketch-Recognition/blob/main/class_names.txt)(https://huggingface.co/spaces/dawood/Sketch-Recognition/blob/main/class_names.txt) 加载标签，并从 [pytorch_model.bin](https://huggingface.co/spaces/dawood/Sketch-Recognition/blob/main/pytorch_model.bin)(https://huggingface.co/spaces/dawood/Sketch-Recognition/blob/main/pytorch_model.bin) 加载预训练的 pytorch 模型。通过点击链接并单击文件预览左上角的下载来下载这些文件。让我们看看下面的代码，看看我们如何使用这些文件来加载模型并创建一个 `predict()` 函数：
+```python
+from pathlib import Path
+import torch
+import gradio as gr
+from torch import nn
+
+LABELS = Path("class_names.txt").read_text().splitlines()
+
+model = nn.Sequential(
+    nn.Conv2d(1, 32, 3, padding="same"),
+    nn.ReLU(),
+    nn.MaxPool2d(2),
+    nn.Conv2d(32, 64, 3, padding="same"),
+    nn.ReLU(),
+    nn.MaxPool2d(2),
+    nn.Conv2d(64, 128, 3, padding="same"),
+    nn.ReLU(),
+    nn.MaxPool2d(2),
+    nn.Flatten(),
+    nn.Linear(1152, 256),
+    nn.ReLU(),
+    nn.Linear(256, len(LABELS)),
+)
+state_dict = torch.load("pytorch_model.bin", map_location="cpu")
+model.load_state_dict(state_dict, strict=False)
+model.eval()
+
+def predict(im):
+    x = torch.tensor(im, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
+    with torch.no_grad():
+        out = model(x)
+    probabilities = torch.nn.functional.softmax(out[0], dim=0)
+    values, indices = torch.topk(probabilities, 5)
+    return {LABELS[i]: v.item() for i, v in zip(indices, values)}
+```
+
+现在我们有了一个 `predict()` 函数。下一步是定义并启动我们的 gradio 界面：
+
+```python
+interface = gr.Interface(
+    predict,
+    inputs="sketchpad",
+    outputs="label",
+    theme="huggingface",
+    title="Sketch Recognition",
+    description="Who wants to play Pictionary? Draw a common object like a shovel or a laptop, and the algorithm will guess in real time!",
+    article="<p style='text-align: center'>Sketch Recognition | Demo Model</p>",
+    live=True,
+)
+interface.launch(share=True)
+```
+
+
+注意 `Interface` 中设置了 `live=True` 参数，这意味着每当有人在画板上绘制时，草图演示都会进行预测（无需提交按钮！）。
+
+此外，我们还在 `launch()` 方法中设置了 `share=True` 参数。这将创建一个公共链接，你可以发送给任何人！当你发送此链接时，对方可以尝试草图识别模型。重申一下，你还可以在 Hugging Face Spaces 上托管模型，这就是我们在网页上面演示的方式。
+
+接下来，我们将介绍 Gradio 可用于 Hugging Face 生态系统的其他方式！

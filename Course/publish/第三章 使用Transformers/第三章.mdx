@@ -78,6 +78,7 @@ tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 我们可以使用 `return_tensors` 参数指定我们想要得到的 tensor 的类型（PyTorch、TensorFlow 或纯 NumPy），
 
 {#if fw === 'pt'}
+
 ```python
 raw_inputs = [
     "I've been waiting for a HuggingFace course my whole life.",
@@ -87,6 +88,7 @@ inputs = tokenizer(raw_inputs, padding=True, truncation=True, return_tensors="pt
 print(inputs)
 ```
 {:else}
+
 ```python
 raw_inputs = [
     "I've been waiting for a HuggingFace course my whole life.",
@@ -95,6 +97,7 @@ raw_inputs = [
 inputs = tokenizer(raw_inputs, padding=True, truncation=True, return_tensors="tf")
 print(inputs)
 ```
+
 {/if}
 
 现在不要担心 padding（填充）和 truncation（截断）；我们稍后会解释这些。这里要记住的是，你可以传递一个句子或一组句子，还可以指定要返回的 tensor 类型（如果没有传递类型，默认返回的是 python 中的 list 格式）。
@@ -182,6 +185,7 @@ Transformers 模块的矢量输出通常较大。它通常有三个维度：
 如果我们将预处理的之后的值输入到模型中，我们会得到以下输入：
 
 {#if fw === 'pt'}
+
 ```python
 outputs = model(**inputs)
 print(outputs.last_hidden_state.shape)
@@ -191,6 +195,7 @@ print(outputs.last_hidden_state.shape)
 torch.Size([2, 16, 768])
 ```
 {:else}
+
 ```python
 outputs = model(inputs)
 print(outputs.last_hidden_state.shape)
@@ -199,6 +204,7 @@ print(outputs.last_hidden_state.shape)
 ```python
 (2, 16, 768)
 ```
+
 {/if}
 
 注意，Transformers 模型的输出有些像 `namedtuple` 或词典。你可以通过使用“.”+属性（就像我们在上面示例中所做的那样）或键（ `outputs["last_hidden_state"]` ）访问元素，如果你确切知道要查找的内容的位置（ `outputs[0]` ），也可以通过索引访问元素。
@@ -279,47 +285,59 @@ print(outputs.logits)
 ```
 
 {#if fw === 'pt'}
+
 ```python
 tensor([[-1.5607,  1.6123],
         [ 4.1692, -3.3464]], grad_fn=<AddmmBackward>)
 ```
+
 {:else}
+
 ```python
 <tf.Tensor: shape=(2, 2), dtype=float32, numpy=
     array([[-1.5606991,  1.6122842],
            [ 4.169231 , -3.3464472]], dtype=float32)>
 ```
+
 {/if}
 
 我们的模型预测第一句为 `[-1.5607, 1.6123]` ，第二句为 `[ 4.1692, -3.3464]` 。这些不是概率，而是 `logits（对数几率）` ，是模型最后一层输出的原始的、未标准化的分数。要转换为概率，它们需要经过 [SoftMax](https://en.wikipedia.org/wiki/Softmax_function)(https://en.wikipedia.org/wiki/Softmax_function) 层（所有Transformers 模型的输出都是 logits，因为训练时的损失函数通常会将最后的激活函数（如 SoftMax）与实际的损失函数（如交叉熵）融合）：
 
 {#if fw === 'pt'}
+
 ```python
 import torch
 
 predictions = torch.nn.functional.softmax(outputs.logits, dim=-1)
 print(predictions)
 ```
+
 {:else}
+
 ```python
 import tensorflow as tf
 
 predictions = tf.math.softmax(outputs.logits, axis=-1)
 print(predictions)
 ```
+
 {/if}
 
 {#if fw === 'pt'}
+
 ```python
 tensor([[4.0195e-02, 9.5980e-01],
         [9.9946e-01, 5.4418e-04]], grad_fn=<SoftmaxBackward>)
 ```
+
 {:else}
+
 ```python
 tf.Tensor(
 [[4.01951671e-02 9.59804833e-01]
  [9.9945587e-01 5.4418424e-04]], shape=(2, 2), dtype=float32)
 ```
+
 {/if}
 
 现在我们可以看到，模型预测第一句的输出是 `[0.0402, 0.9598]` ，第二句 `[0.9995,  0.0005]` 。这些是可直接使用的概率分数。
@@ -360,6 +378,7 @@ model.config.id2label
 初始化 BERT 模型需要做的第一件事是加载 `Config` 对象：
 
 {#if fw === 'pt'}
+
 ```python
 from transformers import BertConfig, BertModel
 
@@ -408,6 +427,7 @@ BertConfig {
 使用默认配置创建模型会使用随机值对其进行初始化：
 
 {#if fw === 'pt'}
+
 ```python
 from transformers import BertConfig, BertModel
 
@@ -416,7 +436,9 @@ model = BertModel(config)
 
 ## 模型已随机初始化!
 ```
+
 {:else}
+
 ```python
 from transformers import BertConfig, TFBertModel
 
@@ -425,6 +447,7 @@ model = TFBertModel(config)
 
 ## 模型已随机初始化!
 ```
+
 {/if}
 
 这个模型是可以运行并得到结果的，但它会输出胡言乱语；它需要先进行训练才能正常使用。我们可以根据手头的任务从头开始训练模型，但正如你在第一章中看到的，这将需要很长的时间和大量的数据，并且会对环境产生不可忽视的影响。为了避免不必要的重复工作，能够共享和复用已经训练过的模型是非常重要的。
@@ -432,6 +455,7 @@ model = TFBertModel(config)
 加载已经训练过的 Transformers 模型很简单——我们可以使用 `from_pretrained()` 方法：
 
 {#if fw === 'pt'}
+
 ```python
 from transformers import BertModel
 
@@ -441,6 +465,7 @@ model = BertModel.from_pretrained("bert-base-cased")
 正如你在上一小节看到的，从现在开始，我们会将 `BertModel` 替换为等效的 `AutoModel` 类，这样可以摆脱对 checkpoint 的依赖；如果你的代码适用于一个 checkpoint 那么它就可以在另一个 checkpoint 无缝地工作。即使体系结构不同，这也适用，只要 checkpoint 是针对类似任务（例如，情绪分析任务）训练的。
 
 {:else}
+
 ```python
 from transformers import TFBertModel
 
@@ -470,17 +495,21 @@ model.save_pretrained("directory_on_my_computer")
 这会将两个文件保存到磁盘：
 
 {#if fw === 'pt'}
+
 ```python
 ls directory_on_my_computer
 
 config.json pytorch_model.bin
 ```
+
 {:else}
+
 ```python
 ls directory_on_my_computer
 
 config.json tf_model.h5
 ```
+
 {/if}
 
 如果你看一下 `config.json` 文件，你会认出构建模型架构所需的属性。这个文件还包含一些元数据，例如 checkpoint 的来源，以及你上次保存 checkpoint 时所使用的 Transformers 版本。
@@ -751,6 +780,7 @@ print(decoded_string)
 在上一个练习中，你看到了句子如何转换为数字列表。让我们将此数字列表转换为张量，并将其发送到模型：
 
 {#if fw === 'pt'}
+
 ```python
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -799,6 +829,7 @@ InvalidArgumentError: Input to reshape is a tensor with 14 values, but the reque
 问题是我们向模型发送了一个单独的句子，而Transformers 模型默认情况下需要多个句子。在这里，当我们试图重现 tokenizer 在输入 `sequence` 后在其内部进行的所有操作。但如果你仔细观察，你会发现 tokenizer 不仅仅是将 inputs ID 的列表转换为张量，它还在其上添加了一个维度：
 
 {#if fw === 'pt'}
+
 ```python
 tokenized_inputs = tokenizer(sequence, return_tensors="pt")
 print(tokenized_inputs["input_ids"])
@@ -808,7 +839,9 @@ print(tokenized_inputs["input_ids"])
 tensor([[  101,  1045,  1005,  2310,  2042,  3403,  2005,  1037, 17662, 12172,
           2607,  2026,  2878,  2166,  1012,   102]])
 ```
+
 {:else}
+
 ```python
 tokenized_inputs = tokenizer(sequence, return_tensors="tf")
 print(tokenized_inputs["input_ids"])
@@ -819,11 +852,13 @@ tf.Tensor: shape=(1, 16), dtype=int32, numpy=
 array([[  101,  1045,  1005,  2310,  2042,  3403,  2005,  1037, 17662,
         12172,  2607,  2026,  2878,  2166,  1012,   102]], dtype=int32)>
 ```
+
 {/if}
 
 让我们再试一次并添加一个新的维度：
 
 {#if fw === 'pt'}
+
 ```python
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -868,11 +903,13 @@ print("Logits:", output.logits)
 让我们打印 inputs ID 以及生成的 logits 值，以下是输出：
 
 {#if fw === 'pt'}
+
 ```python
 Input IDs: [[ 1045,  1005,  2310,  2042,  3403,  2005,  1037, 17662, 12172,  2607, 2026,  2878,  2166,  1012]]
 Logits: [[-2.7276,  2.8789]]
 ```
 {:else}
+
 ```python
 Input IDs: tf.Tensor(
 [[ 1045  1005  2310  2042  3403  2005  1037 17662 12172  2607  2026  2878
@@ -922,6 +959,7 @@ batched_ids = [
 我们可以在 `tokenizer.pad_token_id` 中找到填充 token 的 ID。让我们使用它，分别用模型处理这两个句子，然后再尝试将这两个句子放在一起用模型批处理：
 
 {#if fw === 'pt'}
+
 ```python
 model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
 
@@ -943,7 +981,9 @@ tensor([[ 0.5803, -0.4125]], grad_fn=<AddmmBackward>)
 tensor([[ 1.5694, -1.3895],
         [ 1.3373, -1.2163]], grad_fn=<AddmmBackward>)
 ```
+
 {:else}
+
 ```python
 model = TFAutoModelForSequenceClassification.from_pretrained(checkpoint)
 
@@ -966,6 +1006,7 @@ tf.Tensor(
 [[ 1.5693681 -1.3894582]
  [ 1.3373486 -1.2163193]], shape=(2, 2), dtype=float32)
 ```
+
 {/if}
 
 咦，我们批处理预测中的 logits 值有点问题：第二行应该与第二句的 logits 相同，但我们得到了完全不同的值！
@@ -979,6 +1020,7 @@ tf.Tensor(
 让我们用 attention mask 修改上一个示例：
 
 {#if fw === 'pt'}
+
 ```python
 batched_ids = [
     [200, 200, 200],
@@ -998,7 +1040,9 @@ print(outputs.logits)
 tensor([[ 1.5694, -1.3895],
         [ 0.5803, -0.4125]], grad_fn=<AddmmBackward>)
 ```
+
 {:else}
+
 ```python
 batched_ids = [
     [200, 200, 200],
@@ -1019,6 +1063,7 @@ tf.Tensor(
 [[ 1.5693681  -1.3894582 ]
  [ 0.5803021  -0.41252586]], shape=(2, 2), dtype=float32)
 ```
+
 {/if}
 
 现在我们得到了批处理中第二句话相同的 logits 值。
@@ -1162,6 +1207,7 @@ print(tokenizer.decode(ids))
 现在我们已经看到 `tokenizer` 对象在处理文本时的所有步骤，让我们最后再看一次它如何通过 tokenizer  API 处理多个序列（填充！），非常长的序列（截断！）以及多种类型的张量：
 
 {#if fw === 'pt'}
+
 ```python
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -1174,7 +1220,9 @@ sequences = ["I've been waiting for a HuggingFace course my whole life.", "So ha
 tokens = tokenizer(sequences, padding=True, truncation=True, return_tensors="pt")
 output = model(**tokens)
 ```
+
 {:else}
+
 ```python
 import tensorflow as tf
 from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
@@ -1187,6 +1235,7 @@ sequences = ["I've been waiting for a HuggingFace course my whole life.", "So ha
 tokens = tokenizer(sequences, padding=True, truncation=True, return_tensors="tf")
 output = model(**tokens)
 ```
+
 {/if}
 
 ## 基本用法完成！

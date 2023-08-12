@@ -30,7 +30,7 @@ data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 ## 训练前的准备 [[训练前的准备]]
 
-在实际编写我们的训练循环之前，我们需要定义一些对象。首先是我们将用于迭代批次的数据加载器。但在定义这些数据加载器之前，我们需要对我们的tokenized_datasets进行一些后处理，以处理一些Trainer自动为我们处理的内容。具体来说，我们需要：
+在实际编写我们的训练循环之前，我们需要定义一些对象。首先是我们将用于迭代批次的数据加载器。但在定义这些数据加载器之前，我们需要对我们的 `tokenized_datasets` 进行一些后处理，以处理一些 Trainer 自动为我们处理的内容。具体来说，我们需要：
 
 - 删除与模型不需要的列（如 `sentence1` 和 `sentence2` 列）。
 - 将列名 `label` 重命名为 `labels` （因为模型默认的参数是 `labels` ）。
@@ -102,7 +102,7 @@ tensor(0.5441, grad_fn=<NllLossBackward>) torch.Size([8, 2])
 
 当我们提供 `labels` 时，🤗 Transformers 模型都将返回这个 `batch` 的 `loss` ，我们还得到了 `logits` （ `batch` 中的每个输入有两个，所以张量大小为 8 x 2）。
 
-我们几乎准备好编写我们的训练循环了！我们只是缺少两件事：优化器和学习率调度器。由于我们试图手动实现 `Trainer` 的功能，我们将使用相同的优化器和学习率调度器。 `Trainer` 使用的优化器是 `AdamW` ，它与 `Adam` 相同，但加入了权重衰减正则化的一点变化（参见Ilya Loshchilov和Frank Hutter的[“Decoupled Weight Decay Regularization”](https://arxiv.org/abs/1711.05101)）：
+我们几乎准备好编写我们的训练循环了！我们只是缺少两件事：优化器和学习率调度器。由于我们试图手动实现 `Trainer` 的功能，我们将使用相同的优化器和学习率调度器。 `Trainer` 使用的优化器是 `AdamW` ，它与 `Adam` 相同，但加入了权重衰减正则化的一点变化（参见 Ilya Loshchilov 和 Frank Hutter 的 [“Decoupled Weight Decay Regularization”](https://arxiv.org/abs/1711.05101) ）：
 
 ```py
 from transformers import AdamW
@@ -350,7 +350,7 @@ accelerate launch train.py
 
 这将启动分布式训练
 
-这将启动分布式训练。如果你想在 Notebook 中尝试此操作（例如，在 Colab 上使用 TPU 进行测试），只需将代码粘贴到一个 `training_function()`函数中，并在最后一个单元格中运行：
+这将启动分布式训练。如果你想在 Notebook 中尝试此操作（例如，在 Colab 上使用 TPU 进行测试），只需将代码粘贴到一个 `training_function()` 函数中，并在最后一个单元格中运行：
 
 ```python
 from accelerate import notebook_launcher
