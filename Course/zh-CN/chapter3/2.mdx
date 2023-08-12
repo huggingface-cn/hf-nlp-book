@@ -90,7 +90,7 @@ model.train_on_batch(batch, labels)
 
 模型中心（hub）不仅仅包含模型，还有许多别的语言的数据集。访问 [Datasets](https://huggingface.co/datasets) 的链接即可进行浏览。我们建议你在完成本节的学习后阅读一下 [加载和处理新的数据集](https://huggingface.co/docs/datasets/loading_datasets.html#from-the-huggingface-hub) 这篇文章，这会让你对 huggingface 的数据集理解更加清晰。现在让我们使用 MRPC 数据集中的 [GLUE 基准测试数据集](https://gluebenchmark.com) ，它是构成 MRPC 数据集的 10 个数据集之一，作为一个用于衡量机器学习模型在 10 个不同文本分类任务中性能的学术基准。
 
-🤗 Datasets 库提供了一条非常便捷的命令，可以在模型中心（hub）上下载和缓存数据集。你可以通过以下代码下载 MRPC 数据集：
+🤗 Datasets 库提供了一条非常便捷的命令，可以在模型中心（hub）上下载和缓存数据集。你可以以下代码下载 MRPC 数据集：
 
 ```py
 from datasets import load_dataset
@@ -251,9 +251,9 @@ def tokenize_function(example):
 
 请注意，我们暂时在 `tokenize_function` 中省略了 padding 参数。这是因为将所有的样本填充到最大长度并不高效。一个更好的做法是：在构建 batch 的时候。这样我们只需要填充到每个 batch 中的最大长度，而不是整个数据集的最大长度。当输入长度不稳定时，这可以节省大量时间和处理能力！
 
-下面是我们如何在整个数据集上一次性应用`tokenize_function`。我们在调用 `map` 时使用了 `batch =True` ，这样函数就可以同时应用到数据集的多个元素上，而不是分别应用到每个元素，这样可以更快进行预处理。
+下面是我们如何使用一次性`tokenize_function`处理整个数据集。我们在调用 `map` 时使用了 `batch =True` ，这样函数就可以同时处理数据集的多个元素，而不是分别处理每个元素，这样可以更快进行预处理。
 
-以下是如何同时将 tokenization 函数应用于我们的整个数据集的方法。我们在调用 map 时使用了 `batched=True`，因此该函数会一次性应用于数据集的多个元素，而不是单独应用于每个元素。这样可以实现更快的预处理。
+以下是如何使用 tokenization 函数处理我们的整个数据集的方法。我们在调用 map 时使用了 `batched=True`，因此该函数会一次性处理数据集的多个元素，而不是单独处理每个元素。这样可以实现更快的预处理。
 
 ```py
 tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)

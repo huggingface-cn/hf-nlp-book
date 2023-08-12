@@ -17,7 +17,7 @@
 
 当你在 `trainer.train()` 中遇到错误时，它可能来自多个来源，因为 `Trainer` 会将很多模块放在一起组合运行。它会将 datasets 转换为 dataloaders 因此问题可能出在 datasets 中，或者在尝试将 datasets 的元素一起批处理时出现问题。接着它会准备一批数据并将其提供给模型，因此问题可能出在模型代码中。之后，它会计算梯度并执行优化器，因此问题也可能出在你的优化器中。即使训练一切顺利，如果你的评估指标有问题，评估期间仍然可能出现问题。
 
-调试 `trainer.train()` 中出现的错误的最佳方法是手动检查整个管道，看看哪里出了问题。错误通常很容易解决。
+调试 `trainer.train()` 中出现的错误的最佳方法是手动检查整个管道，看看哪里出了问题。通常情况下，错误很容易解决。
 
 为了解释这一点，我们将尝试使用以下脚本在 [MNLI 数据集](https://huggingface.co/datasets/glue) 上微调 DistilBERT 模型：
 
@@ -70,7 +70,7 @@ trainer = Trainer(
 trainer.train()
 ```
 
-如果你尝试执行它，你会遇到一个相当神秘的错误：
+如果你尝试执行它，你会遇到一个相当晦涩的错误：
 
 ```python out
 'ValueError: You have to specify either input_ids or inputs_embeds'
@@ -78,9 +78,9 @@ trainer.train()
 
 ### 检查数据 [[检查数据]]
 
-这是显而易见的，如果你的数据损坏了， `Trainer` 将无法将数据整理成一个批次，更不用说训练你的模型了。因此，你需要先检查一下你的训练集的内容。
+这是显而易见的，如果你的数据损坏了， `Trainer` 将无法将数据整理成 batch，更不用说训练你的模型了。因此，你需要先检查一下你的训练集的内容。
 
-为了避免在错误原因之外的问题上浪费无数时间进行修复，我们建议你使用 `trainer.train_dataset` 进行检查。所以让我们在这里这样尝试一下：
+为了避免花费无数小时试图修复不是错误来源的问题，我们建议你只使用 `trainer.train_dataset` 进行检查。所以让我们在这里这样尝试一下：
 
 ```py
 trainer.train_dataset[0]
@@ -93,9 +93,9 @@ trainer.train_dataset[0]
  'premise': 'Conceptually cream skimming has two basic dimensions - product and geography.'}
 ```
 
-你注意到有什么不对吗？与缺少 `input_ids` 的错误消息相结合，应该让你意识到数据集里是文本，而不是模型可以理解的数字。在这个例子，输出的原始错误信息非常具有误导性，因为 `Trainer` 会自动删除与模型签名不匹配的 `列` （即模型预期的输入参数）。这意味着在这里，除了标签之外的所有东西都被丢弃了。因此，创建批次然后将它们发送到模型时没有问题，但是模型会抱怨它没有收到正确的输入。
+你注意到有什么不对吗？与缺少 `input_ids` 的错误消息相结合，应该让你意识到数据集里是文本，而不是模型可以理解的数字。在这个例子，输出的原始错误信息非常具有误导性，因为 `Trainer` 会自动删除与模型签名不匹配的列 （即模型预期的输入参数）。这意味着在这里，除了标签之外的所有东西都被丢弃了。因此，创建 batch 然后将它们发送到模型时没有问题，但是模型会抱怨它没有收到正确的输入。
 
-为什么没有处理数据生成标记呢？我们确实在数据集上使用了 `Dataset.map()` 方法来对每个样本应用标记器。但是如果你仔细看代码，你会发现我们在将训练和评估集传递给 `Trainer` 时犯了一个错误。我们在这里没有使用 `tokenized_datasets` ，而是使用了 `raw_datasets` 🤦。所以让我们解决这个问题！
+为什么数据没有被处理？我们确实在数据集上使用了 `Dataset.map()` 方法来使用 tokenizer 处理每个样本。但是如果你仔细看代码，你会发现我们在将训练和评估集传递给 `Trainer` 时犯了一个错误。我们在这里没有使用 `tokenized_datasets` ，而是使用了 `raw_datasets` 🤦。所以让我们解决这个问题！
 
 ```py
 from datasets import load_dataset
@@ -165,7 +165,7 @@ trainer.train()
 
 所以，我们应该去研究一下那个。然而，在我们这样做之前，让我们完成检查我们的数据，先确定它 100％是正确的。
 
-在调试训练过程时，你应该始终做的一件事是查看模型的解码输入。我们无法理解直接提供给它的数字，所以我们应该看看这些数字代表什么。例如，在计算机视觉中，这意味着查看你传递解码后的像素图片，在语音中意味着解码后的音频样本，对于我们的 NLP 示例，这意味着使用我们的标记器解码后的输入：
+在调试训练过程时，你应该始终做的一件事是查看模型的解码输入。我们无法理解直接提供给它的数字，所以我们应该看看这些数字代表什么。例如，在计算机视觉中，这意味着查看你传递解码后的像素图片，在语音中意味着解码后的音频样本，对于我们的 NLP 示例，这意味着使用我们的 tokenizer 解码后的输入：
 
 ```py
 tokenizer.decode(trainer.train_dataset[0]["input_ids"])
@@ -175,7 +175,7 @@ tokenizer.decode(trainer.train_dataset[0]["input_ids"])
 '[CLS] conceptually cream skimming has two basic dimensions - product and geography. [SEP] product and geography are what make cream skimming work. [SEP]'
 ```
 
-所以这似乎是正确的。你应该对输入中的所有键都使用此操作：
+所以这似乎是正确的。你应该对输入中的所有键都这样做：
 
 ```py
 trainer.train_dataset[0].keys()
@@ -185,7 +185,7 @@ trainer.train_dataset[0].keys()
 dict_keys(['attention_mask', 'hypothesis', 'idx', 'input_ids', 'label', 'premise'])
 ```
 
-请注意，与模型接受的输入不对应的键将被自动丢弃，因此这里我们将仅保留 `input_ids` 、 `attention_mask` 和 `label` （它将被重命名为 `labels` ）。要仔细检查模型输入的列，你可以打印模型的类，然后查看其文档：
+请注意，与模型接受的输入不对应的键将被自动丢弃，因此这里我们将仅保留 `input_ids` 、 `attention_mask` 和 `label` （它将被重命名为 `labels` ）。为了双重保险，你可以打印模型的类，然后查看其文档：
 
 ```py
 type(trainer.model)
@@ -229,7 +229,7 @@ trainer.train_dataset[0]["label"]
 1
 ```
 
-与inputs ID 一样，这是一个本身并没有真正意义的数字。正如我们之前看到的，标签 ID 和标签名之间的映射存储在数据集 `features` 里的 `names` 属性中：
+与inputs ID 一样，这是一个本身并没有真正意义的数字。正如我们之前学到的，标签 ID 和标签名之间的映射存储在数据集 `features` 里的 `names` 属性中：
 
 ```py
 trainer.train_dataset.features["label"].names
@@ -255,14 +255,14 @@ trainer.train_dataset.features["label"].names
 
 ### 从 datasets 到 dataloaders [[从 datasets 到 dataloaders]]
 
-训练管道中可能出错的下一件事是当 `Trainer` 尝试从训练或验证集形成 batch 时。当你确定 `Trainer` 的数据集是正确的后，你可以尝试通过执行以下操作手动形成一个批次（当要测试验证集的 dataloaders 时，可以将 `train` 替换为 `eval` ）：
+训练管道中可能出错的下一件事是当 `Trainer` 尝试从训练或验证集形成 batch 时。当你确定 `Trainer` 的数据集是正确的后，你可以尝试通过执行以下操作手动形成一个 batch（当要测试验证集的 dataloaders 时，可以将 `train` 替换为 `eval` ）：
 
 ```py
 for batch in trainer.get_train_dataloader():
     break
 ```
 
-此代码将会创建训练数据加载器，然后对其进行迭代一次。如果代码执行没有错误，那么你就有了可以检查的第一个训练批次，如果代码出错，你可以确定问题出在数据加载器中，如下所示：
+此代码将会创建训练数据加载器，然后对其进行迭代一次。如果代码执行没有错误，那么你就有了可以检查的第一个 batch，如果代码出错，你可以确定问题出在数据加载器中，如下所示：
 
 ```python out
 ~/git/transformers/src/transformers/data/data_collator.py in torch_default_data_collator(features)
@@ -275,7 +275,7 @@ for batch in trainer.get_train_dataloader():
 ValueError: expected sequence of length 45 at dim 1 (got 76)
 ```
 
-Trackback 的最后一个堆栈的输出应该足够给你一些线索，但让我们再深入挖掘一下。批处理创建过程中的大多数问题是在将示例整理到单个批处理中而出现的，因此在有疑问时首先要检查的是你的 DataLoader 正在使用的是哪个 `collate_fn` ：
+Trackback 的最后一个堆栈的输出应该足够给你一些线索，但让我们再深入挖掘一下。批处理创建过程中的大多数问题是在将示例整理到单个 batch 中而出现的，因此在有疑问时首先要检查的是你的 DataLoader 正在使用的 `collate_fn` ：
 
 ```py
 data_collator = trainer.get_train_dataloader().collate_fn
@@ -286,7 +286,7 @@ data_collator
 <function transformers.data.data_collator.default_data_collator(features: List[InputDataClass], return_tensors='pt') -> Dict[str, Any]>
 ```
 
-所以，目前使用的是 `default_data_collator` ，但这不是我们在这种情况下想要的。我们希望将示例填充到批处理中最长的句子，这项功能是由 `DataCollatorWithPadding` 整理器实现的。而这个数据整理器应该是默认被 `Trainer` 使用的，为什么这里没有使用呢？
+所以，目前使用的是 `default_data_collator` ，但这不是我们在这个例子中想要的。我们希望将示例填充到批处理中最长的句子，这项功能是由 `DataCollatorWithPadding` 整理器实现的。而这个数据整理器应该是默认被 `Trainer` 使用的，为什么这里没有使用呢？
 
 答案是因为我们没有将 `tokenizer` 传递给 `Trainer` ，所以它无法创建我们想要的 `DataCollatorWithPadding` 。在实践中，你应该明确地传递你想要使用的数据整理器，以确保避免这些类型的错误。让我们修改代码以实现这一点：
 
@@ -353,14 +353,14 @@ RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(
 
 这很糟糕，因为 CUDA 错误通常很难调试。我们稍后会看到如何解决这个问题，但首先让我们完成对创建批处理的分析。
 
-如果你确定你的数据整理器是正确的，则应尝试将其应用于数据集的几个样本：
+如果你确定你的数据整理器是正确的，则应尝试用它来处理数据集的几个样本：
 
 ```py
 data_collator = trainer.get_train_dataloader().collate_fn
 batch = data_collator([trainer.train_dataset[i] for i in range(4)])
 ```
 
-此代码将运行失败，因为 `train_dataset` 包含字符串列， `Trainer` 通常会删除这些列。你可以手动删除它们，或者如果你想准确地控制 `Trainer` 在幕后所做的事情，你可以调用私有的 `Trainer._remove_unused_columns()` 方法来执行此操作：
+此代码将运行失败，因为 `train_dataset` 包含字符串列， `Trainer` 通常会删除这些列。你可以手动删除它们，或者如果你使用 `Trainer` 在幕后所做的事情，你可以调用私有的 `Trainer._remove_unused_columns()` 方法来执行此操作：
 
 ```py
 data_collator = trainer.get_train_dataloader().collate_fn
@@ -381,13 +381,13 @@ for batch in trainer.get_train_dataloader():
     break
 ```
 
-如果你在 notebook 中运行此代码，你可能会收到与我们之前看到的类似的 CUDA 错误，在这种情况下，你需要重新启动 notebook 并重新执行最后一段代码，而不运行 `trainer.train()` 行．这是关于 CUDA 错误的第二个最烦人的事情：它们会破坏你的 Cuda 内核，而且无法恢复。它们最烦人的事情是它们很难调试。
+如果你在 notebook 中运行此代码，你可能会收到与我们之前看到的类似的 CUDA 错误，在这种情况下，你需要重新启动 notebook 并重新执行最后一段代码，但是不运行 `trainer.train()` 行．这是关于 CUDA 错误的第二个最烦人的事情：它们会破坏你的 Cuda 内核，而且无法恢复。它们最烦人的事情是它们很难调试。
 
-这是为什么？它与 GPU 的工作方式有关。它们在并行执行大量操作方面非常有效，但缺点是当其中一条指令导致错误时，你不会立即知道。只有当程序在 GPU 上调用多个进程的同步处理时，它才会意识到出现问题，因此错误实际上是在与创建它的原因无关的地方引发的。例如，如果我们查看之前的 Trackback，错误是在反向传播期间引发的，但我们会在一分钟后看到它实际上源于正向传播的某些东西。
+这是为什么？它与 GPU 的工作方式有关。它们在并行执行大量操作方面非常有效，但缺点是当其中一条指令导致错误时，你不会立即知道。只有当程序在 GPU 上调用多个进程的同步处理时，它才会意识到出现问题，因此错误实际上是在与创建它的原因无关的地方引发的。例如，如果我们查看之前的 Trackback，错误是在反向传播期间引发的，但我们会在一分钟后看到它实际上源于前向传播的某些东西。
 
-那么我们如何调试这些错误呢？答案很简单：不调试。除非你的 CUDA 错误是内存不足错误（这意味着你的 GPU 中没有足够的内存），除此之外你应该始终使用 CPU 进行调试。
+那么我们如何调试这些错误呢？答案很简单：不调试。除非你的 CUDA 错误是内存不足错误（这意味着你的 GPU 中没有足够的内存），除此之外你应该始终返回到 CPU 进行调试。
 
-为此，我们只需将模型放回 CPU 上并在我们的一批数据中调用它—— `DataLoader` 返回的那批数据尚未移动到 GPU：
+为此，我们只需将模型放回 CPU 上并在我们的 batch 数据中调用它—— `DataLoader` 返回的那批数据尚未移动到 GPU：
 
 ```python
 outputs = trainer.model.cpu()(**batch)
@@ -414,7 +414,7 @@ trainer.model.config.num_labels
 2
 ```
 
-有两个标签，只允许 0 和 1 作为目标，但是根据错误信息我们得到一个 2。得到一个 2 实际上是正常的：如果我们记得我们之前提取的标签名称，有三个，所以我们有索引 0 1 和 2 在我们的数据集中。问题是我们没有告诉我们的模型，它应该创建三个标签。让我们解决这个问题！
+有两个标签，只有 0 和 1 作为目标，但是根据错误信息我们得到一个 2。得到一个 2 实际上是正常的：如果我们记得我们之前提取的标签名称，有三个，所以在我们的数据集中我们有索引 0、1 和 2 。问题是我们没有告诉我们的模型，它应该创建三个标签。让我们解决这个问题！
 
 ```py
 from datasets import load_dataset
@@ -470,7 +470,7 @@ trainer = Trainer(
 )
 ```
 
-为了方便检查一切是否正常，我们还没有把 `trainer.train()` 加进去。如果我们请求一个批次的数据并将其传递给我们的模型，假如它现在可以正常工作了！
+为了方便检查一切是否正常，我们还没有把 `trainer.train()` 加进去。如果我们请求一个 batch 的数据并将其传递给我们的模型，假如它现在可以正常工作了！
 
 ```py
 for batch in trainer.get_train_dataloader():
@@ -503,7 +503,7 @@ loss = outputs.loss
 loss.backward()
 ```
 
-在这个阶段很少出现错误，但如果确实出现错误，请返回 CPU 以获取有用的错误消息。
+在这个阶段很少出现错误，但如果确实出现错误，请返回 CPU 来获取有用的错误消息。
 
 要执行优化步骤，我们只需要创建 `optimizer` 并调用它的 `step()` 方法：
 
@@ -531,7 +531,7 @@ trainer.optimizer.step()
 现在我们已经解决了代码的所有问题，一切都很完美，训练应该可以顺利进行，对吧？没那么快！如果你运行 `trainer.train()` 命令，一开始一切看起来都不错，但过一会儿你会得到以下信息：
 
 ```py
-# This will take a long time and error out, so you shouldn't run this cell
+# 这将花费很长时间并且会出错，所以不要直接运行这个单元
 trainer.train()
 ```
 
@@ -541,7 +541,7 @@ TypeError: only size-1 arrays can be converted to Python scalars
 
 你将意识到此错误出现在评估阶段，因此这是我们需要调试的最后一件事。
 
-你可以像这样在训练中独立运行 `Trainer` 的评估循环：
+你可以独立于训练运行Trainer的评估循环，如下所示：
 
 ```py
 trainer.evaluate()
@@ -557,7 +557,7 @@ TypeError: only size-1 arrays can be converted to Python scalars
 
 </Tip>
 
-在尝试调试评估循环中的问题之前，你应该首先确保你已经查看了数据，能够正确地形成批处理，并且可以在其上运行你的模型。我们已经完成了所有这些步骤，因此可以执行以下代码而不会出错：
+在尝试调试评估循环中的问题之前，你应该首先确保你已经查看了数据，能够正确地形成了 batch ，并且可以在其上运行你的模型。我们已经完成了所有这些步骤，因此可以执行以下代码而不会出错：
 
 ```py
 for batch in trainer.get_eval_dataloader():
@@ -580,7 +580,7 @@ with torch.no_grad():
     435             self._init_writer()
 ```
 
-这告诉我们错误源自 `datasets/metric.py` 模块——所以这是我们的 `compute_metrics()` 函数的问题。它需要一个带有 logits 和标签的元组作为 NumPy 数组，所以让我们尝试输入它：
+这告诉我们错误源自 `datasets/metric.py` 模块——所以这是我们的 `compute_metrics()` 函数的问题。它需要一个带有 logits 和标签的元组作为 NumPy 数组，所以让我们尝试将其提供给它：
 
 ```py
 predictions = outputs.logits.cpu().numpy()
@@ -593,7 +593,7 @@ compute_metrics((predictions, labels))
 TypeError: only size-1 arrays can be converted to Python scalars
 ```
 
-我们得到同样的错误，所以问题肯定出在那个函数上。如果我们回顾它的代码，我们会发现它只是将 `预测的标签` 和 `真正的标签` 转发到 `metric.compute()` 。那么这种方法有问题吗？不一定。让我们快速浏览一下形状：
+我们得到同样的错误，所以问题肯定出在那个函数上。如果我们回顾它的代码，我们会发现它只是将 `predictions` 和 `labels` 转发到 `metric.compute()` 。那么这种方法有问题吗？不一定。让我们快速浏览一下形状：
 
 ```py
 predictions.shape, labels.shape
@@ -622,7 +622,7 @@ compute_metrics((predictions, labels))
 {'accuracy': 0.625}
 ```
 
-现在我们的错误已修复！这是最后一个，所以我们的脚本现在将正确训练模型。
+现在我们的错误已修复！这是最后一个错误，所以我们的脚本现在将可以正确地训练一个模型。
 
 作为参考，这里是完全修正好的脚本：
 
@@ -683,8 +683,7 @@ trainer = Trainer(
 trainer.train()
 ```
 
-在这种情况下，如果没有更多错误，我们的脚本将微调一个应该给出合理结果的模型。但是，如果训练没有任何错误，而训练出来的模型根本表现不佳，我们该怎么办？这是机器学习中最难的部分，我们将向你展示一些可以提供帮助的技术。
-
+在这种情况下，如果没有更多错误，我们的脚本将微调一个应该给出合理结果的模型。但是，如果训练没有任何错误，而训练出来的模型根本表现不佳，我们该怎么办？这是机器学习中最难的部分，我们将向你展示一些可以帮助解决这类问题的技巧。
 <Tip>
 
 💡 如果你使用的是手动训练循环，调试训练流程时也需要遵循相同的步骤，而且更容易将训练中的各个步骤分开调试。但是，请确保你没有忘记在合适的位置使用 `model.eval()` 或 `model.train()` ，也不要忘记在每个步骤中使用 `zero_grad()` ！
@@ -702,7 +701,7 @@ trainer.train()
 - 解码后的数据是否可以理解？
 - 你认同这些标签吗？
 - 有没有一个标签比其他标签更常见？
-- 如果模型预测随机的答案／总是相同的答案，那么 loss／评估指标应该是多少？
+- 如果模型预测随机的答案/总是相同的答案，那么 loss/评估指标应该是多少？
 
 <Tip warning={true}>
 
@@ -710,9 +709,9 @@ trainer.train()
 
 </Tip>
 
-查看你的数据后，查看模型的一些预测并对其进行解码。如果模型总是预测同样的事情，那可能是因为你的数据集偏向一个类别（针对分类问题）；过采样稀有类等技术可能会有所帮助。
+查看你的数据后，查看模型的一些预测并对其进行解码。如果模型总是预测同样的类别，那可能是因为你的数据集偏向一个类别（针对分类问题）；过采样稀有类等技术可能会有所帮助。
 
-如果你在初始模型上获得的 loss／评估指标与你期望的随机预测的 loss／评估指标非常不同，请仔细检查你的 loss 或评估指标的计算方式，因为那里可能存在错误。如果你使用最后添加的多个 loss，并在最后将它们相加，请确保它们具有相同的比例。
+如果你在初始模型上获得的 loss/评估指标与你期望的随机预测的 loss/评估指标非常不同，请仔细检查你的 loss 或评估指标的计算方式，因为那里可能存在错误。如果你使用最后添加的多个 loss，并在最后将它们相加，请确保它们具有相同的比例。
 
 当你确定你的数据是完美的时，你可以通过一个简单的测试来查看模型是否能够对其进行训练。
 
@@ -764,17 +763,17 @@ compute_metrics((preds.cpu().numpy(), labels.cpu().numpy()))
 
 <Tip warning={true}>
 
-⚠️ 在此测试之后，你需要创建你的模型和“Trainer”，因为获得的模型可能无法在你的完整数据集上恢复和学习有用的东西。
+⚠️ 在此测试之后，你需要创建模型和`Trainer`，因为获得的模型可能无法在你的完整数据集上恢复和学习有用的东西。
 
 </Tip>
 
-### 在你有第一个基线之前不要调整任何东西 [[在你有第一个基线之前不要调整任何东西]]
+### 在你有第一个baseline 模型之前不要调整任何东西 [[在你有第一个baseline 模型之前不要调整任何东西]]
 
-超参数调优总是被强调为机器学习中最难的部分，但这只是帮助你在指标上有所收获的最后一步。大多数情况下， `Trainer` 的默认超参数可以很好地为你提供良好的结果，因此在你获得超出数据集基线的东西之前，不要开始进行耗时且昂贵的超参数搜索 
+超参数调优总是被强调为机器学习中最难的部分，但这只是帮助你在指标上有所收获的最后一步。大多数情况下， `Trainer` 的默认超参数可以很好地为你提供良好的结果，因此在你拥有数据集上的baseline 模型之前，不要急于进行耗时和昂贵的超参数搜索。
 
-一旦你有一个足够好的模型，你就可以开始稍微调整一下。不要尝试使用不同的超参数启动一千次运行，而是比较一个超参数的不同值的几次运行，以了解哪个影响最大。
+一旦你有一个足够好的模型，你就可以开始稍微调整一下。不要尝试使用不同的超参数启动一千次运行，而是比较一个超参数的不同值的几次运行，以了解哪个超参数对指标影响最大。
 
-如果你正在调整模型本身，不要尝试任何你无法合理证明的事情。始终确保你返回过拟合测试以验证你的更改没有产生任何意外后果。
+如果你正在调整模型本身，请保持简单，不要尝试任何你无法合理证明的事情。始终确保你返回过拟合测试以验证你的更改没有产生任何意外后果。
 
 ### 请求帮忙 [[请求帮忙]]
 
@@ -782,9 +781,9 @@ compute_metrics((preds.cpu().numpy(), labels.cpu().numpy()))
 
 以下是一些可能有用的额外资源：
 
-- [“作为工程最佳实践工具的再现性”](https://docs.google.com/presentation/d/1yHLPvPhUs2KGI5ZWo0sU-PKU3GimAk3iTsI38Z-B5Gw/edit#slide=id.p) ，作者：Joel Grus
-- [“神经网络调试清单”](https://towardsdatascience.com/checklist-for-debugging-neural-networks-d8b2a9434f21) 作者：Cecelia Shao
-- [“如何对机器学习代码进行单元测试”](https://medium.com/@keeper6928/how-to-unit-test-machine-learning-code-57cf6fd81765) by Chase Roberts
-- [“训练神经网络的秘诀”](http://karpathy.github.io/2019/04/25/recipe/) 作者：Andrej Karpathy
+-Joel Grus 的 [“作为工程最佳实践工具的再现性”](https://docs.google.com/presentation/d/1yHLPvPhUs2KGI5ZWo0sU-PKU3GimAk3iTsI38Z-B5Gw/edit#slide=id.p)
+- Cecelia Shao 的 [“神经网络调试清单”](https://towardsdatascience.com/checklist-for-debugging-neural-networks-d8b2a9434f21) 
+- Chase Roberts 的 [“如何对机器学习代码进行单元测试”](https://medium.com/@keeper6928/how-to-unit-test-machine-learning-code-57cf6fd81765) 
+- Andrej Karpathy 的 [“训练神经网络的秘诀”](http://karpathy.github.io/2019/04/25/recipe)
 
-当然，并非在训练神经网络时遇到的每个问题都是你自己的错！如果你在 🤗 Transformers 或 🤗 Datasets 库中遇到看起来不正确的内容，你可能遇到了一个错误。你应该告诉我们这一切，在下一节中，我们将详细解释如何做到这一点。
+当然，并不是你在训练神经网络时遇到的每个问题都是你自己的错！如果你在🤗 Transformers或🤗 Datasets库中遇到了似乎不正确的东西，你可能遇到了一个错误。你应该告诉我们所有这些问题，在下一节中，我们将详细解释如何做到这一点。

@@ -784,7 +784,7 @@ from transformers import AdamW
 optimizer = AdamW(model.parameters(), lr=2e-5)
 ```
 
-一旦我们拥有所有这些对象，我们就可以将它们发送到 `accelerator.prepare()` 方法中。请记住，如果您想在 Colab Notebook 上使用 TPU 进行训练，您需要将所有这些代码移动到一个训练函数中，并且该函数不应任何实例化 `Accelerator` 的单元格。
+一旦我们拥有所有这些对象，我们就可以将它们发送到 `accelerator.prepare()` 方法中。请记住，如果你想在 Colab Notebook 上使用 TPU 进行训练，你需要将所有这些代码移动到一个训练函数中，并且该函数不应任何实例化 `Accelerator` 的单元格。
 
 ```python
 from accelerate import Accelerator

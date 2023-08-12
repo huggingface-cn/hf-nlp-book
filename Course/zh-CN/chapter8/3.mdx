@@ -9,23 +9,23 @@
 
 <Youtube id="S2EEG3JIt2A"/>
 
- [Hugging Face 论坛](https://discuss.huggingface.co) 是从开源团队和更广泛的 Hugging Face 社区获得帮助的好地方。以下是论坛某一天的主页面：
+[Hugging Face 论坛](https://discuss.huggingface.co) 是从开源团队和更广泛的 Hugging Face 社区获得帮助的好地方。以下是论坛某一天的主页面：
 
 <div class="flex justify-center">
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forums.png" alt="The Hugging Face forums." width="100%"/>
 </div>
 
-在左侧，你可以看到各种主题分组的所有类别，而右侧显示了最新的主题。主题是包含标题、类别和描述的帖子；它与我们在创建自己的数据集时看到的 GitHub 问题格式非常相似 [Chapter 5](/course/chapter5) 。顾名思义， [Beginners](https://discuss.huggingface.co/c/beginners/5) 类别主要面向刚开始使用 Hugging Face 库和生态系统的人。欢迎你对任何库提出任何问题，无论是调试一些代码还是寻求有关如何做某事的帮助。
+在左侧，你可以看到各种主题分组的所有类别，而右侧显示了最新的主题。一个主题包含标题、类别和描述；它与我们在[第五章](/course/chapter5) 中创建自己的数据集时看到的 GitHub issue 格式非常相似 。顾名思义， [Beginners（初学者）](https://discuss.huggingface.co/c/beginners/5) 类别主要面向刚开始使用 Hugging Face 库和生态系统的人。欢迎你对任何库提出任何问题，无论是调试一些代码还是寻求有关如何做某事的帮助。（话虽如此，如果你的问题特属于某个库，你可能应该前往论坛上对应的库类别。）
 
-同样， [Intermediate](https://discuss.huggingface.co/c/intermediate/6) 和 [Research](https://discuss.huggingface.co/c/research/7) 类别用于更高级的问题，例如你想讨论一些最新的 NLP 研究。
+同样， [Intermediate（中级）](https://discuss.huggingface.co/c/intermediate/6) 和 [Research（研究）](https://discuss.huggingface.co/c/research/7) 类别用于更高级的问题，例如关于库或一些有趣的新自然语言处理研究的讨论。
 
-当然，我们也应该提到 [Course](https://discuss.huggingface.co/c/course/20) 类别，你可以在里面提出与 Hugging Face 课程相关的任何问题！
+当然，我们也应该提到 [Course](https://discuss.huggingface.co/c/course/20) 类别，你可以在里面提出与 Hugging Face Course相关的任何问题！
 
-选择类别后，就可以编写第一个主题了。你可以找一些 [guidelines](https://discuss.huggingface.co/t/how-to-request-support/3128) 这些论坛会探讨有关如何执行此操作，在本节中，我们将一起学习一些用来构成一个好主题的功能。
+选择类别后，就可以编写第一个主题了。你可以找一些 [指南](https://discuss.huggingface.co/t/how-to-request-support/3128)，教你如何撰写主题。在本节中，我们将一起学习一些用来构成一个好主题的特点。
 
 ## 写一篇高质量的论坛帖子 [[写一篇高质量的论坛帖子]]
 
-举例，我们要从 Wikipedia 文章生成嵌入表示用来创建自定义搜索引擎。和前面处理相同，我们按如下方式加载分词器和模型：
+举个例子，我们要从 Wikipedia 文章生成嵌入表示用来创建自定义搜索引擎。通常情况下，我们加载 Tokenizer 和模型的方式如下：
 
 ```python
 from transformers import AutoTokenizer, AutoModel
@@ -35,7 +35,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 model = AutoModel.from_pretrained(model_checkpoint)
 ```
 
-现在我们尝试将 [Transformers Of Wikipedia](https://en.wikipedia.org/wiki/Transformers) 的一整段进行热知识：Transformers 作为一个 🤗 Python 库被越来越多人熟知）：
+现在假设我们尝试嵌入维基百科文章中关于[变形金刚](https://en.wikipedia.org/wiki/Transformers)（指的是变形金刚系列作品，而不是 Transformers库！热知识：Transformers 作为一个 🤗 Python 库被越来越多人熟知）的整个部分：
 
 ```python
 text = """
@@ -88,9 +88,9 @@ logits = model(**inputs).logits
 IndexError: index out of range in self
 ```
 
-我们遇到了一个问题——错误信息有些奇怪 [section 2](/course/chapter8/section2) ！我们无法确定完整回溯的正反向，这时我们可以转向 Hugging Face 论坛寻求帮助。那么我们如何撰写问题的主题？
+糟糕，我们遇到了一个问题——而且错误消息比我们在[第2节](/course/chapter8/section2)中看到的要难懂得多！我们无法理解完整的 traceback 信息，因此我们决定向Hugging Face论坛寻求帮助。我们该如何撰写主题呢？
 
-首先，我们需要点击右上角的“新建主题”按钮（注意，要创建主题，我们需要登录）：
+首先，我们需要点击右上角的“New Topic”按钮（请注意，要创建主题，我们需要先登录）：
 
 <div class="flex justify-center">
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forums-new-topic.png" alt="Creating a new forum topic." width="100%"/>
@@ -110,25 +110,25 @@ IndexError: index out of range in self
 
 尽这个主题包含这个错误消息，但撰写方式存在一些问题：
 
-1. 标题描述性不是很强，这会导致浏览论坛的人在不阅读正文的情况下无法分辨出主题的内容。
+1. 标题描述性不是很强，这会导致浏览论坛的人在没有阅读正文的情况下无法知道主题是关于什么的。
 
 2. 正文没有提供足够的信息说明错误的来源以及如何重现错误。
 
-3. 这个话题下的语气有些苛刻。
+3. 主题以某种要求的语气直接 @ 了几个人。
 
-像这样的主题不太可能很快得到答案，需要对其进行改进。我们将从选择一个问题的好标题开始。
+像这样的主题不太可能很快得到答案（如果有答复的话），需要对其进行改进。我们将从解决第一个问题，选择一个好的标题开始。
 
 ### 选择描述性标题 [[选择描述性标题]]
 
-如果你想就代码中的错误寻求帮助，经验法则是在标题中包含足够的信息，以便其他人可以快速确定他们是否可以回答你的问题。在我们的运行示例中，我们知道正在引发的异常名称，并有一些提示表示它是在模型的前向传递中触发的，所以我们调用 `model(**inputs)` 。为了传达这一点，一个可能的标题可能是：
+如果你想就代码中的错误寻求帮助，一个好的经验法则是在标题中包含足够的信息，以便其他人可以快速确定他们是否可以回答你的问题。在我们的运行示例中，我们知道正在引发的异常名称，并有一些提示表示它是在模型的前向传递中触发的，即我们调用`model(**inputs)`的位置。为了传达这一信息，一个可能的标题可能是：
 
-> 自动建模正向传递中的索引错误的来源？
+> AutoModel 前向传递中的 IndexError 来源？
 
-这个标题告诉读者在哪里你认为错误来自，如果他们遇到了 `IndexError` 在此之前，他们很有可能知道如何调试它。当然，标题也可以是其他变体，例如：
+这个标题告诉读者在哪里你认为错误来自，如果他们遇到了 `IndexError` 他们很可能知道如何回答你。当然，标题可以是任何你想要的，其他变体如：
 
-> 为什么我的模型会产生索引错误？
+> 为什么我的模型会产生 IndexError？
 
-这种标题也是可以的。现在我们有了一个描述性的标题，让我们来看看改善主体。
+这种标题也是可以的。现在我们有了一个描述性的标题，让我们来看看改善正文。
 
 ### 设置代码段的格式 [[设置代码段的格式]]
 
@@ -138,25 +138,25 @@ IndexError: index out of range in self
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic03.png" alt="Our revised forum topic, with proper code formatting." width="100%"/>
 </div>
 
-正如你在屏幕截图中看到的，将代码块括在反引号中会将原始文本转换为格式化代码，并带有颜色样式！另外，单个反引号可用于格式化内联变量，比如 `distilbert-base-uncased` 这样。此时这个问题看起来好多了，我们还有可能在社区中找到回答错误原因的是什么的人。然而，与其依靠运气，不如把完整的回溯细节包括进来，可以更好地找到问题答案。
+正如你在屏幕截图中看到的，将代码块括在反引号中会将原始文本转换为带有颜色样式的格式化代码！另外，单个反引号可用于格式化内联变量，比如 `distilbert-base-uncased` 这样。这个主题看起来好多了，有了一点运气，我们可能会在社区中找到一些人猜测错误的原因。然而，与其依靠运气，不如通过包括完整而详细的回溯信息使事情更容易！
 
-### 包括完整的回溯 [[包括完整的回溯]]
+### 包括完整的回溯信息 [[包括完整的回溯信息]]
 
-由于回溯的最后一行通常已经包含足够的代码问题信息，因此很可能在问题帖子中提供这个来“节省空间”。然而，实际上对于你以外的其他人来说很难去着手调试问题，所以提供在回溯中较上面的信息也是必要的。最好的做法是复制并粘贴所有的回溯，同时确保它的格式不被破坏。但是这些回溯可能会很长，所以可以在对源代码进行解释之后再展示它们。就这个思路现在来对我们的问题帖子进行修改，我们的帖子如下所示：
+由于回溯的最后一行通常足以调试你自己的代码，但是只提供这一行以“节省空间”可能会使他人调试问题变得更加困难，因为 traceback 中更上面的信息也可能非常有用。因此，一个好的做法是复制并粘贴整个的 traceback，同时确保它的格式不被破坏。但是这些 traceback 可能会很长，所以可以在对源代码进行解释之后再展示它们。就这个思路现在来对我们的问题帖子进行修改，我们的帖子如下所示：
 
 <div class="flex justify-center">
 <img src="https:/huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic04.png" alt="Our example forum topic, with the complete traceback." width="100%"/>
 </div>
 
-这提供了更多信息，细心的读者可能会指出问题似乎是由于回溯中的这一行而传递了一个长输入：
+这提供了更多信息，细心的读者可能会指出问题似乎是由于 traceback 中的这行代码导致输入过长：
 
 > 令牌索引序列长度长于为此模型指定的最大序列长度 （583 > 512）。
 
-除此之外，确定问题所在还需要提供通过提供触发错误的对应代码。
+然而，我们可以通过提供触发错误的实际代码进一步简化事情。现在，我们就来做这件事。
 
 ### 提供可重复的示例 [[提供可重复的示例]]
 
-如果你曾经尝试过调试其他人的代码，那么你可能首先尝试重现他们报告的问题，以便可以通过回溯来查明错误。在论坛上获得（或提供）帮助时没有什么不同，如果你能提供一个重现错误的小例子真的很有帮助。这里有个示例帖子：
+如果你曾经尝试过调试其他人的代码，那么你可能首先尝试重现他们报告的问题，以便你可以开始逐步查找错误。在论坛上获取（或提供）帮助也不例外，如果你能提供一个重现错误的小例子真的很有帮助。这里有个示例帖子：
 
 <div class="flex justify-center">
 <img src="https://huggingface.co/datasets/huggingface-course/documentation-images/resolve/main/en/chapter8/forum-topic05.png" alt="The final version of our forum topic." width="100%"/>

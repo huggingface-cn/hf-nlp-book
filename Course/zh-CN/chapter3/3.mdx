@@ -13,7 +13,7 @@
 
 🤗 Transformers 提供了一个 `Trainer` 类，以帮助你在自己的数据集上微调它提供的任何预训练模型。完成上一节中的所有数据预处理工作后，你只需要执行几个步骤来创建 `Trainer` 最难的部分可能是准备运行 `Trainer.train()`配置环境，因为它在 CPU 上运行速度会非常慢。如果你没有设置 GPU，可以访问免费的 GPU 或 TPU 。
 
-🤗 Transformers提供了一个`Trainer`类，可以帮助您在数据集上微调任何预训练模型。在上一节中完成所有数据预处理工作后，您只需完成几个步骤来定义`Trainer`。最困难的部分可能是准备运行`Trainer.train()`所需的环境，因为在CPU上运行速度非常慢。如果您没有设置GPU，可以使用[Google Colab](https://colab.research.google.com/) （国内网络无法使用） 上获得免费的GPU或TPU。
+🤗 Transformers提供了一个`Trainer`类，可以帮助你在数据集上微调任何预训练模型。在上一节中完成所有数据预处理工作后，你只需完成几个步骤来定义`Trainer`。最困难的部分可能是准备运行`Trainer.train()`所需的环境，因为在CPU上运行速度非常慢。如果你没有设置GPU，可以使用[Google Colab](https://colab.research.google.com/) （国内网络无法使用） 上获得免费的GPU或TPU。
 
 下面的示例假设你已经执行了上一节中的示例。下面是在开始学习这一节之前你需要运行的代码：
 
@@ -102,9 +102,9 @@ print(predictions.predictions.shape, predictions.label_ids.shape)
 (408, 2) (408,)
 ```
 
-`predict()` 方法的输出另一个带有三个字段的命名元组：`predictions` `label_ids` 和 `metrics` `metrics` 字段将只包含所传递的数据集的损失，以及一些时间指标（预测所需的总时间和总的平均时间）。一旦我们定义了自己的 `compute_metrics()` 函数并将其传递给 `Trainer` 该字段还将包含`compute_metrics()`返回的结果。
+`predict()` 方法的输出另一个带有三个字段的命名元组：`predictions` `label_ids` 和 `metrics` `metrics` 字段将只包含所传递的数据集的损失，以及一些时间指标（总共花费的时间和平均预测时间）。当我们定义了自己的 `compute_metrics()` 函数并将其传递给 `Trainer` 该字段还将包含`compute_metrics()`返回的结果。
 
-`predict()` 是一个二维数组，形状为 408×2（408 是我们所用的数据集元素数），这是我们传递给 `pprdict()` 的数据集中每个元素的对数（正如在 [前一章](/course/chapter2) 中看到的，所有 Transformer 模型都返回对数）。为了将它们转化为可以与我们的标签进行比较的预测值，我们需要在第二轴上取值最大的索引：
+`predict()` 是一个二维数组，形状为 408 × 2（408 是我们使用的数据集中的元素数量），这是我们传递给 `pprdict()` 的数据集中每个元素的 logits（正如在 [前一章](/course/chapter2) 中看到的，所有 Transformer 模型都返回 logits）。为了将它们转化为可以与我们的标签进行比较的预测值，我们需要在第二轴上取值最大的索引：
 
 ```py
 import numpy as np
@@ -112,7 +112,7 @@ import numpy as np
 preds = np.argmax(predictions.predictions, axis=-1)
 ```
 
-我们现在可以将这些 `preds` 与标签进行比较。为了建立我们的 `compute_metric()` 函数，我们将依靠 🤗 [Evaluate](https://github.com/huggingface/evaluate/) 库中的指标。我们可以像加载数据集一样轻松地加载与 MRPC 数据集关联的指标，这次是用 `evaluate.load()` 函数。返回的对象有一个 `compute()`方法，我们可以用它来进行指标的计算：
+我们现在可以将这些 `preds` 与标签进行比较。为了构建我们的 `compute_metric()` 函数，我们将使用 🤗 [Evaluate](https://github.com/huggingface/evaluate/) 库中的指标。我们可以像加载数据集一样轻松地加载与 MRPC 数据集关联的指标，这次是使用 `evaluate.load()` 函数。返回的对象有一个 `compute()`方法，我们可以用它来进行指标的计算：
 
 ```py
 import evaluate
@@ -125,7 +125,7 @@ metric.compute(predictions=preds, references=predictions.label_ids)
 {'accuracy': 0.8578431372549019, 'f1': 0.8996539792387542}
 ```
 
-你得到的确切结果可能会有所不同，因为模型头的随机初始化可能会改变它取得的指标。在这里，我们可以看到我们的模型在验证集上的准确率为 85.78%，F1 分数为 89.97。这就是用于评估 GLUE 基准的 MRPC 数据集上的结果的两个指标。而在 [BERT 论文](https://arxiv.org/pdf/1810.04805.pdf) 中的表格展示了基础模型的 F1 分数为 88.9。那是 `uncased` 模型，而我们目前正在使用 `cased` 模型，这就解释了更好的结果。
+你得到的确切结果可能会有所不同，因为模型头部的随机初始化可能会改变其指标。在这里，我们可以看到我们的模型在验证集上的准确率为85.78%，F1分数为89.97。这是用于评估MRPC数据集在GLUE基准测试中的结果的两个指标。在BERT论文中的表格中，基础模型的F1分数为88.9。那是uncased模型，而我们现在正在使用cased模型，这解释了为什么我们得到了更好的结果。
 
 最后把所有东西打包在一起，我们就得到了 `compute_metrics()` 函数：
 
@@ -154,21 +154,21 @@ trainer = Trainer(
 )
 ```
 
-请注意，我们设置了一个新的 `TrainingArguments`，其`evaluation_strategy` 设置为 `epoch` 和一个新模型。如果不创建新的模型就直接训练，就只会继续训练我们已经训练过的模型。为了启动新的训练运行，我们执行：
+请注意，我们设置了一个新的 `TrainingArguments`，其`evaluation_strategy` 设置为 `epoch` 并且创建了一个新模型。如果不创建新的模型就直接训练，就只会继续训练我们已经训练过的模型。为了启动新的训练，我们执行：
 
 ```py
 trainer.train()
 ```
 
-这一次，它将在每个 epoch 结束时在训练损失的基础上报告验证损失和指标。同样，由于模型的随机头部初始化，达到的准确率/F1 分数可能与我们发现的略有不同，但它应该在同一范围内。
+这一次，它将在每个 epoch 结束时在训练损失的基础上报告验证损失和指标。同样，由于模型的随机头部初始化，达到的准确率/F1 分数可能与我们发现的略有不同，这是由于模型头部的随机初始化造成的，但应该相差不多。
 
-`Trainer` 可以在多个 GPU 或 TPU 上工作，并提供许多选项，例如混合精度训练（在训练的参数中使用 `fp16 = True` ）。我们将在第 10 章讨论它支持的所有内容。
+`Trainer` 可以在多个 GPU 或 TPU 上运行，并提供许多选项，例如混合精度训练（在训练的参数中使用 `fp16 = True` ）。我们将在第十章讨论它支持的所有内容。
 
-使用`Trainer` API 微调的介绍到此结束。在 [第七章](/course/chapter7) 中会给出一个对大多数常见的 NLP 任务进行训练的例子，但现在让我们看看如何在纯 PyTorch 中做相同的操作。
+使用`Trainer` API 微调的介绍到此结束。在 [第七章](/course/chapter7) 中会给出一个对大多数常见的 NLP 任务进行训练的例子，但现在让我们看看如何在 PyTorch 中做相同的操作。
 
 <Tip>
 
-✏️ **试试看！** 使用你在第 2 节中进行的数据处理，在 GLUE SST-2 数据集上微调模型。
+✏️ **试试看！** 使用你在第 2 节中进行的数据处理，在 GLUE SST-2 数据集上对模型进行微调。
 
 </Tip>
 

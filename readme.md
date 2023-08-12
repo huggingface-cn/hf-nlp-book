@@ -244,6 +244,46 @@ TODO：尝试搭建Github的Bot自动化处理
 
 第 2 部分
 
+第十章
+
+diff language
+
+chapter3 s4 kears
+
+qa 的{#if fw === 'pt'} 
+
+应用
+
+允许
+
+点击
+
+这种情况下
+
+新标签页
+
+工作
+
+通过
+
+tokenization 翻译正确性和空格问题
+
+有些章节链接没有第几章标识问题
+
+章节格式统一
+
+注释的英文加空格
+
+删除视频的部分
+
+对于我们主体性的修改 Huggingface
+
+qa 手动 format
+
+“``` `”替换
+
+qa 的双版本问题
+
 流程：
 
 1. 使用public_export_format将文本导出到publish
