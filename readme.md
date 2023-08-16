@@ -213,7 +213,6 @@ TODO：尝试搭建Github的Bot自动化处理
    格式：
 
    format_tools.py
-
 2. 修改一个书的版本
 
    格式：
@@ -234,8 +233,6 @@ TODO：尝试搭建Github的Bot自动化处理
 
    3.章节层级
 
-
-
 章节层级：根据readme更改
 
 章节的描述：更改章节链接，章节标号
@@ -250,7 +247,7 @@ diff language
 
 chapter3 s4 kears
 
-qa 的{#if fw === 'pt'} 
+qa 的{#if fw === 'pt'}
 
 应用
 
@@ -292,8 +289,7 @@ qa 的双版本问题
 4. 处理QA（处理之前要提交commit）
 5. 下载图片（下载之前要提交commit），翻译图片以及解释
 6. 重构章节
-7. 导出word并处理其他的信息
-   | title                   | words  | 交稿日期 |
+7. 导出word并处理其他的信息| title                   | words  | 交稿日期 |
    | ----------------------- | ------ | -------- |
    | 0. 安装                 | 3113   |          |
    | 1. Transformer 模型     | 34920  | 7月28日  |

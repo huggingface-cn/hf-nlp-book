@@ -12,7 +12,7 @@
 
 大多数课程和服务都依赖于你拥有 Hugging Face 帐户。我们建议现在创建一个： [创建一个账号](https://huggingface.co/join)(https://huggingface.co/join) 。
 
-### 使用 Google Colab Notebook  
+### 使用 Google Colab Notebook
 
 使用 Colab Notebook 是最简单的搭建方式；可以在浏览器中启动 Notebook 并直接开始编写自己的代码！
 
@@ -80,10 +80,10 @@ ls -a
 你可以使用 `activate` 和 `deactivate` 命令来控制进入和退出你的虚拟环境：
 
 ```python
-## 激活虚拟环境
+# 激活虚拟环境
 source .env/bin/activate
 
-## 退出虚拟环境
+# 退出虚拟环境
 source .env/bin/deactivate
 ```
 
@@ -1358,10 +1358,10 @@ model.config.id2label
 #####Pytorch
 from transformers import BertConfig, BertModel
 
-## 初始化配置类
+# 初始化配置类
 config = BertConfig()
 
-## 从配置类初始化模型
+# 从配置类初始化模型
 model = BertModel(config)####end
 ```
 
@@ -1371,10 +1371,10 @@ model = BertModel(config)####end
 #####TensorFlow
 from transformers import BertConfig, TFBertModel
 
-## 初始化配置类
+# 初始化配置类
 config = BertConfig()
 
-## 从配置类初始化模型
+# 从配置类初始化模型
 model = TFBertModel(config)####end
 ```
 {/if}
@@ -1412,7 +1412,7 @@ from transformers import BertConfig, BertModel
 config = BertConfig()
 model = BertModel(config)
 
-## 模型已随机初始化!####end
+# 模型已随机初始化!####end
 ```
 
 {:else}
@@ -1424,7 +1424,7 @@ from transformers import BertConfig, TFBertModel
 config = BertConfig()
 model = TFBertModel(config)
 
-## 模型已随机初始化!####end
+# 模型已随机初始化!####end
 ```
 
 {/if}
@@ -1780,7 +1780,7 @@ sequence = "I've been waiting for a HuggingFace course my whole life."
 tokens = tokenizer.tokenize(sequence)
 ids = tokenizer.convert_tokens_to_ids(tokens)
 input_ids = torch.tensor(ids)
-## 这一行会运行失败
+# 这一行会运行失败
 model(input_ids)####end
 ```
 
@@ -1803,7 +1803,7 @@ sequence = "I've been waiting for a HuggingFace course my whole life."
 tokens = tokenizer.tokenize(sequence)
 ids = tokenizer.convert_tokens_to_ids(tokens)
 input_ids = tf.constant(ids)
-## 这一行会运行失败
+# 这一行会运行失败
 model(input_ids)####end
 ```
 
@@ -2134,14 +2134,14 @@ model_inputs = tokenizer(sequences)
 它可以使用多种不同的方法对目标进行填充：
 
 ```python
-## 将句子序列填充到最长句子的长度
+# 将句子序列填充到最长句子的长度
 model_inputs = tokenizer(sequences, padding="longest")
 
-## 将句子序列填充到模型的最大长度
-## (512 for BERT or DistilBERT)
+# 将句子序列填充到模型的最大长度
+# (512 for BERT or DistilBERT)
 model_inputs = tokenizer(sequences, padding="max_length")
 
-## 将句子序列填充到指定的最大长度
+# 将句子序列填充到指定的最大长度
 model_inputs = tokenizer(sequences, padding="max_length", max_length=8)
 ```
 
@@ -2150,11 +2150,11 @@ model_inputs = tokenizer(sequences, padding="max_length", max_length=8)
 ```python
 sequences = ["I've been waiting for a HuggingFace course my whole life.", "So have I!"]
 
-## 将截断比模型最大长度长的句子序列
-## (512 for BERT or DistilBERT)
+# 将截断比模型最大长度长的句子序列
+# (512 for BERT or DistilBERT)
 model_inputs = tokenizer(sequences, truncation=True)
 
-## 将截断长于指定最大长度的句子序列
+# 将截断长于指定最大长度的句子序列
 model_inputs = tokenizer(sequences, max_length=8, truncation=True)
 ```
 
@@ -2163,13 +2163,13 @@ model_inputs = tokenizer(sequences, max_length=8, truncation=True)
 ```python
 sequences = ["I've been waiting for a HuggingFace course my whole life.", "So have I!"]
 
-## 返回 PyTorch tensors
+# 返回 PyTorch tensors
 model_inputs = tokenizer(sequences, padding=True, return_tensors="pt")
 
-## 返回 TensorFlow tensors
+# 返回 TensorFlow tensors
 model_inputs = tokenizer(sequences, padding=True, return_tensors="tf")
 
-## 返回 NumPy arrays
+# 返回 NumPy arrays
 model_inputs = tokenizer(sequences, padding=True, return_tensors="np")
 ```
 
@@ -2572,9 +2572,12 @@ result = model(**encoded)####end
 
 ## 4.1 处理数据 
 
+{#if fw === 'pt'}
+
 在这一小节你将学习第一小节中提到的“如何使用模型中心（hub）大型数据集”，下面是用模型中心的数据在 PyTorch 上训练句子分类器的一个例子：
 
 ```python
+#####Pytorch
 import torch
 from transformers import AdamW, AutoTokenizer, AutoModelForSequenceClassification
 
@@ -2588,13 +2591,13 @@ sequences = [
 ]
 batch = tokenizer(sequences, padding=True, truncation=True, return_tensors="pt")
 
-# 新增部分
+# 新增的部分
 batch["labels"] = torch.tensor([1, 1])
 
 optimizer = AdamW(model.parameters())
 loss = model(**batch).loss
 loss.backward()
-optimizer.step()
+optimizer.step()####end
 ```
 
 {:else}
@@ -2602,6 +2605,7 @@ optimizer.step()
 在这一小节你将学习第一小节中提到的“如何使用模型中心（hub）大型数据集”，下面是用模型中心的数据在 TensorFlow 上训练句子分类器的一个例子：
 
 ```python
+#####TensorFlow
 import tensorflow as tf
 import numpy as np
 from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
@@ -2619,7 +2623,7 @@ batch = dict(tokenizer(sequences, padding=True, truncation=True, return_tensors=
 # 新增部分
 model.compile(optimizer="adam", loss="sparse_categorical_crossentropy")
 labels = tf.convert_to_tensor([1, 1])
-model.train_on_batch(batch, labels)
+model.train_on_batch(batch, labels)####end
 ```
 
 {/if}
@@ -2629,12 +2633,6 @@ model.train_on_batch(batch, labels)
 在本节中，我们以 MRPC（微软研究院释义语料库）数据集为例，该数据集由威廉·多兰和克里斯·布罗克特在这篇文章发布，由 5801 对句子组成，每个句子对带有一个标签来指示它们是否为同义（即两个句子的意思相同）。在本章选择该数据集的原因是它的数据体量小，容易对其进行训练。
 
 ### 从模型中心（Hub）加载数据集 
-
-{#if fw === 'pt'}
-
-{:else}
-
-{/if}
 
 模型中心（hub）不仅仅包含模型，还有许多别的语言的数据集。访问 [Datasets](https://huggingface.co/datasets)(https://huggingface.co/datasets) 的链接即可进行浏览。我们建议你在完成本节的学习后阅读一下 [加载和处理新的数据集](https://huggingface.co/docs/datasets/loading_datasets.html#from-the-huggingface-hub)(https://huggingface.co/docs/datasets/loading_datasets.html#from-the-huggingface-hub) 这篇文章，这会让你对 huggingface 的数据集理解更加清晰。现在让我们使用 MRPC 数据集中的 [GLUE 基准测试数据集](https://gluebenchmark.com)(https://gluebenchmark.com) ，它是构成 MRPC 数据集的 10 个数据集之一，作为一个用于衡量机器学习模型在 10 个不同文本分类任务中性能的学术基准。
 
@@ -2828,15 +2826,7 @@ DatasetDict({
 
 ### 动态填充 
 
-{#if fw === 'pt'}
-
-负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数` 。这是一个可以在构建 `DataLoader` 时传递的一个参数，默认是一个将你的数据集转换为 PyTorch 张量并将它们拼接起来的函数（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例子中下是不可行的，因为我们的输入的大小可能是不相同的。我们特意推迟了填充的时间，只在每个 batch 上进行必要的填充，以避免出现有大量填充的过长输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
-
-{:else}
-
-负责在批处理中将数据整理为一个 batch 的函数称为 `collate 函数` 。默认的拼合函数只会将你的样本转换为 `tf.Tensor` 并将它们拼接起来（如果你的元素是列表、元组或字典，则会使用递归进行拼接）。这在本例中是不可行的，因为我们的输入不是都是相同大小的。我们特意推迟了填充时间，只在每个 batch 上进行填充，以避免有太多填充的过长的输入。这将大大加快训练速度，但请注意，如果你在 TPU 上训练，需要注意一个问题——TPU 喜欢固定的形状，即使这需要额外填充很多无用的 token。
-
-{/if}
+负责将样本组合成一个 batch 的函数叫做 `collate 函数`。当你构建一个 DataLoader 时，你可以传递这个函数作为一个参数，它的默认值是一个函数，它会将你的样本转换成 PyTorch 或 tf.Tensor 的张量，并将它们（如果你的元素是列表、元组或字典的话，会递归地进行拼接）连接起来。但在我们的情况下，默认的设置是不行的，因为我们的输入不会都是相同的大小。我们故意推迟了填充，只在每个 batch 上进行必要的填充，避免了有很多填充的过长输入。这会大大加快训练速度，但请注意，如果你在 TPU 上训练，可能会出现问题—— TPU 更喜欢大小固定的形状，即使这需要额外填充很多无用的 token。
 
 为了解决句子长度不统一的问题，我们必须定义一个 collate 函数，该函数会将每个 batch 句子填充到正确的长度。幸运的是，transformer 库通过 `DataCollatorWithPadding` 为我们提供了这样一个函数。当你实例化它时，它需要一个 tokenizer （用来知道使用哪种填充 token 以及模型期望在输入的左边填充还是右边填充），然后它会自动完成所有需要的操作：
 
@@ -4413,7 +4403,7 @@ checkpoint = "camembert-base"
 model = AutoModelForMaskedLM.from_pretrained(checkpoint)
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
-## 对模型进行一些操作,训练、微调...
+# 对模型进行一些操作,训练、微调...
 
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")####end
@@ -4430,7 +4420,7 @@ checkpoint = "camembert-base"
 model = TFAutoModelForMaskedLM.from_pretrained(checkpoint)
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
-## 对模型进行一些操作,训练、微调...
+# 对模型进行一些操作,训练、微调...
 
 model.save_pretrained("<path_to_dummy_folder>")
 tokenizer.save_pretrained("<path_to_dummy_folder>")####end
@@ -5104,7 +5094,7 @@ squad_it_dataset = load_dataset("json", data_files=data_files, field="data")
 from datasets import load_dataset
 
 data_files = {"train": "drugsComTrain_raw.tsv", "test": "drugsComTest_raw.tsv"}
-## \t 在python中是制表符的意思
+# \t 在python中是制表符的意思
 drug_dataset = load_dataset("csv", data_files=data_files, delimiter="\t")
 ```
 
@@ -5112,7 +5102,7 @@ drug_dataset = load_dataset("csv", data_files=data_files, delimiter="\t")
 
 ```python
 drug_sample = drug_dataset["train"].shuffle(seed=42).select(range(1000))
-## 细看前几个例子
+# 细看前几个例子
 drug_sample[:3]
 ```
 
@@ -5226,13 +5216,13 @@ lambda x : x * x
 
 ```python
 drug_dataset = drug_dataset.filter(lambda x: x["condition"] is not None)
-``` 
+```
 
 `None` 条目删除之后,我们可以规范我们的 `condition` 列:
 
 ```python
 drug_dataset = drug_dataset.map(lowercase_condition)
-## 检查一下转换后的结果
+# 检查一下转换后的结果
 drug_dataset["train"]["condition"][:3]
 ```
 
@@ -5257,7 +5247,7 @@ def compute_review_length(example):
 
 ```python
 drug_dataset = drug_dataset.map(compute_review_length)
-## 检查第一个训练样例
+# 检查第一个训练样例
 drug_dataset["train"][0]
 ```
 
@@ -5514,7 +5504,7 @@ DatasetDict({
 
 你现在已经了解了如何使用 Datasets 以各种方式用于预处理数据集。虽然Datasets 的处理功能会覆盖你大部分的模型训练需求，有时你可能需要切换到 Pandas 以使用更强大的功能，例如 `DataFrame.groupby()` 或用于可视化的高级 API。幸运的是，Datasets 设计宗旨就是与 Pandas、NumPy、PyTorch、TensorFlow 和 JAX 等库可以相互转换。让我们来看看这是如何实现的。
 
-### Datasets 和 DataFrames 的相互转换 
+### Datasets 和 DataFrames 的相互转换
 
 为了实现各种第三方库之间的转换，Datasets 提供了一个 `Dataset.set_format()` 函数。此函数可以通过仅更改输出格式的，轻松切换到另一种格式，而不会影响底层数据格式（以 Apache Arrow 方式进行存储）。为了演示，让我们把数据集转换为 Pandas：
 
@@ -5528,56 +5518,12 @@ drug_dataset.set_format("pandas")
 drug_dataset["train"][:3]
 ```
 
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>patient_id</th>
-      <th>drugName</th>
-      <th>condition</th>
-      <th>review</th>
-      <th>rating</th>
-      <th>date</th>
-      <th>usefulCount</th>
-      <th>review_length</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>95260</td>
-      <td>Guanfacine</td>
-      <td>adhd</td>
-      <td>"My son is halfway through his fourth week of Intuniv."</td>
-      <td>8.0</td>
-      <td>April 27, 2010</td>
-      <td>192</td>
-      <td>141</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>92703</td>
-      <td>Lybrel</td>
-      <td>birth control</td>
-      <td>"I used to take another oral contraceptive, which had 21 pill cycle, and was very happy- very light periods, max 5 days, no other side effects."</td>
-      <td>5.0</td>
-      <td>December 14, 2009</td>
-      <td>17</td>
-      <td>134</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>138000</td>
-      <td>Ortho Evra</td>
-      <td>birth control</td>
-      <td>"This is my first time using any form of birth control."</td>
-      <td>8.0</td>
-      <td>November 3, 2015</td>
-      <td>10</td>
-      <td>89</td>
-    </tr>
-  </tbody>
-</table>
+|      | patient_id | drugName    | condition      | review                                                       | rating | date      | usefulCount | review_length |
+| ---- | ---------- | ----------- | -------------- | ------------------------------------------------------------ | ------ | --------- | ----------- | ------------- |
+| 0    | 95260      | Guanfacine  | adhd           | "My  son is halfway through his fourth week of Intuniv."     | 8      | 27-Apr-10 | 192         | 141           |
+| 1    | 92703      | Lybrel      | birth  control | "I  used to take another oral contraceptive, which had 21 pill cycle, and was  very happy- very light periods, max 5 days, no other side effects." | 5      | 14-Dec-09 | 17          | 134           |
+| 2    | 138000     | Ortho  Evra | birth  control | "This  is my first time using any form of birth control."    | 8      | 3-Nov-15  | 10          | 89            |
+
 
 接下来我们从数据集中选择 `drug_dataset[train]` 的所有数据来得到训练集数据：
 
@@ -5604,42 +5550,13 @@ frequencies = (
 frequencies.head()
 ```
 
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>condition</th>
-      <th>frequency</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>birth control</td>
-      <td>27655</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>depression</td>
-      <td>8023</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>acne</td>
-      <td>5209</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>anxiety</td>
-      <td>4991</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>pain</td>
-      <td>4744</td>
-    </tr>
-  </tbody>
-</table>
+|      | condition      | frequency |
+| ---- | -------------- | --------- |
+| 0    | birth  control | 27655     |
+| 1    | depression     | 8023      |
+| 2    | acne           | 5209      |
+| 3    | anxiety        | 4991      |
+| 4    | pain           | 4744      |
 
 当我们完成了 Pandas 分析之后，我们可以使用对象 `Dataset.from_pandas()` 方法可以创建一个新的 `Dataset` 对象，如下所示：
 
@@ -5677,9 +5594,9 @@ Datasets 提供了一个基于 `scikit-learn` 的经典方法： `Dataset.train_
 
 ```python
 drug_dataset_clean = drug_dataset["train"].train_test_split(train_size=0.8, seed=42)
-## 将默认的 "test" 部分重命名为"validation"
+# 将默认的 "test" 部分重命名为"validation"
 drug_dataset_clean["validation"] = drug_dataset_clean.pop("test")
-## 将 "test" 集添加到我们的`DatasetDict`中
+# 将 "test" 集添加到我们的`DatasetDict`中
 drug_dataset_clean["test"] = drug_dataset["test"]
 drug_dataset_clean
 ```
@@ -5825,7 +5742,7 @@ The Pile 是由 [EleutherAI](https://www.eleuther.ai)(https://www.eleuther.ai) �
 ```python
 from datasets import load_dataset
 
-## 这需要几分钟才能运行,所以在你等待的时候去喝杯茶或咖啡 :)
+# 这需要几分钟才能运行,所以在你等待的时候去喝杯茶或咖啡 :)
 data_files = "https://the-eye.eu/public/AI/pile_preliminary_components/PUBMED_title_abstracts_2019_baseline.jsonl.zst"
 pubmed_dataset = load_dataset("json", data_files=data_files, split="train")
 pubmed_dataset
@@ -5872,7 +5789,7 @@ pubmed_dataset[0]
 ```python
 import psutil
 
-## Process.memory_info是以字节为单位的,所以转换为兆字节
+# Process.memory_info是以字节为单位的,所以转换为兆字节
 print(f"使用的RAM:{psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
 ```
 
@@ -6008,9 +5925,9 @@ list(dataset_head)
 同样，你可以使用 `IterableDataset.skip()` 函数从打乱的数据集中创建训练集和验证集，如下所示：
 
 ```python
-## 跳过前1,000个示例,将其余部分创建为训练集
+# 跳过前1,000个示例,将其余部分创建为训练集
 train_dataset = shuffled_dataset.skip(1000)
-## 将前1,000个示例用于验证集
+# 将前1,000个示例用于验证集
 validation_dataset = shuffled_dataset.take(1000)
 ```
 
@@ -6249,7 +6166,7 @@ def fetch_issues(
 现在我们可以调用 `fetch_issues()` 它将按批次下载所有 issue，以避免超过 GitHub 每小时请求次数的限制；结果将存储在 `repository_name-issues.jsonl` 文件，其中每一行都是一个 JSON 对象，代表一个 issue。让我们使用这个函数从 Datasets 中抓取所有 issue：
 
 ```python
-## 取决于你的网络连接,这可能需要几分钟的时间来运行...
+# 取决于你的网络连接,这可能需要几分钟的时间来运行...
 fetch_issues()
 ```
 
@@ -6367,7 +6284,7 @@ def get_comments(issue_number):
     response = requests.get(url, headers=headers)
     return [r["body"] for r in response.json()]
 
-## 测试我们的函数是否按预期工作
+# 测试我们的函数是否按预期工作
 get_comments(2792)
 ```
 
@@ -6378,7 +6295,7 @@ get_comments(2792)
 这看起来不错，所以让我们使用 `Dataset.map()` 方法，为我们数据集中每个 issue 的添加一个 `comments` 列：
 
 ```python
-## 取决于你的网络连接,这可能需要几分钟时间...
+# 取决于你的网络连接,这可能需要几分钟时间...
 issues_with_comments_dataset = issues_dataset.map(
     lambda x: {"comments": get_comments(x["number"])}
 )
@@ -6550,47 +6467,12 @@ comments_df = df.explode("comments", ignore_index=True)
 comments_df.head(4)
 ```
 
-<table border="1" class="dataframe" style="table-layout: fixed; word-wrap:break-word; width: 100%;">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>html_url</th>
-      <th>title</th>
-      <th>comments</th>
-      <th>body</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>https://github.com/huggingface/datasets/issues/2787</td>
-      <td>ConnectionError: Couldn't reach https://raw.githubusercontent.com</td>
-      <td>the bug code locate in ：\r\n    if data_args.task_name is not None...</td>
-      <td>Hello,\r\nI am trying to run run_glue.py and it gives me this error...</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>https://github.com/huggingface/datasets/issues/2787</td>
-      <td>ConnectionError: Couldn't reach https://raw.githubusercontent.com</td>
-      <td>Hi @jinec,\r\n\r\nFrom time to time we get this kind of `ConnectionError` coming from the github.com website: https://raw.githubusercontent.com...</td>
-      <td>Hello,\r\nI am trying to run run_glue.py and it gives me this error...</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>https://github.com/huggingface/datasets/issues/2787</td>
-      <td>ConnectionError: Couldn't reach https://raw.githubusercontent.com</td>
-      <td>cannot connect，even by Web browser，please check that  there is some  problems。</td>
-      <td>Hello,\r\nI am trying to run run_glue.py and it gives me this error...</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>https://github.com/huggingface/datasets/issues/2787</td>
-      <td>ConnectionError: Couldn't reach https://raw.githubusercontent.com</td>
-      <td>I can access https://raw.githubusercontent.com/huggingface/datasets/1.7.0/datasets/glue/glue.py without problem...</td>
-      <td>Hello,\r\nI am trying to run run_glue.py and it gives me this error...</td>
-    </tr>
-  </tbody>
-</table>
+|      | html_url                                            | title                                                        | comments                                                     | body                                                         |
+| ---- | --------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 0    | https://github.com/huggingface/datasets/issues/2787 | ConnectionError:  Couldn't reach https://raw.githubusercontent.com | the  bug code locate in ：\r\n if data_args.task_name is not None... | Hello,\r\nI  am trying to run run_glue.py and it gives me this error... |
+| 1    | https://github.com/huggingface/datasets/issues/2787 | ConnectionError:  Couldn't reach https://raw.githubusercontent.com | Hi  @jinec,\r\n\r\nFrom time to time we get this kind of `ConnectionError` coming  from the github.com website: https://raw.githubusercontent.com... | Hello,\r\nI  am trying to run run_glue.py and it gives me this error... |
+| 2    | https://github.com/huggingface/datasets/issues/2787 | ConnectionError:  Couldn't reach https://raw.githubusercontent.com | cannot  connect，even by Web browser，please check that there is some problems。 | Hello,\r\nI  am trying to run run_glue.py and it gives me this error... |
+| 3    | https://github.com/huggingface/datasets/issues/2787 | ConnectionError:  Couldn't reach https://raw.githubusercontent.com | I  can access  https://raw.githubusercontent.com/huggingface/datasets/1.7.0/datasets/glue/glue.py  without problem... | Hello,\r\nI  am trying to run run_glue.py and it gives me this error... |
 
 非常好，我们可以看到其他三列已经被复制了， `comments` 列里存放着单独的评论！现在我们已经完成了 Pandas 要完成的部分功能，我们可以通过加载内存中的 `DataFrame` 快速切换回 `Dataset` ：
 
@@ -7219,7 +7101,7 @@ dataset[0]
 ```python
 from datasets import load_dataset
 
-## 加载这个可能需要几分钟的时间,你可以趁此喝杯咖啡或茶!
+# 加载这个可能需要几分钟的时间,你可以趁此喝杯咖啡或茶!
 raw_datasets = load_dataset("code_search_net", "python")
 ```
 
@@ -7267,11 +7149,11 @@ def handle_simple_responses(
 下面的操作会创建一个由每个列包含 1000 个文本组成的文本列表，但会将所有内容加载到内存中：
 
 ```python
-## 除非你的数据集很小,否则不要直接运行下面的代码!
-## training_corpus = [
-##     raw_datasets["train"][i: i + 1000]["whole_func_string"] 
-##     for i in range(0, len(raw_datasets["train"]), 1000)
-## ]
+# 除非你的数据集很小,否则不要直接运行下面的代码!
+# training_corpus = [
+#     raw_datasets["train"][i: i + 1000]["whole_func_string"] 
+#     for i in range(0, len(raw_datasets["train"]), 1000)
+# ]
 ```
 
 通过使用 Python 生成器，我们可以使 Python 只将正在使用的数据加载到内存中。要创建这样一个生成器，你只需要将方括号替换为圆括号：
@@ -7445,7 +7327,7 @@ tokenizer.push_to_hub("code-search-net-tokenizer")
 这将在你的账户中创建一个名为 `code-search-net-tokenizer` 的新仓库，其中将包含 tokenizer 文件。然后，你可以使用 tokenizer 的 `from_pretrained()` 方法从任何地方加载 tokenizer 
 
 ```python
-## 将下面的 "huggingface-course" 替换为你的用户名来加载你的 tokenizer 
+# 将下面的 "huggingface-course" 替换为你的用户名来加载你的 tokenizer 
 tokenizer = AutoTokenizer.from_pretrained("huggingface-course/code-search-net-tokenizer")
 ```
 
@@ -8042,9 +7924,9 @@ torch.Size([1, 66]) torch.Size([1, 66])####end
 import torch
 
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除 context 之外的所有内容
+# 屏蔽除 context 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 不屏蔽 [CLS] token 
+# 不屏蔽 [CLS] token 
 mask[0] = False
 mask = torch.tensor(mask)[None]
 
@@ -8059,9 +7941,9 @@ end_logits[mask] = -10000####end
 import tensorflow as tf
 
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除 context 之外的所有内容
+# 屏蔽除 context 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 不屏蔽 [CLS] token 
+# 不屏蔽 [CLS] token 
 mask[0] = False
 mask = tf.constant(mask)[None]
 
@@ -8301,7 +8183,7 @@ inputs = tokenizer(
 print(inputs["overflow_to_sample_mapping"])
 ```
 
-输出的结果是：
+当我们访问数据集的元素时，我们会得到一个输出的结果是：
 
 ```python
 [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
@@ -8393,11 +8275,11 @@ torch.Size([2, 384]) torch.Size([2, 384])####end
 ```python
 #####Pytorch
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除上下文 tokens 之外的所有内容
+# 屏蔽除上下文 tokens 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 取消对[CLS] token 的屏蔽
+# 取消对[CLS] token 的屏蔽
 mask[0] = False
-## 屏蔽所有的 [PAD] tokens
+# 屏蔽所有的 [PAD] tokens
 mask = torch.logical_or(torch.tensor(mask)[None], (inputs["attention_mask"] == 0))
 
 start_logits[mask] = -10000
@@ -8409,11 +8291,11 @@ end_logits[mask] = -10000####end
 ```python
 #####TensorFlow
 sequence_ids = inputs.sequence_ids()
-## 屏蔽除上下文 tokens 之外的所有内容
+# 屏蔽除上下文 tokens 之外的所有内容
 mask = [i != 1 for i in sequence_ids]
-## 取消对[CLS] token 的屏蔽
+# 取消对[CLS] token 的屏蔽
 mask[0] = False
-## 屏蔽所有的 [PAD] tokens
+# 屏蔽所有的 [PAD] tokens
 mask = tf.math.logical_or(tf.constant(mask)[None], inputs["attention_mask"] == 0)
 
 start_logits = tf.where(mask, -10000, start_logits)
@@ -9536,7 +9418,7 @@ for word, freq in word_freqs.items():
         for j in range(i + 2, len(word) + 1):
             subwords_freqs[word[i:j]] += freq
 
-## 按频率对子词排序
+# 按频率对子词排序
 sorted_subwords = sorted(subwords_freqs.items(), key=lambda x: x[1], reverse=True)
 sorted_subwords[:10]
 ```
@@ -10937,7 +10819,7 @@ huggingface-cli login####end
 from transformers import create_optimizer
 import tensorflow as tf
 
-## 在混合精度 float16 中进行训练
+# 在混合精度 float16 中进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 # 训练步数是数据集中的样本数量,除以 batch 大小,然后乘以总的 epoch 数。
@@ -11460,7 +11342,7 @@ unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)####e
 ```python
 from transformers import pipeline
 
-## 将此替换为你自己的 checkpoint
+# 将此替换为你自己的 checkpoint
 model_checkpoint = "huggingface-course/bert-finetuned-ner"
 token_classifier = pipeline(
     "token-classification", model=model_checkpoint, aggregation_strategy="simple"
@@ -11603,10 +11485,10 @@ import torch
 
 inputs = tokenizer(text, return_tensors="pt")
 token_logits = model(**inputs).logits
-## 找到 [MASK] 的位置并提取其 logits
+# 找到 [MASK] 的位置并提取其 logits
 mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
 mask_token_logits = token_logits[0, mask_token_index, :]
-## 选择具有最高 logits 的 [MASK] 候选词
+# 选择具有最高 logits 的 [MASK] 候选词
 top_5_tokens = torch.topk(mask_token_logits, 5, dim=1).indices[0].tolist()
 
 for token in top_5_tokens:
@@ -11622,11 +11504,11 @@ import tensorflow as tf
 
 inputs = tokenizer(text, return_tensors="np")
 token_logits = model(**inputs).logits
-## 找到 [MASK] 的位置并提取其 logits
+# 找到 [MASK] 的位置并提取其 logits
 mask_token_index = np.argwhere(inputs["input_ids"] == tokenizer.mask_token_id)[0, 1]
 mask_token_logits = token_logits[0, mask_token_index, :]
-## 选择具有最高 logits 的 [MASK] 候选词
-## 通过在 argsort 前对数组取负,来得到最大的 logits
+# 选择具有最高 logits 的 [MASK] 候选词
+# 通过在 argsort 前对数组取负,来得到最大的 logits
 top_5_tokens = np.argsort(-mask_token_logits)[:5].tolist()
 
 for token in top_5_tokens:
@@ -11718,7 +11600,7 @@ def tokenize_function(examples):
         result["word_ids"] = [result.word_ids(i) for i in range(len(result["input_ids"]))]
     return result
 
-## 使用 batched=True 来激活快速多线程!
+# 使用 batched=True 来激活快速多线程!
 tokenized_datasets = imdb_dataset.map(
     tokenize_function, batched=True, remove_columns=["text", "label"]
 )
@@ -11777,7 +11659,7 @@ chunk_size = 128
 现在来到了有趣的部分。为了展示如何把这些示例连接在一，我们从分词后的训练集中取出几个评论，并打印出每个评论的 token 数量：
 
 ```python
-## 切片会为每个特征生成一个列表的列表
+# 切片会为每个特征生成一个列表的列表
 tokenized_samples = tokenized_datasets["train"][:3]
 
 for idx, sample in enumerate(tokenized_samples["input_ids"]):
@@ -12130,7 +12012,7 @@ optimizer, schedule = create_optimizer(
 )
 model.compile(optimizer=optimizer)
 
-## 使用 float16 精度进行混合精度训练
+# 使用 float16 精度进行混合精度训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
 model_name = model_checkpoint.split("/")[-1]
@@ -13119,7 +13001,7 @@ optimizer, schedule = create_optimizer(
 )
 model.compile(optimizer=optimizer)
 
-## 使用 float16 混合精度进行训练
+# 使用 float16 混合精度进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")####end
 ```
 
@@ -13486,7 +13368,7 @@ epoch 2, BLEU score: 54.44####end
 ```python
 from transformers import pipeline
 
-## 将其替换成你自己的 checkpoint
+# 将其替换成你自己的 checkpoint
 model_checkpoint = "huggingface-course/marian-finetuned-kde4-en-to-fr"
 translator = pipeline("translation", model=model_checkpoint)
 translator("Default to expanded threads")
@@ -13590,7 +13472,7 @@ show_samples(english_dataset)
 ```python
 english_dataset.set_format("pandas")
 english_df = english_dataset["train"][:]
-## 显示前 20 个产品的数量
+# 显示前 20 个产品的数量
 english_df["product_category"].value_counts()[:20]
 ```
 
@@ -13666,7 +13548,7 @@ for split in english_books.keys():
     )
     books_dataset[split] = books_dataset[split].shuffle(seed=42)
 
-## 挑选一些样例
+# 挑选一些样例
 show_samples(books_dataset)
 ```
 
@@ -13987,7 +13869,7 @@ from transformers import Seq2SeqTrainingArguments
 
 batch_size = 8
 num_train_epochs = 8
-## 每个训练周期都输出训练损失
+# 每个训练周期都输出训练损失
 logging_steps = len(tokenized_datasets["train"]) // batch_size
 model_name = model_checkpoint.split("/")[-1]
 
@@ -14199,7 +14081,7 @@ optimizer, schedule = create_optimizer(
 
 model.compile(optimizer=optimizer)
 
-## 使用 float16 混合精度进行训练
+# 使用 float16 混合精度进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")####end
 ```
 
@@ -14640,7 +14522,7 @@ def filter_streaming_dataset(dataset, filters):
 然后我们可以直接使用此函数处理流数据集：
 
 ```python
-## 执行这个代码块需要非常长的时间,因此你可以跳过它,继续执行下一个!
+# 执行这个代码块需要非常长的时间,因此你可以跳过它,继续执行下一个!
 from datasets import load_dataset
 
 split = "train"  # "valid"
@@ -15038,7 +14920,7 @@ optimizer, schedule = create_optimizer(
 )
 model.compile(optimizer=optimizer)
 
-## 使用 float16 混合精度进行训练
+# 使用 float16 混合精度进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")####end
 ```
 
@@ -15111,45 +14993,45 @@ pipe = pipeline(
 
 ```python
 txt = """\
-## 创建一些数据
+# 创建一些数据
 x = np.random.randn(100)
 y = np.random.randn(100)
 
-## 使用 x,y 创建散点图
+# 使用 x,y 创建散点图
 """
 print(pipe(txt, num_return_sequences=1)[0]["generated_text"])
 ```
 
 ```python
-## 创建一些数据
+# 创建一些数据
 x = np.random.randn(100)
 y = np.random.randn(100)
 
-## 使用 x,y 创建散点图
+# 使用 x,y 创建散点图
 plt.scatter(x, y)
 
-## 创建散点
+# 创建散点
 ```
 
 结果看起来是正确的。那么对于 `pandas` 操作也可以吗？让我们看看是否能从两个数组创建一个 `DataFrame` ：
 
 ```python
 txt = """\
-## 创建一些数据
+# 创建一些数据
 x = np.random.randn(100)
 y = np.random.randn(100)
 
-## 从 x 和 y 创建 dataframe
+# 从 x 和 y 创建 dataframe
 """
 print(pipe(txt, num_return_sequences=1)[0]["generated_text"])
 ```
 
 ```python
-## 创建一些数据
+# 创建一些数据
 x = np.random.randn(100)
 y = np.random.randn(100)
 
-## 从 x 和 y 创建 dataframe
+# 从 x 和 y 创建 dataframe
 df = pd.DataFrame({'x': x, 'y': y})
 df.insert(0,'x', x)
 for
@@ -15159,41 +15041,41 @@ for
 
 ```python
 txt = """\
-## 有职业,收入和名字的 dataframe
+# 有职业,收入和名字的 dataframe
 df = pd.DataFrame({'profession': x, 'income':y, 'name': z})
 
-## 计算每个职业的平均收入
+# 计算每个职业的平均收入
 """
 print(pipe(txt, num_return_sequences=1)[0]["generated_text"])
 ```
 
 ```python
-## 有职业,收入和名字的 dataframe
+# 有职业,收入和名字的 dataframe
 df = pd.DataFrame({'profession': x, 'income':y, 'name': z})
 
-## 计算每个职业的平均收入
+# 计算每个职业的平均收入
 profession = df.groupby(['profession']).mean()
 
-## 计算
+# 计算
 ```
 
 不错；这是正确的做法。最后，让我们看看我们是否也可以将其用于 `scikit-learn` 并建立一个随机森林模型：
 
 ```python
 txt = """
-## 从 scikit-learn 导入随机森林回归器
+# 从 scikit-learn 导入随机森林回归器
 from sklearn.ensemble import RandomForestRegressor
 
-## 用 X, y 拟合带有 300 个估算器的随机森林模型:
+# 用 X, y 拟合带有 300 个估算器的随机森林模型:
 """
 print(pipe(txt, num_return_sequences=1)[0]["generated_text"])
 ```
 
 ```python
-## 从 scikit-learn 导入随机森林回归器
+# 从 scikit-learn 导入随机森林回归器
 from sklearn.ensemble import RandomForestRegressor
 
-## 用 X, y 拟合带有 300 个估算器的随机森林模型:
+# 用 X, y 拟合带有 300 个估算器的随机森林模型:
 rf = RandomForestRegressor(n_estimators=300, random_state=random_state, max_depth=3)
 rf.fit(X, y)
 rf
@@ -16332,9 +16214,9 @@ from transformers import create_optimizer
 from transformers.keras_callbacks import PushToHubCallback
 import tensorflow as tf
 
-## 训练步骤的数量是数据集中的样本数量除以 batch 大小,然后乘以总的训练周期数。
-## 注意,这里的 tf_train_dataset 是一个batch的 tf.data.Dataset,
-## 而不是原始的 Hugging Face 数据集,所以使用 len() 计算其长度已经是 num_samples // batch_size。
+# 训练步骤的数量是数据集中的样本数量除以 batch 大小,然后乘以总的训练周期数。
+# 注意,这里的 tf_train_dataset 是一个batch的 tf.data.Dataset,
+# 而不是原始的 Hugging Face 数据集,所以使用 len() 计算其长度已经是 num_samples // batch_size。
 num_train_epochs = 3
 num_train_steps = len(tf_train_dataset) * num_train_epochs
 optimizer, schedule = create_optimizer(
@@ -16345,7 +16227,7 @@ optimizer, schedule = create_optimizer(
 )
 model.compile(optimizer=optimizer)
 
-## 使用 float16 混合精度进行训练
+# 使用 float16 混合精度进行训练
 tf.keras.mixed_precision.set_global_policy("mixed_float16")####end
 ```
 
@@ -16387,7 +16269,7 @@ from transformers.keras_callbacks import PushToHubCallback
 
 callback = PushToHubCallback(output_dir="bert-finetuned-squad", tokenizer=tokenizer)
 
-## 我们将在之后进行验证,因此训练过程中不会进行验证
+# 我们将在之后进行验证,因此训练过程中不会进行验证
 model.fit(tf_train_dataset, callbacks=[callback], epochs=num_train_epochs)####end
 ```
 
@@ -16645,7 +16527,7 @@ unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)####e
 ```python
 from transformers import pipeline
 
-## 将其替换为你自己的 checkpoint 
+# 将其替换为你自己的 checkpoint 
 model_checkpoint = "huggingface-course/bert-finetuned-squad"
 question_answerer = pipeline("question-answering", model=model_checkpoint)
 
@@ -18402,7 +18284,7 @@ Jura lbh fcrpvsl bcgvzvmref, npgvingvbaf be ybffrf jvgu fgevatf, Xrenf frgf nyy 
 ```python
 #####TensorFlow
   246/24543 [..............................] - ETA: 15:52 - loss: nan####end
-``` 
+```
 哦不。
 
 `nan` 不是一个正常的损失值。我们已经检查了我们的数据，看起来一切正常。如果这不是问题所在，我们可以接下来检查哪里呢？明显的下一步是...
@@ -18888,16 +18770,13 @@ Copy-and-paste the text below in your GitHub issue and FILL OUT the two last poi
 ```python
 from transformers import GPT3ForSequenceClassification
 
-# ImportError: cannot import name 'GPT3ForSequenceClassification' from 'transformers' (/Users/lewtun/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/__init__.py)
-# ---------------------------------------------------------------------------
-# ImportError                               Traceback (most recent call last)
-# /var/folders/28/k4cy5q7s2hs92xq7_h89_vgm0000gn/T/ipykernel_30848/333858878.py in <module>
-# ----> 1 from transformers import GPT3ForSequenceClassification
-
-# ImportError: cannot import name 'GPT3ForSequenceClassification' from 'transformers' (/Users/lewtun/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/__init__.py)
+#Traceback (most recent call last):
+#  File "<stdin>", line 1, in <module>
+#ImportError: cannot import name 'GPT3ForSequenceClassification' from 'transformers' (C:\Users\13756\anaconda3\lib\site-packages\transformers\__init__.py)
 ```
 
 以下哪项可能是有助于寻求帮助的论坛主题标题？
+
 1. import错误:无法从'transformers'import 名称'GPT3GPT3ForSequenceClassification'(/Users/lewtun/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/_ init _. py) 
 2. 从 transformers import gpt3forsequeclassification 时出现问题
 3. 为什么我不能导入 GPT3ForSequenceClassification ?
@@ -19142,7 +19021,7 @@ gr.Interface(fn=greet, inputs=textbox, outputs="text").launch()
 
 我们已经看到，只需几行代码，Gradio 就能让你围绕任何函数创建一个简单的界面，无论它有什么样的输入或输出。在本节中，我们从一个简单的文本框开始，但在接下来的节中，我们将介绍其他类型的输入和输出。现在让我们看一下如何在 Gradio 应用中包含一些自然语言处理（NLP）。
 
-### 🤖 包括模型预测 
+### 🤖 在Gradio 中使用模型进行预测 
 
 现在让我们构建一个简单的界面，让你可以演示像 GPT-2 这样的**文本生成**模型。
 
@@ -19493,7 +19372,7 @@ gr.Interface.load(
     enable_queue=True,
 ).launch()
 ```
-    
+
 上述代码将生成以下界面：
 
 ![与 GPT-j 集成](./assets/9.5.1.jpg)
@@ -19507,7 +19386,7 @@ gr.Interface.load(
 还记得第 1 节中删除图像背景的演示吗？让我们从 Hugging Face Spaces 加载它：
 
 ```python
-gr.Interface.load("spaces/abidlabs/remove-bg").launch()
+gr.Interface.load("spaces/yaoqi/bg-remove-Anime").launch()
 ```
 
 ![与移除背景集成](./assets/9.5.2.jpg)
@@ -19515,9 +19394,50 @@ gr.Interface.load("spaces/abidlabs/remove-bg").launch()
 从Hub 或 Spaces 加载演示的一个很酷的地方是，你可以通过覆盖任何参数来进行一些自定义的调整。在这里，我们添加一个标题并将输入改为了网络摄像头：
 
 ```python
-gr.Interface.load(
-    "spaces/abidlabs/remove-bg", inputs="webcam", title="Remove your webcam background!"
-).launch()
+import gradio as gr
+import huggingface_hub
+import onnxruntime as rt
+import numpy as np
+import cv2
+
+def get_mask(img, s=1024):
+    img = (img / 255).astype(np.float32)
+    h, w = h0, w0 = img.shape[:-1]
+    h, w = (s, int(s * w / h)) if h > w else (int(s * h / w), s)
+    ph, pw = s - h, s - w
+    img_input = np.zeros([s, s, 3], dtype=np.float32)
+    img_input[ph // 2:ph // 2 + h, pw // 2:pw // 2 + w] = cv2.resize(img, (w, h))
+    img_input = np.transpose(img_input, (2, 0, 1))
+    img_input = img_input[np.newaxis, :]
+    mask = rmbg_model.run(None, {'img': img_input})[0][0]
+    mask = np.transpose(mask, (1, 2, 0))
+    mask = mask[ph // 2:ph // 2 + h, pw // 2:pw // 2 + w]
+    mask = cv2.resize(mask, (w0, h0))[:, :, np.newaxis]
+    return mask
+
+def rmbg_fn(img):
+    mask = get_mask(img)
+    img = (mask * img + 255 * (1 - mask)).astype(np.uint8)
+    mask = (mask * 255).astype(np.uint8)
+    img = np.concatenate([img, mask], axis=2, dtype=np.uint8)
+    mask = mask.repeat(3, axis=2)
+    return img
+
+if __name__ == "__main__":
+    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+    model_path = huggingface_hub.hf_hub_download("skytnt/anime-seg", "isnetis.onnx")
+    rmbg_model = rt.InferenceSession(model_path, providers=providers)
+    app = gr.Blocks()
+    with app:
+        gr.Markdown("# Anime Remove Background\n\n"
+                    "fork from [skytnt/anime-remove-background](https://huggingface.co/spaces/skytnt/anime-remove-background)\n")
+        with gr.Row():
+            with gr.Column():
+                input_img = gr.Image(label="input image",source='webcam')
+                run_btn = gr.Button(variant="primary")
+            output_img = gr.Image(label="result", image_mode="RGBA")
+        run_btn.click(rmbg_fn, [input_img], [ output_img])
+    app.launch()
 ```
 
 ![与 webcam 集成](./assets/9.5.3.jpg)

@@ -1,22 +1,162 @@
-<svg width="1816" height="501" xmlns="http://www.w3.org/2000/svg" fill="none">
-
- <g>
-  <title>Layer 1</title>
-  <rect id="svg_1" fill="white" height="501" width="1816"/>
-  <rect id="svg_2" fill="#FFF6DF" rx="40" height="495" width="380" y="3"/>
-  <rect id="svg_4" fill="#F6F3FF" rx="40" height="495" width="380" y="3" x="1435"/>
-  <path id="svg_6" fill="#B4B4B4" d="m1436.06,251.061c0.59,-0.586 0.59,-1.536 0,-2.122l-9.55,-9.546c-0.58,-0.585 -1.53,-0.585 -2.12,0c-0.58,0.586 -0.58,1.536 0,2.122l8.49,8.485l-8.49,8.485c-0.58,0.586 -0.58,1.536 0,2.122c0.59,0.585 1.54,0.585 2.12,0l9.55,-9.546zm-1056.06,0.439l1055,0l0,-3l-1055,0l0,3z"/>
-  <rect id="svg_7" fill="#FFF3EB" rx="11.5" height="85" width="289" y="3.5" x="762.5"/>
-  <path id="svg_10" fill="#B4B4B4" d="m905.939,240.061c0.586,0.585 1.536,0.585 2.122,0l9.546,-9.546c0.585,-0.586 0.585,-1.536 0,-2.122c-0.586,-0.585 -1.536,-0.585 -2.122,0l-8.485,8.486l-8.485,-8.486c-0.586,-0.585 -1.536,-0.585 -2.122,0c-0.585,0.586 -0.585,1.536 0,2.122l9.546,9.546zm-0.439,-147.061l0,146l3,0l0,-146l-3,0z"/>
-  <rect id="svg_11" fill="#FFF3EB" rx="11.5" height="123" width="379" y="374.5" x="500.5"/>
-  <path id="svg_14" d="m934.5,386c0,-6.24886 5.25114,-11.5 11.5,-11.5l356,0c6.24886,0 11.5,5.25114 11.5,11.5l0,100c0,6.24886 -5.25114,11.5 -11.5,11.5l-356,0c-6.24886,0 -11.5,-5.25114 -11.5,-11.5l0,-100z" opacity="undefined" fill="#FFF3EB"/>
-  <path id="svg_17" fill="#B4B4B4" d="m691.061,259.939c-0.586,-0.585 -1.536,-0.585 -2.122,0l-9.546,9.546c-0.585,0.586 -0.585,1.536 0,2.122c0.586,0.585 1.536,0.585 2.122,0l8.485,-8.486l8.485,8.486c0.586,0.585 1.536,0.585 2.122,0c0.585,-0.586 0.585,-1.536 0,-2.122l-9.546,-9.546zm0.439,100.061l0,-99l-3,0l0,99l3,0z"/>
-  <path id="svg_18" fill="#B4B4B4" d="m1125.06,259.939c-0.59,-0.585 -1.53,-0.585 -2.12,0l-9.55,9.546c-0.58,0.586 -0.58,1.536 0,2.122c0.59,0.585 1.54,0.585 2.12,0l8.49,-8.486l8.49,8.486c0.58,0.585 1.53,0.585 2.12,0c0.58,-0.586 0.58,-1.536 0,-2.122l-9.55,-9.546zm0.44,100.061l0,-99l-3,0l0,99l3,0z"/>
-  <text stroke="null" xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" stroke-width="0" id="svg_19" y="262.27857" x="42.15541" fill="#000000">预训练好的语言模型</text>
-  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_20" y="429.24271" x="572.7577" fill="black">可以在单个GPU</text>
-  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_21" y="472.99267" x="573.65055" fill="black">上完成模型微调</text>
-  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_22" y="454.24269" x="1035.25728" fill="black">易于多次训练</text>
-  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_23" y="56.92161" x="829.00746" fill="black">省钱￥￥￥</text>
-  <text xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="30" id="svg_24" y="260.49286" x="1519.18544" fill="black">微调后的语言模型</text>
- </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1816"
+   height="501"
+   fill="none"
+   version="1.1"
+   id="svg22"
+   sodipodi:docname="finetuning.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   inkscape:export-filename="finetuning.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs26" />
+  <sodipodi:namedview
+     id="namedview24"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.69218062"
+     inkscape:cx="909.44471"
+     inkscape:cy="249.93476"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="2872"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g20" />
+  <g
+     id="g20">
+    <title
+       id="title2">Layer 1</title>
+    <rect
+       id="svg_1"
+       fill="white"
+       height="501"
+       width="1816" />
+    <rect
+       id="svg_2"
+       fill="#FFF6DF"
+       rx="40"
+       height="495"
+       width="380"
+       y="3" />
+    <rect
+       id="svg_4"
+       fill="#F6F3FF"
+       rx="40"
+       height="495"
+       width="380"
+       y="3"
+       x="1435" />
+    <path
+       id="svg_6"
+       fill="#B4B4B4"
+       d="m1436.06,251.061c0.59,-0.586 0.59,-1.536 0,-2.122l-9.55,-9.546c-0.58,-0.585 -1.53,-0.585 -2.12,0c-0.58,0.586 -0.58,1.536 0,2.122l8.49,8.485l-8.49,8.485c-0.58,0.586 -0.58,1.536 0,2.122c0.59,0.585 1.54,0.585 2.12,0l9.55,-9.546zm-1056.06,0.439l1055,0l0,-3l-1055,0l0,3z" />
+    <rect
+       id="svg_7"
+       fill="#FFF3EB"
+       rx="11.5"
+       height="85"
+       width="289"
+       y="3.5"
+       x="762.5" />
+    <path
+       id="svg_10"
+       fill="#B4B4B4"
+       d="m905.939,240.061c0.586,0.585 1.536,0.585 2.122,0l9.546,-9.546c0.585,-0.586 0.585,-1.536 0,-2.122c-0.586,-0.585 -1.536,-0.585 -2.122,0l-8.485,8.486l-8.485,-8.486c-0.586,-0.585 -1.536,-0.585 -2.122,0c-0.585,0.586 -0.585,1.536 0,2.122l9.546,9.546zm-0.439,-147.061l0,146l3,0l0,-146l-3,0z" />
+    <rect
+       id="svg_11"
+       fill="#FFF3EB"
+       rx="11.5"
+       height="123"
+       width="379"
+       y="374.5"
+       x="500.5" />
+    <path
+       id="svg_14"
+       d="m934.5,386c0,-6.24886 5.25114,-11.5 11.5,-11.5l356,0c6.24886,0 11.5,5.25114 11.5,11.5l0,100c0,6.24886 -5.25114,11.5 -11.5,11.5l-356,0c-6.24886,0 -11.5,-5.25114 -11.5,-11.5l0,-100z"
+       opacity="undefined"
+       fill="#FFF3EB" />
+    <path
+       id="svg_17"
+       fill="#B4B4B4"
+       d="m691.061,259.939c-0.586,-0.585 -1.536,-0.585 -2.122,0l-9.546,9.546c-0.585,0.586 -0.585,1.536 0,2.122c0.586,0.585 1.536,0.585 2.122,0l8.485,-8.486l8.485,8.486c0.586,0.585 1.536,0.585 2.122,0c0.585,-0.586 0.585,-1.536 0,-2.122l-9.546,-9.546zm0.439,100.061l0,-99l-3,0l0,99l3,0z" />
+    <path
+       id="svg_18"
+       fill="#B4B4B4"
+       d="m1125.06,259.939c-0.59,-0.585 -1.53,-0.585 -2.12,0l-9.55,9.546c-0.58,0.586 -0.58,1.536 0,2.122c0.59,0.585 1.54,0.585 2.12,0l8.49,-8.486l8.49,8.486c0.58,0.585 1.53,0.585 2.12,0c0.58,-0.586 0.58,-1.536 0,-2.122l-9.55,-9.546zm0.44,100.061l0,-99l-3,0l0,99l3,0z" />
+    <text
+       stroke="null"
+       xml:space="preserve"
+       text-anchor="start"
+       font-family="'Noto Sans JP'"
+       font-size="30"
+       stroke-width="0"
+       id="svg_19"
+       y="262.27856"
+       x="22.155411"
+       fill="#000000"
+       style="font-size:37.3333px">预训练好的语言模型</text>
+    <text
+       xml:space="preserve"
+       text-anchor="start"
+       font-family="'Noto Sans JP'"
+       font-size="30"
+       id="svg_20"
+       y="429.24271"
+       x="558.75769"
+       fill="#000000"
+       style="font-size:37.3333px">可以在单个GPU</text>
+    <text
+       xml:space="preserve"
+       text-anchor="start"
+       font-family="'Noto Sans JP'"
+       font-size="30"
+       id="svg_21"
+       y="474.99268"
+       x="559.65057"
+       fill="#000000"
+       style="font-size:37.3333px">上完成模型微调</text>
+    <text
+       xml:space="preserve"
+       text-anchor="start"
+       font-family="'Noto Sans JP'"
+       font-size="30"
+       id="svg_22"
+       y="454.24268"
+       x="1011.2573"
+       fill="#000000"
+       style="font-size:37.3333px">易于多次训练</text>
+    <text
+       xml:space="preserve"
+       text-anchor="start"
+       font-family="'Noto Sans JP'"
+       font-size="30"
+       id="svg_23"
+       y="56.921612"
+       x="815.00745"
+       fill="#000000"
+       style="font-size:37.3333px">省钱￥￥￥</text>
+    <text
+       xml:space="preserve"
+       text-anchor="start"
+       font-family="'Noto Sans JP'"
+       font-size="30"
+       id="svg_24"
+       y="260.49286"
+       x="1489.1854"
+       fill="#000000"
+       style="font-size:37.3333px">微调后的语言模型</text>
+  </g>
 </svg>
