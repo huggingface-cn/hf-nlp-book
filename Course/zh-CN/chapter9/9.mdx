@@ -16,17 +16,17 @@
 	choices={[
         {
 			text: "为自己的机器学习模型创建一个demo",
-			explain: "通过几行 Python 代码，你可以使用我们的预构建组件库为 ML 模型生成一个演示。",
+			explain: "通过几行 Python 代码，你可以使用我们的预构建组件库为 ML 模型生成一个演示demo。",
 			correct: true
 		},
 		{
 			text: "与他人分享你的机器学习模型",
-			explain: "在启动方法中使用 <code> share = True </code> 参数，可以生成一个共享链接发送给任何人。",
+			explain: "在启动方法中添加 <code> share = True </code> 参数，可以生成一个共享链接发送给任何人。",
             correct: true
 		},
 		{
-			text: "调试模型",
-			explain: "Gradio的一个优点是能够用真实数据测试模型，可以实时更改并观察模型的预测变化，从而帮助你调试模型。",
+			text: "测试模型的效果",
+			explain: "Gradio的一个优点是能够用真实数据测试模型，可以实时更改输入并观察模型的预测变化，从而帮助你测试模型。",
 			correct: true
 		},
 		{
@@ -51,7 +51,7 @@
 	]}
 />
 
-### 3. 可以在哪里发布一个 Gradio 演示？
+### 3. 可以在哪里运行一个 Gradio 演示？
 <Question
 	choices={[
         {
@@ -92,12 +92,12 @@
 	choices={[
         {
 			text: "多输入多输出",
-			explain: "多输入多输出是可能的。你所需要做的就是将输入和输出的列表传递给它们相应的参数",
+			explain: "Gradio 支持多输入多输出。你所需要做的就是将输入和输出的列表传递给它们相应的参数",
             correct: true
         },
         {
-			text: "数据持久性状态",
-			explain: "可以在界面中添加状态。",
+			text: "数据持久性，状态保存",
+			explain: "可以在 Interface 中添加状态。",
 			correct: true
         },
         {
@@ -142,21 +142,21 @@
 	]}
 />
 
-### 7. 创建你的 Gradio 接口时，必须添加以下步骤：
+### 7. 创建你的 Gradio Interface时，必须添加以下步骤：
 <Question
 	choices={[
         {
-			text: "向预测函数中传入一个额外的参数，该参数表示接口的状态。",
-			explain: "需要一个额外的参数来存储接口的历史记录或状态。",
+			text: "向预测函数中传入一个额外的参数，该参数表示 Interface 的状态。",
+			explain: "需要一个额外的参数来存储 Interface 的历史记录或状态。",
             correct: true
         },
         {
 			text: "在预测函数的末尾，将状态的更新值作为额外的返回值返回。",
-			explain: "此历史记录或状态值需要由函数返回。",
+			explain: "历史记录或状态值需要由函数返回。",
             correct: true
         },
         {
-			text: "在创建接口时添加状态输入和状态输出组件",
+			text: "在创建 Interface 时添加状态输入和状态输出组件",
 			explain: "Gradio 提供了一个状态输入和输出组件来持久存储数据。",
             correct: true
         }

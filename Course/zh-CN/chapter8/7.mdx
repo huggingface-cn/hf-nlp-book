@@ -9,7 +9,7 @@
 	choices={[
 		{
 			text: "从上到下",
-			explain: "错误！大多数编程语言在顶部打印异常，但 Python 在这方面是特殊的。"
+			explain: "错误！大多数编程语言在顶部输出异常，但 Python 在这方面是特殊的。"
 		},
 		{
 			text: "自下而上",
@@ -19,21 +19,21 @@
 	]}
 />
 
-### 2. 什么是最小可再生示例？
+### 2. 什么是最小可复现示例？
 <Question
 	choices={[
 		{
-			text: "来自一篇研究文章一个简单的 Transformer 体系结构的实现",
+			text: "来自一个简单的 Transformer 体系结构的实现的研究文章",
 			explain: "虽然从头开始实现你自己的 Transformer 模型是非常有教育意义的，但这不是我们在这里讨论的内容。"
 		},
 		{
-			text: "一种紧凑且自包含的代码块，可以在不依赖于私有文件或数据的情况下运行",
-			explain: "正确的！ 最少的可重现示例可以帮助库的维护人员重现你遇到的问题，以便他们可以更快地找到解决方案。",
+			text: "一种紧凑且包含所有所需资源的代码块，可以在不依赖于私有文件或数据的情况下运行",
+			explain: "正确的！ 最少的可复现示例可以帮助库的维护人员重现你遇到的问题，以便他们可以更快地找到解决方案。",
 			correct: true
 		},
 		{
 			text: "Python traceback 的屏幕截图",
-			explain: "再试一次 —— 尽管在提交问题时, 附带你所面临错误的屏幕截图很容易, 但这使得其他人很难重现错误。"
+			explain: "再试一次 —— 尽管在提交问题时, 附带你所面临错误的屏幕截图很容易, 但只有屏幕截图会使其他人很难重现错误。"
 		},
 		{
 			text: "一个记录整个分析的 Notebook，包括与错误无关的部分",
@@ -55,17 +55,17 @@ from transformers import GPT3ForSequenceClassification
 # ImportError: cannot import name 'GPT3ForSequenceClassification' from 'transformers' (/Users/lewtun/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/__init__.py)
 ```
 
-以下哪项可能是有助于寻求帮助的论坛主题标题？
+以下哪项可能是有助于寻求帮助的论坛帖子的标题呢？
 
 <Question
 	choices={[
 		{
 			text: "import错误:无法从'transformers'import 名称'GPT3GPT3ForSequenceClassification'(/Users/lewtun/miniconda3/envs/huggingface/lib/python3.8/site-packages/transformers/_ init _. py) ",
-			explain: "包括 traceback 的最后一行可能会更具描述性，但最好保留在主体部分。再试一次！"
+			explain: "包括 traceback 的最后一行可能会更具描述性，但最好把这个放在正文。请再试一次！"
 		},
 		{
 			text: "从 transformers import gpt3forsequeclassification 时出现问题",
-			explain: "再试一次——尽管这提供了有用的信息，但最好还是保留在文本的主体部分。",
+			explain: "再试一次——尽管这提供了有用的信息，但最好还是放在正文主体部分。",
 		},
 		{
 			text: "为什么我不能导入 GPT3ForSequenceClassification ?",
@@ -85,7 +85,7 @@ from transformers import GPT3ForSequenceClassification
 	choices={[
 		{
 			text: "计算梯度并执行反向传播的优化步骤",
-			explain: "尽管优化器中可能存在缺陷， 但这通常是训练管道中的几个步骤， 因此首先要检查其他事项。再试一次!"
+			explain: "尽管优化器中可能存在缺陷， 但这通常是训练管道中的后几个步骤， 因此首先要检查前面的其他事项。再试一次!"
 		},
 		{
 			text: "计算指标的评估步骤",
@@ -93,7 +93,7 @@ from transformers import GPT3ForSequenceClassification
 		},
 		{
 			text: "数据集",
-			explain: "正确的!查看数据几乎总是你应该做的第一件事， 以确保文本进行了适当的编码， 具有预期的特性， 等等。",
+			explain: "正确的!查看数据几乎你应该做的第一件事，应该在这里确保文本进行了适当的编码， 具有预期的特性， 等等。",
 			correct: true
 		},
 		{
@@ -117,7 +117,7 @@ from transformers import GPT3ForSequenceClassification
 		},
 		{
 			text: "请阅读 traceback 以找出错误的原因。",
-			explain: "对于任何其他错误, 你都会这样做, 但 CUDA 错误通常不会在发生的地方引发, 因为大多数 CUDA 操作都是异步的。"
+			explain: "对于任何其他错误, 你都应该这样做, 但 CUDA 错误通常不会在发生的地方引发, 因为大多数 CUDA 操作都是异步的。"
 		},
 		{
 			text: "减少 batch size。",
@@ -140,7 +140,7 @@ from transformers import GPT3ForSequenceClassification
 		},
 		{
 			text: "每天要求更新。",
-			explain: "这不太可能给你任何帮助；人们更可能会忽视你。",
+			explain: "这不太可能给你任何帮助；其他人更可能会忽视你的需求。",
 		},
 		{
 			text: "检查错误周围的源代码，并试图找出错误发生的原因。在 issue 上发布结果。",
@@ -155,7 +155,7 @@ from transformers import GPT3ForSequenceClassification
 	choices={[
 		{
 			text: "不是这样的， 过拟合总是不好的， 应该避免。",
-			explain: "当对整个数据集进行训练时， 过拟合确实可能是一个不好的信号， 表明你的模型不能很好地推广到新的示例。但是， 对于调试， 我们通常不会对整个数据集进行训练。再试一次！"
+			explain: "当对整个数据集进行训练时， 过拟合确实可能是一个不好的信号， 表明你的模型不能很好地推广到新的示例。但是， 对于调试， 我们通常不会直接对整个数据集进行训练。再试一次！"
 		},
 		{
 			text: "这使我们能够验证该模型能够将损耗降低到零。",
@@ -184,7 +184,7 @@ from transformers import GPT3ForSequenceClassification
 		},
 		{
 			text: "它可以使维护人员知道你是在 GPU 还是 CPU 上运行代码。",
-			explain: "正确的！ 正如我们在本章中所见，在 GPU 或 CPU 上运行的代码可能会产生不同的结果或错误，了解你使用的是哪种硬件有助于吸引维护人员的注意力。 但这不是唯一的好处...",
+			explain: "正确的！ 正如我们在本章中所见，在 GPU 或 CPU 上运行的代码可能会产生不同的结果或错误，了解你使用的是哪种硬件。 但这不是唯一的好处...",
 			correct: true
 		}
 	]}
